@@ -1,0 +1,16 @@
+{
+  "name": "openapi",
+  "version": "1.0.0",
+  "description": "Recart's OpenAPI specification",
+  "main": "index.js",
+  "scripts": {
+    "validate": "./node_modules/.bin/openapi-generator-cli validate -i openapi/2023-12.yaml"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.7.0",
+    "husky": "^8.0.3"
+  }
+}
