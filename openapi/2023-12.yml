@@ -1,0 +1,162 @@
+openapi: 3.0.0
+servers:
+    - url: https://api.recart.com/app-integrations/2023-12/
+      description: Production
+info:
+  title: Recart API
+  description: Open API description of the Recart API
+  version: 2023-12
+paths:
+  /subscription:
+    post:
+      summary: Initiate SMS subscription
+      tags:
+        - Subscription
+      operationId: postSubscription
+      security:
+        - ApiKeyAuth: []
+      description: |
+        Trigger an SMS subscription flow in Recart. It sends the associated welcome flow to the recipient.
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: "#/components/schemas/PostSubscription"
+      responses:
+        "202":
+          description: Accepted
+        "4XX":
+          $ref: "#/components/schemas/HttpError"
+        "5XX":
+          $ref: "#/components/schemas/HttpError"
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Recart-API-Key
+      description: It can be obtained in the Recart application after contacting our support
+  schemas:
+    HttpError:
+      type: object
+      required:
+        - errors 
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - code
+              - title
+              - detail
+            properties:
+              id:
+                type: string
+                example: "17035478-01a9-4aeb-a13c-88ab51e6fee3"
+              code:
+                type: string
+                example: "ERR_BAD_REQUEST"
+              title:
+                type: string
+                example: "Bad request"
+              detail:
+                type: string
+                example: "Phone number is mandatory"
+    PostSubscription:
+      type: object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          example: "subscription"
+        attributes:
+          type: object
+          description: Attributes of the subscriber
+          required:
+            - phoneNumber
+            - source
+          properties:
+            phoneNumber:
+              type: string
+              description: Preferably E.164 format
+              example: "+36301234567"
+            source:
+              type: object
+              required: 
+                - category
+                - name
+              properties:
+                category:
+                  type: string
+                  description: Source category
+                  example: "amped"
+                name:
+                  type: string
+                  description: Source name
+                  example: "welcome popup"
+            browser:
+              type: object
+              properties:
+                userAgent:
+                  type: string
+                  description: User agent of the browser
+                  example: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)"
+                language:
+                  type: string
+                  description: Language of the browser
+                  example: "en"
+                url:
+                  type: string
+                  description: URL of the page where the subscriber was initiated
+                  example: "https://cars.myshopify.com/buy-this"
+            sessionId:
+              type: string
+              description: Recart identifier of the purchase session
+              example: "655637bfaf3c6463c0f06d3e"
+            shopperId:
+              type: string
+              description: Recart identifier of the visitor
+              example: "655637c97825e6ae655fe1b5"
+            firstName:
+              type: string
+              description: First name of the subscriber
+              example: "John"
+            lastName:
+              type: string
+              description: Last name of the subscriber
+              example: "Doe"
+            timezone:
+              type: string
+              description: Timezone of the subscriber
+              example: "Europe/Budapest"
+            location:
+              type: object
+              properties:
+                city:
+                  type: string
+                  description: City
+                  example: "New York"
+                province:
+                  type: string
+                  description: Province
+                  example: "New York"
+                zip:
+                  type: string
+                  description: ZIP code
+                  example: "12345"
+                country:
+                  type: string
+                  description: Country
+                  example: "US"
+                ipAddress:
+                  type: string
+                  description: IP address of the subscriber
+                  example: "192.158.1.38."
