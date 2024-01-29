@@ -7,7 +7,7 @@ info:
   description: Open API description of the Recart API
   version: 2023-12
 paths:
-  /subscription:
+  /subscriptions:
     post:
       summary: Initiate SMS subscription
       tags:
