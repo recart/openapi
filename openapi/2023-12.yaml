@@ -16,7 +16,7 @@ paths:
       security:
         - ApiKeyAuth: []
       description: |
-        Trigger an SMS subscription flow in Recart. It sends the associated welcome flow to the recipient.
+        Trigger an SMS subscription flow in Recart. It sends the associated welcome flow to the recipient. Flow must be active to comply TCPA regulations.
       requestBody:
         required: true
         content:
@@ -39,7 +39,7 @@ components:
       type: apiKey
       in: header
       name: X-Recart-API-Key
-      description: It can be obtained in the Recart application after contacting our support
+      description: It can be obtained in Recart account after contacting Support
   responses:
     HttpError:
       description: HTTP Error response
@@ -81,7 +81,7 @@ components:
       properties:
         type:
           type: string
-          example: "subscription"
+          example: "subscriptions"
         attributes:
           type: object
           description: Attributes of the subscriber
@@ -101,11 +101,11 @@ components:
               properties:
                 category:
                   type: string
-                  description: Source category
+                  description: Source category. Source must be added in the Recart account, contact Support for help.
                   example: "amped"
                 name:
                   type: string
-                  description: Source name
+                  description: Source name. Source must be added in the Recart account, contact Support for help.
                   example: "welcome popup"
             browser:
               type: object
@@ -120,15 +120,15 @@ components:
                   example: "en"
                 url:
                   type: string
-                  description: URL of the page where the subscriber was initiated
+                  description: URL of the browser page
                   example: "https://cars.myshopify.com/buy-this"
             sessionId:
               type: string
-              description: Recart identifier of the purchase session
+              description: Recart identifier of the purchase session.  Use `_recart.getSessionId()` on the merchant's store when Recart script is running.
               example: "655637bfaf3c6463c0f06d3e"
             shopperId:
               type: string
-              description: Recart identifier of the visitor
+              description: Recart identifier of the visitor. Use `_recart.getShopperId()` on the merchant's store when Recart script is running.
               example: "655637c97825e6ae655fe1b5"
             firstName:
               type: string
