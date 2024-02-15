@@ -33,6 +33,107 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
+  /webhooks:
+    get:
+      summary: Retrieve list of webhooks
+      tags:
+        - Webhooks
+      operationId: listWebhooks
+      security:
+        - ApiKeyAuth: []
+      description: Retrieve list of webhooks
+      responses:
+        "200":
+          description: OK
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Webhook"
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
+    post:
+      summary: Create a new webhook
+      tags:
+        - Webhooks
+      operationId: createWebhook
+      security: 
+        - ApiKeyAuth: []
+      description: Create a new webhook
+      requestBody: 
+        required: true
+        content:
+          application/vnd.api+json: 
+            schema: 
+              type: object
+              properties: 
+                data:
+                  $ref: "#/components/schemas/Webhook"
+      responses:
+        "201":
+          description: Created
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
+  /webhooks/{id}:
+    get:
+      summary: Recieve a single webhook
+      tags:
+        - Webhooks
+      operationId: getWebhook
+      security:
+        - ApiKeyAuth: []
+      description: Recieve a single webhook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the webhook
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Webhook"
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
+    delete:
+      summary: Remove an existing webhook
+      tags:
+        - Webhooks
+      operationId: deleteWebhook
+      security:
+        - ApiKeyAuth: []
+      description: Remove an existing webhook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the webhook
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No content
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -71,7 +172,7 @@ components:
                       example: "Bad request"
                     detail:
                       type: string
-                      example: "Phone number is mandatory"
+                      example: ""
   schemas:
     PostSubscription:
       type: object
@@ -165,3 +266,24 @@ components:
                   type: string
                   description: IP address of the subscriber
                   example: "192.158.1.38."
+    Webhook:
+      type: object
+      required:
+        - type
+        - attributes
+      properties: 
+        type:
+          type: string
+          example: "webhooks"
+        attributes:
+          type: object
+          properties:
+            topic:
+              type: string
+              description: Event type, messages/incoming, messages/outgoing
+              example: "messages/incoming"
+            address:
+              type: string
+              description: Destination URL for webhook delivery
+              example: "https://call.me"
+    
