@@ -82,6 +82,37 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
+      callbacks: 
+        Incoming message:
+          '{$request.body#/data/attributes/address}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        data:
+                          $ref: "#/components/schemas/IncomingMessage"
+              responses:
+                '200':
+                  description: Your server returns this code if it accepts the callback
+        Outgoing message:
+          '{$request.body#/data/attributes/address}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        data:
+                          $ref: "#/components/schemas/OutgoingMessage"
+              responses:
+                '200':
+                  description: Your server returns this code if it accepts the callback
   /webhooks/{id}:
     get:
       summary: Recieve a single webhook
@@ -130,6 +161,60 @@ paths:
       responses:
         "204":
           description: No content
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
+  /messages:
+    post:
+      summary: Send message(s) to a subscriber
+      tags:
+        - Messages
+      operationId: postMessages
+      security: 
+        - ApiKeyAuth: []
+      description: |
+        Trigger SMS/MMS messages. 
+      requestBody: 
+        required: true
+        content: 
+          application/vnd.api+json: 
+            schema: 
+              type: object
+              properties: 
+                data:
+                  $ref: "#/components/schemas/PostMessages"
+      responses:
+        "202":
+          description: Accepted
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
+  /messages/{id}:
+    get:
+      summary: Returns the message's status by its ID
+      tags:
+        - Messages
+      security: 
+        - ApiKeyAuth: []
+      description: Returns the status of the selected message.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses: 
+        "200":
+          description: OK
+          content:
+            application/vnd.api+json: 
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/OutgoingMessage'
         "4XX":
           $ref: "#/components/responses/HttpError"
         "5XX":
@@ -286,4 +371,95 @@ components:
               type: string
               description: Destination URL for webhook delivery
               example: "https://call.me"
-    
+    PostMessages:
+      type: object
+      required: 
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          example: "messages"
+        attributes:
+          type: object
+          required:
+            - phoneNumber
+            - messages
+          properties: 
+            phoneNumber:
+              type: string
+              description: Preferably E.164 format
+              example: "+36301234567"
+            messages:
+              type: array
+              items:
+                type: object
+                required: 
+                  - type
+                  - body
+                properties: 
+                  type:
+                    type: string
+                    description: Type of the message, only promotional is supported
+                    example: "promotional"
+                  body:
+                    type: string
+                    description: Content of the message. Messages will be prefixed with "store name:". Maximum supported character count is 1024 per request.
+                    example: "Hi, welcome to our store."
+                  attachment: 
+                    type: string
+                    description: Maximum 1 attachment is supported that's size is under 300 KB
+                    example: "https://img.url"
+    IncomingMessage:
+      type: object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          example: "messages"
+        attributes:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Id
+              example: "65ba227ffa0ad3e1bef89449"
+            body:
+              type: string
+              descripton: Content of the message
+              example: What's the status of my order?
+            attachments:
+              type: array
+              items:
+                type: string
+                example: "https://img.url"
+            from:
+              type: string
+              description: from
+              example: '+123456789'
+            to:
+              type: string
+              description: to
+              example: '+987654321'
+    OutgoingMessage:
+      type: object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          example: "messages"
+        attributes:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Id
+              example: "65ba227ffa0ad3e1bef89449"
+            status:
+              type: string
+              description: Status of the message. It can be processing, sent or error
+              example: sent
