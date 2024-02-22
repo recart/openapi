@@ -174,7 +174,7 @@ paths:
       security: 
         - ApiKeyAuth: []
       description: |
-        Trigger SMS/MMS messages. 
+        Trigger SMS/MMS messages. Maximum 10 messages can be sent in a single request. Requester must comply with TCPA regulations, and make sure the message is not sent in quiet hours.
       requestBody: 
         required: true
         content: 
@@ -404,12 +404,12 @@ components:
                     example: "promotional"
                   body:
                     type: string
-                    description: Content of the message. Messages will be prefixed with "store name:". Maximum supported character count is 1024 per request.
+                    description: Content of the message, maximum 1024 characters
                     example: "Hi, welcome to our store."
                   attachment: 
                     type: string
-                    description: Maximum 1 attachment is supported that's size is under 300 KB
-                    example: "https://img.url"
+                    description: URL of the attachment, extension must be .jpg, .jpeg, .png, or .gif
+                    example: "https://img.url.jpg"
     IncomingMessage:
       type: object
       required:
@@ -430,11 +430,10 @@ components:
               type: string
               descripton: Content of the message
               example: What's the status of my order?
-            attachments:
-              type: array
-              items:
-                type: string
-                example: "https://img.url"
+            hasAttachment:
+              type: boolean
+              description: Returns true if the message has an attachment
+              example: false
             from:
               type: string
               description: from
@@ -443,6 +442,10 @@ components:
               type: string
               description: to
               example: '+987654321'
+            receivedAt:
+              type: string
+              description: UTC Date and time in ISO 8601 format
+              example: "2021-08-10T14:00:00.000+02:00"
     OutgoingMessage:
       type: object
       required:
@@ -463,3 +466,11 @@ components:
               type: string
               description: Status of the message. It can be processing, sent or error
               example: sent
+            body:
+              type: string
+              descripton: Content of the message
+              example: Hey there! Your order is on the way.
+            sentAt:
+              type: string
+              description: UTC Date and time in ISO 8601 format
+              example: "2021-08-10T14:00:00.000+02:00"
