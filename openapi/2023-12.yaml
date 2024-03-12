@@ -63,16 +63,16 @@ paths:
       tags:
         - Webhooks
       operationId: createWebhook
-      security: 
+      security:
         - ApiKeyAuth: []
       description: Create a new webhook
-      requestBody: 
+      requestBody:
         required: true
         content:
-          application/vnd.api+json: 
-            schema: 
+          application/vnd.api+json:
+            schema:
               type: object
-              properties: 
+              properties:
                 data:
                   $ref: "#/components/schemas/Webhook"
       responses:
@@ -82,7 +82,7 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
-      callbacks: 
+      callbacks:
         Incoming message:
           '{$request.body#/data/attributes/address}':
             post:
@@ -110,6 +110,18 @@ paths:
                       properties:
                         data:
                           $ref: "#/components/schemas/OutgoingMessage"
+        Subscribers unsubscribe:
+          '{$request.body#/data/attributes/address}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        data:
+                          $ref: "#/components/schemas/SubscribersUnsubscribe"
               responses:
                 '200':
                   description: Your server returns this code if it accepts the callback
@@ -171,17 +183,17 @@ paths:
       tags:
         - Messages
       operationId: postMessages
-      security: 
+      security:
         - ApiKeyAuth: []
       description: |
         Trigger SMS/MMS messages. Maximum 10 messages can be sent in a single request. Requester must comply with TCPA regulations, and make sure the message is not sent in quiet hours.
-      requestBody: 
+      requestBody:
         required: true
-        content: 
-          application/vnd.api+json: 
-            schema: 
+        content:
+          application/vnd.api+json:
+            schema:
               type: object
-              properties: 
+              properties:
                 data:
                   $ref: "#/components/schemas/PostMessages"
       responses:
@@ -196,7 +208,7 @@ paths:
       summary: Returns the message's status by its ID
       tags:
         - Messages
-      security: 
+      security:
         - ApiKeyAuth: []
       description: Returns the status of the selected message.
       parameters:
@@ -205,11 +217,11 @@ paths:
           required: true
           schema:
             type: string
-      responses: 
+      responses:
         "200":
           description: OK
           content:
-            application/vnd.api+json: 
+            application/vnd.api+json:
               schema:
                 type: object
                 properties:
@@ -234,7 +246,7 @@ components:
           schema:
             type: object
             required:
-              - errors 
+              - errors
             properties:
               errors:
                 type: array
@@ -281,7 +293,7 @@ components:
               example: "+36301234567"
             source:
               type: object
-              required: 
+              required:
                 - category
                 - name
               properties:
@@ -356,7 +368,7 @@ components:
       required:
         - type
         - attributes
-      properties: 
+      properties:
         type:
           type: string
           example: "webhooks"
@@ -365,7 +377,7 @@ components:
           properties:
             topic:
               type: string
-              description: Event type, messages/incoming, messages/outgoing
+              description: Event type, messages/incoming, messages/outgoing, subscribers/unsubscribe
               example: "messages/incoming"
             address:
               type: string
@@ -373,7 +385,7 @@ components:
               example: "https://call.me"
     PostMessages:
       type: object
-      required: 
+      required:
         - type
         - attributes
       properties:
@@ -385,7 +397,7 @@ components:
           required:
             - phoneNumber
             - messages
-          properties: 
+          properties:
             phoneNumber:
               type: string
               description: Preferably E.164 format
@@ -394,10 +406,10 @@ components:
               type: array
               items:
                 type: object
-                required: 
+                required:
                   - type
                   - body
-                properties: 
+                properties:
                   type:
                     type: string
                     description: Type of the message, only promotional is supported
@@ -406,7 +418,7 @@ components:
                     type: string
                     description: Content of the message, maximum 1024 characters
                     example: "Hi, welcome to our store."
-                  attachment: 
+                  attachment:
                     type: string
                     description: URL of the attachment, extension must be .jpg, .jpeg, .png, or .gif
                     example: "https://img.url.jpg"
@@ -474,3 +486,23 @@ components:
               type: string
               description: UTC Date and time in ISO 8601 format
               example: "2021-08-10T14:00:00.000+02:00"
+    SubscribersUnsubscribe:
+      type: object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          example: "subscriptions"
+          attributes:
+            type: object
+            properties:
+              subscriberId:
+                type: string
+                description: Recart identifier of the subscriber
+                example: "655637c97825e6ae655fe1b5"
+              phoneNumber:
+                type: string
+                description: Preferably E.164 format
+                example: "+36301234567"
