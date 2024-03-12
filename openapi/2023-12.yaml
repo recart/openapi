@@ -110,6 +110,18 @@ paths:
                       properties:
                         data:
                           $ref: "#/components/schemas/OutgoingMessage"
+        Subscriber unsubscribe:
+          '{$request.body#/data/attributes/address}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        data:
+                          $ref: "#/components/schemas/SubscriberUnsubscribe"
               responses:
                 '200':
                   description: Your server returns this code if it accepts the callback
@@ -365,7 +377,7 @@ components:
           properties:
             topic:
               type: string
-              description: Event type, messages/incoming, messages/outgoing, sms/unsubscription
+              description: Event type, messages/incoming, messages/outgoing, subscribers/unsubscribe
               example: "messages/incoming"
             address:
               type: string
@@ -474,7 +486,7 @@ components:
               type: string
               description: UTC Date and time in ISO 8601 format
               example: "2021-08-10T14:00:00.000+02:00"
-    SMSUnsubscription:
+    SubscriberUnsubscribe:
       type: object
       required:
         - type
@@ -482,7 +494,7 @@ components:
       properties:
         type:
           type: string
-          example: "subscription"
+          example: "subscriptions"
           attributes:
             type: object
             properties:
