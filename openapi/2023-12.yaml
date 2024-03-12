@@ -110,7 +110,7 @@ paths:
                       properties:
                         data:
                           $ref: "#/components/schemas/OutgoingMessage"
-        Subscriber unsubscribe:
+        Subscribers unsubscribe:
           '{$request.body#/data/attributes/address}':
             post:
               requestBody:
@@ -121,7 +121,7 @@ paths:
                       type: object
                       properties:
                         data:
-                          $ref: "#/components/schemas/SubscriberUnsubscribe"
+                          $ref: "#/components/schemas/SubscribersUnsubscribe"
               responses:
                 '200':
                   description: Your server returns this code if it accepts the callback
@@ -486,7 +486,7 @@ components:
               type: string
               description: UTC Date and time in ISO 8601 format
               example: "2021-08-10T14:00:00.000+02:00"
-    SubscriberUnsubscribe:
+    SubscribersUnsubscribe:
       type: object
       required:
         - type
