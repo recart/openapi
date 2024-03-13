@@ -486,6 +486,14 @@ components:
               type: string
               description: UTC Date and time in ISO 8601 format
               example: "2021-08-10T14:00:00.000+02:00"
+            from:
+                type: string
+                description: Phone number of the sender in E.164 format
+                example: '+36301234567'
+            to:
+                type: string
+                description: Phone number of the recipient in E.164 format
+                example: '+36301234567'
     SubscribersUnsubscribe:
       type: object
       required:
