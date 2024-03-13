@@ -550,3 +550,16 @@ components:
                 type: string
                 description: Source of the subscription
                 example: "welcome popup"
+              sourceId:
+                type: string
+                description: Recart identifier of the source
+                example: "655637c97825e6ae655fe1b5"
+              subscribedAt:
+                type: string
+                description: UTC Date and time in ISO 8601 format
+                example: "2021-08-10T14:00:00.000+02:00"
+              optinType:
+                type: string
+                description: Subscription optin level
+                example: "promotional"
+
