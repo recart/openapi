@@ -122,6 +122,18 @@ paths:
                       properties:
                         data:
                           $ref: "#/components/schemas/SubscribersUnsubscribe"
+        Subscribers subscribe:
+          '{$request.body#/data/attributes/address}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        data:
+                          $ref: "#/components/schemas/SubscribersSubscribe"
               responses:
                 '200':
                   description: Your server returns this code if it accepts the callback
@@ -377,7 +389,7 @@ components:
           properties:
             topic:
               type: string
-              description: Event type, messages/incoming, messages/outgoing, subscribers/unsubscribe
+              description: Event type, messages/incoming, messages/outgoing, subscribers/unsubscribe, subscribers/subscribe
               example: "messages/incoming"
             address:
               type: string
@@ -514,3 +526,27 @@ components:
                 type: string
                 description: Preferably E.164 format
                 example: "+36301234567"
+    SubscribersSubscribe:
+      type: object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          example: "subscriptions"
+          attributes:
+            type: object
+            properties:
+              subscriberId:
+                type: string
+                description: Recart identifier of the subscriber
+                example: "655637c97825e6ae655fe1b5"
+              phoneNumber:
+                type: string
+                description: Preferably E.164 format
+                example: "+36301234567"
+              source:
+                type: string
+                description: Source of the subscription
+                example: "welcome popup"
