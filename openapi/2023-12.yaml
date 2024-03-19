@@ -40,6 +40,47 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
+  /cart/{id}:
+    post:
+      summary: Abandon a session
+      tags:
+	      - Cart
+        - Abandonment
+      operationId: postAbandonment
+      security:
+        - ApiKeyAuth: []
+      description: |
+        Trigger an abandonment event in Recart. It sends the associated abandonment flow to the recipient. Flow must be active to send the message.
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  properties:
+                    type:
+                      type: string
+                      example: "abandonments"
+                    attributes:
+                      type: object
+                      properties:
+                        type: 
+                          type: string
+                          description: Type of the abandonment, only "cart" is supported
+                          example: "cart"
+                        sessionId:
+                          type: string
+                          description: Recart identifier of the purchase session. Use `_recart.getSessionId()` on the merchant's store when Recart script is running.
+                          example: "655637bfaf3c6463c0f06d3e"
+      responses:
+        "200":
+          description: OK
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
   /carts/{id}:
     delete:
       summary: Clear cart
