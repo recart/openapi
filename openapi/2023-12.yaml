@@ -355,6 +355,7 @@ components:
           required:
             - totalPrice
             - recoveryUrl
+            - lineItems
           properties:
             totalPrice:
               type: object
