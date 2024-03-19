@@ -7,6 +7,63 @@ info:
   description: Open API description of the Recart API
   version: 2023-12
 paths:
+  /cart/{id}:
+    put:
+      summary: Update cart
+      tags:
+        - Cart
+      operationId: updateCart
+      security:
+        - ApiKeyAuth: [ ]
+      description: |
+        Update the cart's content. Endpoint overwrites the cart's content with the new one.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the cart (session)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: "#/components/schemas/UpdateCart"
+      responses:
+        "204":
+          description: No content
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
+  /carts/{id}:
+    delete:
+      summary: Clear cart
+      tags:
+        - Cart
+      operationId: clearCart
+      security:
+        - ApiKeyAuth: [ ]
+      description: |
+        Clear the cart's content.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the cart (session)
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No content
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
   /subscriptions:
     post:
       summary: Initiate SMS subscription
@@ -283,6 +340,83 @@ components:
                       type: string
                       example: ""
   schemas:
+    UpdateCart:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          example: "carts"
+        attributes:
+          type: object
+          required:
+            - totalPrice
+            - recoveryUrl
+            - lineItems
+          properties:
+            totalPrice:
+              type: object
+              required:
+                - value
+                - currency
+              properties:
+                value:
+                  type: number
+                  format: double
+                  description: Value of cart
+                  example: 4.20
+                currency:
+                  type: string
+                  description: Currency of the cart
+                  example: "USD"
+            recoveryUrl:
+              type: string
+              description: URL of the cart recovery page
+              example: "https://example.com/cart"
+            lineItems:
+              type: array
+              items:
+                type: object
+                required:
+                  - productId
+                  - name
+                  - quantity
+                  - price
+                properties:
+                  productId:
+                    type: string
+                    description: ID of the product
+                    example: "1234567890"
+                  variantId:
+                    type: string
+                    description: ID of the product variant
+                    example: "0987654321"
+                  name:
+                    type: string
+                    description: Name of the product
+                    example: "Product name"
+                  quantity:
+                    type: integer
+                    description: Quantity of the product
+                    example: 1
+                  price:
+                    type: object
+                    required:
+                      - value
+                      - currency
+                    properties:
+                      value:
+                        type: number
+                        format: double
+                        description: Value of cartItem
+                        example: 4.20
+                      currency:
+                        type: string
+                        description: Currency of the cartItem
+                        example: "USD"
     PostSubscription:
       type: object
       required:
