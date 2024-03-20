@@ -463,6 +463,28 @@ components:
                         type: string
                         description: Currency of the cartItem
                         example: "USD"
+    AbandonCart:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          example: "carts"
+        attributes:
+          type: object
+          required:
+            - type
+            - sessionId
+          properties:
+            type:
+              type: string
+            sessionId:
+              type: string
+              description: Id of the session
+              example: "65ba227ffa0ad3e1bef89449"
     PostSubscription:
       type: object
       required:
