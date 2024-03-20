@@ -7,7 +7,7 @@ info:
   description: Open API description of the Recart API
   version: 2023-12
 paths:
-  /cart/{id}:
+  /carts/{id}:
     put:
       summary: Update cart
       tags:
@@ -40,7 +40,7 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
-  /cart/{id}:
+  /carts/{id}:
     post:
       summary: Abandon a session
       tags:
