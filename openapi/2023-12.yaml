@@ -65,21 +65,7 @@ paths:
               type: object
               properties:
                 data:
-                  properties:
-                    type:
-                      type: string
-                      example: "abandonments"
-                    attributes:
-                      type: object
-                      properties:
-                        type: 
-                          type: string
-                          description: Type of the abandonment, only "cart" is supported
-                          example: "cart"
-                        sessionId:
-                          type: string
-                          description: Recart identifier of the purchase session. Use `_recart.getSessionId()` on the merchant's store when Recart script is running.
-                          example: "655637bfaf3c6463c0f06d3e"
+                  $ref: "#/components/schemas/AbandonCart"
       responses:
         "200":
           description: OK
@@ -463,6 +449,30 @@ components:
                         type: string
                         description: Currency of the cartItem
                         example: "USD"
+    AbandonCart:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          example: "abandonments"
+        attributes:
+          type: object
+          required:
+            - type
+            - sessionId
+          properties:
+            type:
+              type: string
+              description: Type of the abandonment, only "cart" is supported
+              example: "cart"
+            sessionId:
+              type: string
+              description: Recart identifier of the purchase session. Use `_recart.getSessionId()` on the merchant's store when Recart script is running.
+              example: "655637bfaf3c6463c0f06d3e"
     PostSubscription:
       type: object
       required:
