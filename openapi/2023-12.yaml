@@ -44,7 +44,7 @@ paths:
     post:
       summary: Abandon a session
       tags:
-	      - Cart
+        - Cart
         - Abandonment
       operationId: postAbandonment
       security:
