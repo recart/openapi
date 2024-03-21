@@ -40,39 +40,6 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
-    post:
-      summary: Abandon a session
-      tags:
-        - Cart
-        - Abandonment
-      operationId: postAbandonment
-      security:
-        - ApiKeyAuth: []
-      description: |
-        Trigger an abandonment event in Recart. It sends the associated abandonment flow to the recipient. Flow must be active to send the message.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: ID of the cart (session)
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/vnd.api+json:
-            schema:
-              type: object
-              properties:
-                data:
-                  $ref: "#/components/schemas/AbandonCart"
-      responses:
-        "200":
-          description: OK
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
     delete:
       summary: Clear cart
       tags:
@@ -92,6 +59,32 @@ paths:
       responses:
         "204":
           description: No content
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
+  /abandonments:
+    post:
+      summary: Abandon a session
+      tags:
+        - Abandonment
+      operationId: postAbandonment
+      security:
+        - ApiKeyAuth: []
+      description: |
+        Trigger an abandonment event in Recart. It sends the associated abandonment flow to the recipient. Flow must be active to send the message.
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: "#/components/schemas/AbandonCart"
+      responses:
+        "200":
+          description: OK
         "4XX":
           $ref: "#/components/responses/HttpError"
         "5XX":
