@@ -1,6 +1,6 @@
 openapi: 3.1.0
 servers:
-    - url: https://api.recart.com/app-integrations/2023-12/
+    - url: https://api.recart.com/app-integrations/2023-12
       description: Production
 info:
   title: Recart API
