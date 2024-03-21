@@ -1,7 +1,7 @@
 openapi: 3.1.0
 servers:
-  - url: https://api.recart.com/app-integrations/2023-12/
-    description: Production
+    - url: https://api.recart.com/app-integrations/2023-12/
+      description: Production
 info:
   title: Recart API
   description: Open API description of the Recart API
@@ -40,38 +40,6 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
-    post:
-      summary: Abandon a session
-      tags:
-        - Abandonment
-      operationId: postAbandonment
-      security:
-        - ApiKeyAuth: [ ]
-      description: |
-        Trigger an abandonment event in Recart. It sends the associated abandonment flow to the recipient. Flow must be active to send the message.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: ID of the cart (session)
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/vnd.api+json:
-            schema:
-              type: object
-              properties:
-                data:
-                  $ref: "#/components/schemas/AbandonCart"
-      responses:
-        "200":
-          description: OK
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
     delete:
       summary: Clear cart
       tags:
@@ -95,6 +63,32 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
+  /abandonments:
+    post:
+      summary: Abandon a session
+      tags:
+        - Abandonment
+      operationId: postAbandonment
+      security:
+        - ApiKeyAuth: []
+      description: |
+        Trigger an abandonment event in Recart. It sends the associated abandonment flow to the recipient. Flow must be active to send the message.
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: "#/components/schemas/AbandonCart"
+      responses:
+        "200":
+          description: OK
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
   /orders:
     post:
       summary: Create an order
@@ -102,7 +96,7 @@ paths:
         - Order
       operationId: postOrder
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: |
         Create an order in Recart. It sends the associated order flow to the recipient. Flow must be active to send the message.
       requestBody:
@@ -128,7 +122,7 @@ paths:
         - Subscription
       operationId: postSubscription
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: |
         Trigger an SMS subscription flow in Recart. It sends the associated welcome flow to the recipient. Flow must be active to comply TCPA regulations.
       requestBody:
@@ -154,7 +148,7 @@ paths:
         - Webhooks
       operationId: listWebhooks
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: Retrieve list of webhooks
       responses:
         "200":
@@ -178,7 +172,7 @@ paths:
         - Webhooks
       operationId: createWebhook
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: Create a new webhook
       requestBody:
         required: true
@@ -258,7 +252,7 @@ paths:
         - Webhooks
       operationId: getWebhook
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: Recieve a single webhook
       parameters:
         - name: id
@@ -287,7 +281,7 @@ paths:
         - Webhooks
       operationId: deleteWebhook
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: Remove an existing webhook
       parameters:
         - name: id
@@ -310,7 +304,7 @@ paths:
         - Messages
       operationId: postMessages
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: |
         Trigger SMS/MMS messages. Maximum 10 messages can be sent in a single request. Requester must comply with TCPA regulations, and make sure the message is not sent in quiet hours.
       requestBody:
@@ -335,7 +329,7 @@ paths:
       tags:
         - Messages
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: Returns the status of the selected message.
       parameters:
         - in: path
