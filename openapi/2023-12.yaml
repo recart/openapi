@@ -1,7 +1,7 @@
 openapi: 3.1.0
 servers:
-    - url: https://api.recart.com/app-integrations/2023-12/
-      description: Production
+  - url: https://api.recart.com/app-integrations/2023-12/
+    description: Production
 info:
   title: Recart API
   description: Open API description of the Recart API
@@ -43,11 +43,10 @@ paths:
     post:
       summary: Abandon a session
       tags:
-        - Cart
         - Abandonment
       operationId: postAbandonment
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: |
         Trigger an abandonment event in Recart. It sends the associated abandonment flow to the recipient. Flow must be active to send the message.
       parameters:
@@ -96,6 +95,32 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
+  /orders:
+    post:
+      summary: Create an order
+      tags:
+        - Order
+      operationId: postOrder
+      security:
+        - ApiKeyAuth: [ ]
+      description: |
+        Create an order in Recart. It sends the associated order flow to the recipient. Flow must be active to send the message.
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: "#/components/schemas/PostOrder"
+      responses:
+        "201":
+          description: Created
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
   /subscriptions:
     post:
       summary: Initiate SMS subscription
@@ -103,7 +128,7 @@ paths:
         - Subscription
       operationId: postSubscription
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: |
         Trigger an SMS subscription flow in Recart. It sends the associated welcome flow to the recipient. Flow must be active to comply TCPA regulations.
       requestBody:
@@ -129,7 +154,7 @@ paths:
         - Webhooks
       operationId: listWebhooks
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: Retrieve list of webhooks
       responses:
         "200":
@@ -153,7 +178,7 @@ paths:
         - Webhooks
       operationId: createWebhook
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: Create a new webhook
       requestBody:
         required: true
@@ -233,7 +258,7 @@ paths:
         - Webhooks
       operationId: getWebhook
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: Recieve a single webhook
       parameters:
         - name: id
@@ -262,7 +287,7 @@ paths:
         - Webhooks
       operationId: deleteWebhook
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: Remove an existing webhook
       parameters:
         - name: id
@@ -285,7 +310,7 @@ paths:
         - Messages
       operationId: postMessages
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: |
         Trigger SMS/MMS messages. Maximum 10 messages can be sent in a single request. Requester must comply with TCPA regulations, and make sure the message is not sent in quiet hours.
       requestBody:
@@ -310,7 +335,7 @@ paths:
       tags:
         - Messages
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: Returns the status of the selected message.
       parameters:
         - in: path
@@ -689,13 +714,13 @@ components:
               description: UTC Date and time in ISO 8601 format
               example: "2021-08-10T14:00:00.000+02:00"
             from:
-                type: string
-                description: Phone number of the sender in E.164 format
-                example: '+36301234567'
+              type: string
+              description: Phone number of the sender in E.164 format
+              example: '+36301234567'
             to:
-                type: string
-                description: Phone number of the recipient in E.164 format
-                example: '+36301234567'
+              type: string
+              description: Phone number of the recipient in E.164 format
+              example: '+36301234567'
     SubscribersUnsubscribe:
       type: object
       required:
@@ -752,4 +777,95 @@ components:
                 type: string
                 description: Subscription optin level
                 example: "promotional"
-
+    PostOrder:
+      type: object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          example: "orders"
+        attributes:
+          type: object
+          required:
+            - phoneNumber
+            - orderStatusUrl
+            - orderNumber
+          properties:
+            phoneNumber:
+              type: string
+              description: Preferably E.164 format
+              example: "+36301234567"
+            sessionId:
+              type: string
+              description: Recart identifier of the purchase session. Use `_recart.getSessionId()` on the merchant's store when Recart script is running.
+              example: "655637bfaf3c6463c0f06d3e"
+            orderStatusUrl:
+              type: string
+              description: URL of the order status page
+              example: "https://example.com/order"
+            orderNumber:
+              type: string
+              description: Order number
+              example: "1234567890"
+            totalPrice:
+              type: object
+              required:
+                - value
+                - currency
+              properties:
+                value:
+                  type: number
+                  format: double
+                  description: Value of order
+                  example: 4.20
+                currency:
+                  type: string
+                  description: Currency of the order
+                  example: "USD"
+            lineItems:
+              type: array
+              items:
+                type: object
+                required:
+                  - productId
+                  - name
+                  - quantity
+                  - price
+                properties:
+                  productId:
+                    type: string
+                    description: ID of the product
+                    example: "1234567890"
+                  variantId:
+                    type: string
+                    description: ID of the product variant
+                    example: "0987654321"
+                  name:
+                    type: string
+                    description: Name of the product
+                    example: "Product name"
+                  quantity:
+                    type: integer
+                    description: Quantity of the product
+                    example: 1
+                  price:
+                    type: object
+                    required:
+                      - value
+                      - currency
+                    properties:
+                      value:
+                        type: number
+                        format: double
+                        description: Value of orderItem
+                        example: 4.20
+                      currency:
+                          type: string
+                          description: Currency of the orderItem
+                          example: "USD"
+            subscriberId:
+              type: string
+              description: Recart identifier of the subscriber.
+              example: "655637c97825e6ae655fe1b5"
