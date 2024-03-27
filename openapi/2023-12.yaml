@@ -1,7 +1,7 @@
 openapi: 3.1.0
 servers:
-    - url: https://api.recart.com/app-integrations/2023-12/
-      description: Production
+  - url: https://api.recart.com/app-integrations/2023-12/
+    description: Production
 info:
   title: Recart API
   description: Open API description of the Recart API
@@ -70,7 +70,7 @@ paths:
         - Abandonment
       operationId: postAbandonment
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: |
         Trigger an abandonment event in Recart. It sends the associated abandonment flow to the recipient. Flow must be active to send the message.
       requestBody:
@@ -96,7 +96,7 @@ paths:
         - Order
       operationId: postOrder
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: |
         Create an order in Recart. It sends the associated order flow to the recipient. Flow must be active to send the message.
       requestBody:
@@ -115,6 +115,40 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
+  /orders/{id}:
+    put:
+      summary: Update an order
+      tags:
+        - Order
+      operationId: updateOrder
+      security:
+        - ApiKeyAuth: [ ]
+      description: |
+        Update an order in Recart.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Id of the order
+          schema:
+            type: number
+          example: 1234567890
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: "#/components/schemas/PutOrders"
+      responses:
+        "204":
+          description: No content
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
   /subscriptions:
     post:
       summary: Initiate SMS subscription
@@ -122,7 +156,7 @@ paths:
         - Subscription
       operationId: postSubscription
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: |
         Trigger an SMS subscription flow in Recart. It sends the associated welcome flow to the recipient. Flow must be active to comply TCPA regulations.
       requestBody:
@@ -148,7 +182,7 @@ paths:
         - Webhooks
       operationId: listWebhooks
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: Retrieve list of webhooks
       responses:
         "200":
@@ -172,7 +206,7 @@ paths:
         - Webhooks
       operationId: createWebhook
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: Create a new webhook
       requestBody:
         required: true
@@ -252,7 +286,7 @@ paths:
         - Webhooks
       operationId: getWebhook
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: Recieve a single webhook
       parameters:
         - name: id
@@ -281,7 +315,7 @@ paths:
         - Webhooks
       operationId: deleteWebhook
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: Remove an existing webhook
       parameters:
         - name: id
@@ -304,7 +338,7 @@ paths:
         - Messages
       operationId: postMessages
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: |
         Trigger SMS/MMS messages. Maximum 10 messages can be sent in a single request. Requester must comply with TCPA regulations, and make sure the message is not sent in quiet hours.
       requestBody:
@@ -329,7 +363,7 @@ paths:
       tags:
         - Messages
       security:
-        - ApiKeyAuth: []
+        - ApiKeyAuth: [ ]
       description: Returns the status of the selected message.
       parameters:
         - in: path
@@ -783,9 +817,9 @@ components:
         attributes:
           type: object
           required:
-            - phoneNumber
             - orderStatusUrl
-            - orderNumber
+            - orderId
+            - totalPrice
           properties:
             phoneNumber:
               type: string
@@ -799,10 +833,10 @@ components:
               type: string
               description: URL of the order status page
               example: "https://example.com/order"
-            orderNumber:
-              type: string
-              description: Order number
-              example: "1234567890"
+            orderId:
+              type: int
+              description: Order Id
+              example: 1234567890
             totalPrice:
               type: object
               required:
@@ -856,10 +890,117 @@ components:
                         description: Value of orderItem
                         example: 4.20
                       currency:
-                          type: string
-                          description: Currency of the orderItem
-                          example: "USD"
-            subscriberId:
+                        type: string
+                        description: Currency of the orderItem
+                        example: "USD"
+            discountCodes:
+              type: array
+              items:
+                type: object
+                required:
+                  - code
+                  - amount
+                properties:
+                  code:
+                    type: string
+                    description: Discount code
+                    example: "DISCOUNT"
+                  amount:
+                    type: number
+                    description: Value of discount
+                    example: 4.20
+    PutOrders:
+      type: object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          example: "orders"
+        attributes:
+          type: object
+          required:
+            - orderStatusUrl
+            - totalPrice
+          properties:
+            phoneNumber:
               type: string
-              description: Recart identifier of the subscriber.
-              example: "655637c97825e6ae655fe1b5"
+              description: Preferably E.164 format
+              example: "+36301234567"
+            orderStatusUrl:
+              type: string
+              description: URL of the order status page
+              example: "https://example.com/order"
+            totalPrice:
+              type: object
+              required:
+                - value
+                - currency
+              properties:
+                value:
+                  type: number
+                  format: double
+                  description: Value of order
+                  example: 4.20
+                currency:
+                  type: string
+                  description: Currency of the order
+                  example: "USD"
+            lineItems:
+              type: array
+              items:
+                type: object
+                required:
+                  - productId
+                  - name
+                  - quantity
+                  - price
+                properties:
+                  productId:
+                    type: string
+                    description: ID of the product
+                    example: "1234567890"
+                  variantId:
+                    type: string
+                    description: ID of the product variant
+                    example: "0987654321"
+                  name:
+                    type: string
+                    description: Name of the product
+                    example: "Product name"
+                  quantity:
+                    type: integer
+                    description: Quantity of the product
+                    example: 1
+                  price:
+                    type: object
+                    required:
+                      - value
+                      - currency
+                    properties:
+                      value:
+                        type: number
+                        format: double
+                        description: Value of orderItem
+                        example: 4.20
+                      currency:
+                        type: string
+                        description: Currency of the orderItem
+                        example: "USD"
+                discountCodes:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - code
+                      - amount
+                    properties:
+                      code:
+                        type: string
+                        description: Discount code
+                        example: "DISCOUNT"
+                      amount:
+                        type: number
+                        description: Value of discount
+                        example: 4.20
