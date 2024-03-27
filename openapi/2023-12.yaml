@@ -1,7 +1,7 @@
 openapi: 3.1.0
 servers:
-  - url: https://api.recart.com/app-integrations/2023-12/
-    description: Production
+    - url: https://api.recart.com/app-integrations/2023-12
+      description: Production
 info:
   title: Recart API
   description: Open API description of the Recart API
@@ -758,17 +758,17 @@ components:
         type:
           type: string
           example: "subscriptions"
-          attributes:
-            type: object
-            properties:
-              subscriberId:
-                type: string
-                description: Recart identifier of the subscriber
-                example: "655637c97825e6ae655fe1b5"
-              phoneNumber:
-                type: string
-                description: Preferably E.164 format
-                example: "+36301234567"
+        attributes:
+          type: object
+          properties:
+            subscriberId:
+              type: string
+              description: Recart identifier of the subscriber
+              example: "655637c97825e6ae655fe1b5"
+            phoneNumber:
+              type: string
+              description: Preferably E.164 format
+              example: "+36301234567"
     SubscribersSubscribe:
       type: object
       required:
