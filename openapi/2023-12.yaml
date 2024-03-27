@@ -7,6 +7,64 @@ info:
   description: Open API description of the Recart API
   version: 2023-12
 paths:
+  /events:
+    get:
+      summary: List events
+      tags:
+        - Event
+      operationId: listEvents
+      security:
+        - ApiKeyAuth: [ ]
+      description: |
+        List available events.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Event"
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
+    post:
+      summary: Create event
+      tags:
+        - Event
+      operationId: createEvent
+      security:
+        - ApiKeyAuth: [ ]
+      description: |
+        Create event.
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: "#/components/schemas/CreateEvent"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Event"
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
   /carts/{id}:
     put:
       summary: Update cart
@@ -192,6 +250,9 @@ paths:
                       properties:
                         data:
                           $ref: "#/components/schemas/OutgoingMessage"
+              responses:
+                '200':
+                  description: Your server returns this code if it accepts the callback
         Subscribers unsubscribe:
           '{$request.body#/data/attributes/address}':
             post:
@@ -204,6 +265,9 @@ paths:
                       properties:
                         data:
                           $ref: "#/components/schemas/SubscribersUnsubscribe"
+              responses:
+                '200':
+                  description: Your server returns this code if it accepts the callback
         Subscribers subscribe:
           '{$request.body#/data/attributes/address}':
             post:
@@ -365,6 +429,79 @@ components:
                       type: string
                       example: ""
   schemas:
+    CreateEvent:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          example: "events"
+        attributes:
+          type: object
+          required:
+            - source
+          properties:
+            source:
+              type: object
+              required:
+                - category
+                - name
+                - type
+              properties:
+                category:
+                  type: string
+                  description: Event category
+                  example: "Thirdy-party app"
+                name:
+                  type: string
+                  description: Event name
+                  example: "Welcome popup"
+                type:
+                  type: string
+                  description: Type of event, only "optin" is supported
+                  example: "optin"
+    Event:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          example: "events"
+        attributes:
+          type: object
+          required:
+            - slug
+            - source
+            - type
+          properties:
+            slug:
+              type: string
+              description: ID of the event
+              example: "third-party-welcome-popup"
+            source:
+              type: object
+              required:
+                - category
+                - name
+              properties:
+                category:
+                  type: string
+                  description: Event category
+                  example: "Thirdy-party app"
+                name:
+                  type: string
+                  description: Event name
+                  example: "Welcome popup"
+            type:
+              type: string
+              description: Type of event, only "optin" is supported
+              example: "optin"
     UpdateCart:
       type:
         - object
