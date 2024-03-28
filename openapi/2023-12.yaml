@@ -437,7 +437,7 @@ components:
       properties:
         type:
           type: string
-          example: "flows"
+          enum: [flows]
         attributes:
           type: object
           required:
@@ -466,7 +466,7 @@ components:
       properties:
         type:
           type: string
-          example: "carts"
+          enum: [carts]
         attributes:
           type: object
           required:
@@ -543,7 +543,7 @@ components:
       properties:
         type:
           type: string
-          example: "abandonments"
+          enum: [abandonments]
         attributes:
           type: object
           required:
@@ -566,7 +566,7 @@ components:
       properties:
         type:
           type: string
-          example: "subscriptions"
+          enum: [subscriptions]
         attributes:
           type: object
           description: Attributes of the subscriber
@@ -658,7 +658,7 @@ components:
       properties:
         type:
           type: string
-          example: "webhooks"
+          enum: [webhooks]
         attributes:
           type: object
           properties:
@@ -678,7 +678,7 @@ components:
       properties:
         type:
           type: string
-          example: "messages"
+          enum: [messages]
         attributes:
           type: object
           required:
@@ -717,7 +717,7 @@ components:
       properties:
         type:
           type: string
-          example: "messages"
+          enum: [messages]
         attributes:
           type: object
           properties:
@@ -753,7 +753,7 @@ components:
       properties:
         type:
           type: string
-          example: "messages"
+          enum: [messages]
         attributes:
           type: object
           properties:
@@ -789,7 +789,7 @@ components:
       properties:
         type:
           type: string
-          example: "subscriptions"
+          enum: [subscriptions]
         attributes:
           type: object
           properties:
@@ -809,7 +809,7 @@ components:
       properties:
         type:
           type: string
-          example: "subscriptions"
+          enum: [subscriptions]
         attributes:
           type: object
           properties:
