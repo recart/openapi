@@ -7,6 +7,63 @@ info:
   description: Open API description of the Recart API
   version: 2023-12
 paths:
+  /flows:
+    get:
+      summary: Retrieve list of flows
+      tags:
+        - Flow
+      operationId: listFlows
+      security:
+        - ApiKeyAuth: [ ]
+      description: |
+        List flows.
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Flow"
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
+  /flows/{id}:
+    get:
+      summary: Receive a single flow
+      tags:
+        - Flow
+      operationId: getFlow
+      security:
+        - ApiKeyAuth: [ ]
+      description: |
+        Get flow by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the flow
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Flow"
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
   /carts/{id}:
     put:
       summary: Update cart
@@ -192,6 +249,9 @@ paths:
                       properties:
                         data:
                           $ref: "#/components/schemas/OutgoingMessage"
+              responses:
+                '200':
+                  description: Your server returns this code if it accepts the callback
         Subscribers unsubscribe:
           '{$request.body#/data/attributes/address}':
             post:
@@ -204,6 +264,9 @@ paths:
                       properties:
                         data:
                           $ref: "#/components/schemas/SubscribersUnsubscribe"
+              responses:
+                '200':
+                  description: Your server returns this code if it accepts the callback
         Subscribers subscribe:
           '{$request.body#/data/attributes/address}':
             post:
@@ -365,6 +428,40 @@ components:
                       type: string
                       example: ""
   schemas:
+    Flow:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum: [flows]
+        attributes:
+          type: object
+          required:
+            - id
+            - name
+            - tags
+            - status
+          properties:
+            id:
+              type: string
+              description: ID of flow
+              example: "655637c97825e6ae655fe1b5"
+            name:
+              type: string
+              description: Name of flow
+              example: "Welcome flow"
+            tags:
+              type: array
+              description: Flow tags
+              example: ["automated", "welcome"]
+            status:
+              type: string
+              description: Status of flow
+              enum: [draft, active, inactive, cancelled]
     UpdateCart:
       type:
         - object
@@ -374,7 +471,7 @@ components:
       properties:
         type:
           type: string
-          example: "carts"
+          enum: [carts]
         attributes:
           type: object
           required:
@@ -451,7 +548,7 @@ components:
       properties:
         type:
           type: string
-          example: "abandonments"
+          enum: [abandonments]
         attributes:
           type: object
           required:
@@ -474,7 +571,7 @@ components:
       properties:
         type:
           type: string
-          example: "subscriptions"
+          enum: [subscriptions]
         attributes:
           type: object
           description: Attributes of the subscriber
@@ -566,7 +663,7 @@ components:
       properties:
         type:
           type: string
-          example: "webhooks"
+          enum: [webhooks]
         attributes:
           type: object
           properties:
@@ -586,7 +683,7 @@ components:
       properties:
         type:
           type: string
-          example: "messages"
+          enum: [messages]
         attributes:
           type: object
           required:
@@ -625,7 +722,7 @@ components:
       properties:
         type:
           type: string
-          example: "messages"
+          enum: [messages]
         attributes:
           type: object
           properties:
@@ -661,7 +758,7 @@ components:
       properties:
         type:
           type: string
-          example: "messages"
+          enum: [messages]
         attributes:
           type: object
           properties:
@@ -697,7 +794,7 @@ components:
       properties:
         type:
           type: string
-          example: "subscriptions"
+          enum: [subscriptions]
         attributes:
           type: object
           properties:
@@ -717,7 +814,7 @@ components:
       properties:
         type:
           type: string
-          example: "subscriptions"
+          enum: [subscriptions]
         attributes:
           type: object
           properties:
