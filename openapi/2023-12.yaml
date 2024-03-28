@@ -444,6 +444,7 @@ components:
             - id
             - name
             - tags
+            - status
           properties:
             id:
               type: string
@@ -457,6 +458,10 @@ components:
               type: array
               description: Flow tags
               example: ["automated", "welcome"]
+            status:
+              type: string
+              description: Status of flow
+              enum: [draft, active, inactive, cancelled]
     UpdateCart:
       type:
         - object
