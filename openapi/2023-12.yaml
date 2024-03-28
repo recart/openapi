@@ -98,7 +98,7 @@ paths:
       security:
         - ApiKeyAuth: [ ]
       description: |
-        Create an order in Recart. It sends the associated order flow to the recipient. Flow must be active to send the message.
+        Create an order in Recart. It sends the associated receipt flow to the recipient. Flow must be active to send the message.
       requestBody:
         required: true
         content:
@@ -107,9 +107,9 @@ paths:
               type: object
               properties:
                 data:
-                  $ref: "#/components/schemas/PostOrder"
+                  $ref: "#/components/schemas/CreateOrder"
       responses:
-        "201":
+        "202":
           description: Created
         "4XX":
           $ref: "#/components/responses/HttpError"
@@ -129,7 +129,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: Id of the order
+          description: Id of the order(order number)
           schema:
             type: number
           example: 1234567890
@@ -141,9 +141,9 @@ paths:
               type: object
               properties:
                 data:
-                  $ref: "#/components/schemas/PutOrders"
+                  $ref: "#/components/schemas/UpdateOrder"
       responses:
-        "204":
+        "202":
           description: No content
         "4XX":
           $ref: "#/components/responses/HttpError"
@@ -805,7 +805,7 @@ components:
               type: string
               description: Subscription optin level
               example: "promotional"
-    PostOrder:
+    CreateOrder:
       type: object
       required:
         - type
@@ -818,7 +818,7 @@ components:
           type: object
           required:
             - orderStatusUrl
-            - orderId
+            - orderNumber
             - totalPrice
           properties:
             phoneNumber:
@@ -833,9 +833,9 @@ components:
               type: string
               description: URL of the order status page
               example: "https://example.com/order"
-            orderId:
+            orderNumber:
               type: int
-              description: Order Id
+              description: Order number
               example: 1234567890
             totalPrice:
               type: object
@@ -909,7 +909,7 @@ components:
                     type: number
                     description: Value of discount
                     example: 4.20
-    PutOrders:
+    UpdateOrder:
       type: object
       required:
         - type
