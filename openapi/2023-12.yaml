@@ -917,6 +917,7 @@ components:
             - orderStatusUrl
             - orderNumber
             - totalPrice
+            - createdAt
           properties:
             phoneNumber:
               type: string
@@ -949,6 +950,10 @@ components:
                   type: string
                   description: Currency of the order
                   example: "USD"
+            createdAt:
+              type: string
+              description: UTC Date and time in ISO 8601 format
+              example: "2021-08-10T14:00:00.000+02:00"
             lineItems:
               type: array
               items:
@@ -1020,6 +1025,7 @@ components:
           required:
             - orderStatusUrl
             - totalPrice
+            - updatedAt
           properties:
             phoneNumber:
               type: string
@@ -1044,6 +1050,10 @@ components:
                   type: string
                   description: Currency of the order
                   example: "USD"
+            updatedAt:
+              type: string
+              description: UTC Date and time in ISO 8601 format
+              example: "2021-08-10T14:00:00.000+02:00"
             lineItems:
               type: array
               items:
