@@ -186,7 +186,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: Id of the order(order number)
+          description: Id of the order
           schema:
             type: number
           example: 1234567890
@@ -916,7 +916,9 @@ components:
           required:
             - orderStatusUrl
             - orderNumber
+            - orderId
             - totalPrice
+            - lineItems
             - createdAt
           properties:
             phoneNumber:
@@ -934,6 +936,10 @@ components:
             orderNumber:
               type: int
               description: Order number
+              example: 1234567890
+            orderId:
+              type: int
+              description: Order ID
               example: 1234567890
             totalPrice:
               type: object
@@ -1025,6 +1031,7 @@ components:
           required:
             - orderStatusUrl
             - totalPrice
+            - lineItems
             - updatedAt
           properties:
             phoneNumber:
@@ -1095,19 +1102,19 @@ components:
                         type: string
                         description: Currency of the orderItem
                         example: "USD"
-                discountCodes:
-                  type: array
-                  items:
-                    type: object
-                    required:
-                      - code
-                      - amount
-                    properties:
-                      code:
-                        type: string
-                        description: Discount code
-                        example: "DISCOUNT"
-                      amount:
-                        type: number
-                        description: Value of discount
-                        example: 4.20
+            discountCodes:
+              type: array
+              items:
+                type: object
+                required:
+                  - code
+                  - amount
+                properties:
+                  code:
+                    type: string
+                    description: Discount code
+                    example: "DISCOUNT"
+                  amount:
+                    type: number
+                    description: Value of discount
+                    example: 4.20
