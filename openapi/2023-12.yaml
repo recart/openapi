@@ -965,13 +965,13 @@ components:
                   - price
                 properties:
                   productId:
-                    type: string
+                    type: integer
                     description: ID of the product
-                    example: "1234567890"
+                    example: 1234567890
                   variantId:
-                    type: string
+                    type: integer
                     description: ID of the product variant
-                    example: "0987654321"
+                    example: 0987654321
                   name:
                     type: string
                     description: Name of the product
@@ -1065,13 +1065,13 @@ components:
                   - price
                 properties:
                   productId:
-                    type: string
+                    type: integer
                     description: ID of the product
-                    example: "1234567890"
+                    example: 1234567890
                   variantId:
-                    type: string
+                    type: integer
                     description: ID of the product variant
-                    example: "0987654321"
+                    example: 0987654321
                   name:
                     type: string
                     description: Name of the product
