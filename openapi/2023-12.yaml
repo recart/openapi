@@ -172,6 +172,32 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
+  /unsubscribe:
+    post:
+      summary: Unsubscribe SMS subscriber
+      tags:
+        - Subscription
+      operationId: postUnsubscription
+      security:
+        - ApiKeyAuth: []
+      description: |
+        Unsubscribe an SMS subscriber if it's not unsubscribed already.
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: "#/components/schemas/PostUnsubscription"
+      responses:
+        "200":
+          description: Accepted
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
   /webhooks:
     get:
       summary: Retrieve list of webhooks
@@ -563,6 +589,25 @@ components:
               type: string
               description: Recart identifier of the purchase session. Use `_recart.getSessionId()` on the merchant's store when Recart script is running.
               example: "655637bfaf3c6463c0f06d3e"
+    PostUnsubscription:
+      type: object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum: [subscriptions]
+        attributes:
+          type: object
+          description: Attributes of the subscriber
+          required:
+            - phoneNumber
+          properties:
+            phoneNumber:
+              type: string
+              description: Preferably E.164 format
+              example: "+36301234567"
     PostSubscription:
       type: object
       required:
