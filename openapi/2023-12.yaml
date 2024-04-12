@@ -232,6 +232,29 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
+    delete:
+      summary: Unsubscribe SMS subscriber
+      tags:
+        - Subscription
+      operationId: deleteSubscription
+      security:
+        - ApiKeyAuth: []
+      description: |
+        Unsubscribe an SMS subscriber if it's not unsubscribed yet.
+      parameters:
+        - name: phoneNumber
+          in: query
+          required: true
+          description: Phone number of the subscriber
+          schema:
+            type: string
+      responses:
+        "204":
+          description: "No content"
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
   /webhooks:
     get:
       summary: Retrieve list of webhooks
