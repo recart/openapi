@@ -232,28 +232,25 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
-  /unsubscribe:
-    post:
+    delete:
       summary: Unsubscribe SMS subscriber
       tags:
         - Subscription
-      operationId: postUnsubscription
+      operationId: deleteSubscription
       security:
         - ApiKeyAuth: []
       description: |
-        Unsubscribe an SMS subscriber if it's not unsubscribed already.
-      requestBody:
-        required: true
-        content:
-          application/vnd.api+json:
-            schema:
-              type: object
-              properties:
-                data:
-                  $ref: "#/components/schemas/PostUnsubscription"
+        Unsubscribe an SMS subscriber if it's not unsubscribed yet.
+      parameters:
+        - name: phoneNumber
+          in: query
+          required: true
+          description: Phone number of the subscriber
+          schema:
+            type: string
       responses:
-        "200":
-          description: Accepted
+        "204":
+          description: "No content"
         "4XX":
           $ref: "#/components/responses/HttpError"
         "5XX":
@@ -649,25 +646,6 @@ components:
               type: string
               description: Recart identifier of the purchase session. Use `_recart.getSessionId()` on the merchant's store when Recart script is running.
               example: "655637bfaf3c6463c0f06d3e"
-    PostUnsubscription:
-      type: object
-      required:
-        - type
-        - attributes
-      properties:
-        type:
-          type: string
-          enum: [subscriptions]
-        attributes:
-          type: object
-          description: Attributes of the subscriber
-          required:
-            - phoneNumber
-          properties:
-            phoneNumber:
-              type: string
-              description: Preferably E.164 format
-              example: "+36301234567"
     PostSubscription:
       type: object
       required:
