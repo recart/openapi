@@ -1178,7 +1178,6 @@ components:
           enum: [events]
         attributes:
           type: object
-          description: Attributes of the subscriber
           required:
             - phoneNumber
             - source
