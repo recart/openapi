@@ -257,14 +257,14 @@ paths:
           $ref: "#/components/responses/HttpError"
   /events:
     post:
-      summary: Receive an event
+      summary: Post an event
       tags:
         - Event
       operationId: postEvent
       security:
         - ApiKeyAuth: [ ]
       description: |
-        Receive an event from the merchant's store. It can be used to trigger flows in Recart.
+        Post an event which can be used to trigger flows in Recart.
       requestBody:
         required: true
         content:
