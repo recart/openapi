@@ -255,6 +255,32 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
+  /events:
+    post:
+      summary: Receive an event
+      tags:
+        - Event
+      operationId: postEvent
+      security:
+        - ApiKeyAuth: [ ]
+      description: |
+        Receive an event from the merchant's store. It can be used to trigger flows in Recart.
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: "#/components/schemas/PostEvent"
+      responses:
+        "200":
+          description: OK
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
   /webhooks:
     get:
       summary: Retrieve list of webhooks
@@ -1141,3 +1167,45 @@ components:
                     type: number
                     description: Value of discount
                     example: 4.20
+    PostEvent:
+      type: object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum: [events]
+        attributes:
+          type: object
+          description: Attributes of the subscriber
+          required:
+            - phoneNumber
+            - source
+          properties:
+            phoneNumber:
+              type: string
+              description: Preferably E.164 format
+              example: "+36301234567"
+            source:
+              type: object
+              required:
+                - category
+                - name
+              properties:
+                category:
+                  type: string
+                  description: Source category. Source must be added in the Recart account, contact Support for help.
+                  example: "payment"
+                name:
+                  type: string
+                  description: Source name. Source must be added in the Recart account, contact Support for help.
+                  example: "billing attempt failed"
+            properties:
+              type: object
+              description: Data of the event. It can be string/number. Nested objects are not supported. Maximum 10 properties are allowed.
+              example: {
+                "updatePaymentMethodURL": "https://example.com/update-payment-method",
+                "billingAttemptCount": 3
+              }
+
