@@ -275,8 +275,8 @@ paths:
                 data:
                   $ref: "#/components/schemas/PostEventSource"
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
         "4XX":
           $ref: "#/components/responses/HttpError"
         "5XX":
