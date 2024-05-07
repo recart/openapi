@@ -1013,11 +1013,11 @@ components:
               description: URL of the order status page
               example: "https://example.com/order"
             orderNumber:
-              type: int
+              type: integer
               description: Order number
               example: 1234567890
             orderId:
-              type: int
+              type: integer
               description: Order ID
               example: 1234567890
             totalPrice:
@@ -1266,4 +1266,4 @@ components:
               enum: [custom, optin]
               description: Type of source
               example: "invoice #1234"
-      
+
