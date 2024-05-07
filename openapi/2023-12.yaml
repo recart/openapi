@@ -255,6 +255,32 @@ paths:
           $ref: "#/components/responses/HttpError"
         "5XX":
           $ref: "#/components/responses/HttpError"
+  /event-sources:
+    post:
+      summary: Create new event source
+      tags:
+        - Event
+      operationId: createEventSource
+      security:
+        - ApiKeyAuth: [ ]
+      description: |
+        Create a new source to start sending events
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: "#/components/schemas/PostEventSource"
+      responses:
+        "201":
+          description: Created
+        "4XX":
+          $ref: "#/components/responses/HttpError"
+        "5XX":
+          $ref: "#/components/responses/HttpError"
   /events:
     post:
       summary: Post an event
@@ -700,12 +726,16 @@ components:
               properties:
                 category:
                   type: string
-                  description: Source category. Source must be added in the Recart account, contact Support for help.
+                  description: Source category
                   example: "amped"
                 name:
                   type: string
-                  description: Source name. Source must be added in the Recart account, contact Support for help.
-                  example: "welcome popup"
+                  description: Source name
+                  example: "subscription"
+                externalId:
+                  type: string
+                  description: Optional identifier
+                  example: "2024 june campaign"
             browser:
               type: object
               properties:
@@ -1194,11 +1224,11 @@ components:
               properties:
                 category:
                   type: string
-                  description: Source category. Source must be added in the Recart account, contact Support for help.
+                  description: Source category
                   example: "payment"
                 name:
                   type: string
-                  description: Source name. Source must be added in the Recart account, contact Support for help.
+                  description: Source name
                   example: "billing attempt failed"
             properties:
               type: object
@@ -1207,4 +1237,33 @@ components:
                 "updatePaymentMethodURL": "https://example.com/update-payment-method",
                 "billingAttemptCount": 3
               }
-
+    PostEventSource:
+      type: object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum: [events]
+        attributes:
+          type: object
+          required:
+            - category
+            - name
+            - type
+          properties:
+            category:
+              type: string
+              description: Source category
+              example: "payment"
+            name:
+              type: string
+              description: Source name
+              example: "billing attempt failed"
+            type:
+              type: string
+              enum: [custom, optin]
+              description: Type of source
+              example: "invoice #1234"
+      
