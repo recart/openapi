@@ -644,19 +644,22 @@ components:
                   - price
                 properties:
                   productId:
-                    type: integer
+                    type: string
+                    format: int64
                     description: ID of the product
-                    example: 1234567890
+                    example: "9007199254740991"
                   variantId:
-                    type: integer
+                    type: string
+                    format: int64
                     description: ID of the product variant
-                    example: 0987654321
+                    example: "9007199254740991"
                   name:
                     type: string
                     description: Name of the product
                     example: "Product name"
                   quantity:
                     type: integer
+                    format: int32
                     description: Quantity of the product
                     example: 1
                   price:
@@ -749,6 +752,7 @@ components:
                   example: "en"
                 url:
                   type: string
+                  format: uri
                   description: URL of the browser page
                   example: "https://cars.myshopify.com/buy-this"
             sessionId:
@@ -792,6 +796,7 @@ components:
                   example: "US"
                 ipAddress:
                   type: string
+                  format: ipv4
                   description: IP address of the subscriber
                   example: "192.158.1.38."
     Webhook:
@@ -880,11 +885,11 @@ components:
             from:
               type: string
               description: from
-              example: '+123456789'
+              example: "+123456789"
             to:
               type: string
               description: to
-              example: '+987654321'
+              example: "+987654321"
             receivedAt:
               type: string
               description: UTC Date and time in ISO 8601 format
@@ -920,11 +925,11 @@ components:
             from:
               type: string
               description: Phone number of the sender in E.164 format
-              example: '+36301234567'
+              example: "+36301234567"
             to:
               type: string
               description: Phone number of the recipient in E.164 format
-              example: '+36301234567'
+              example: "+36301234567"
     SubscribersUnsubscribe:
       type: object
       required:
@@ -1013,13 +1018,15 @@ components:
               description: URL of the order status page
               example: "https://example.com/order"
             orderNumber:
-              type: integer
+              type: string
+              format: int64
               description: Order number
-              example: 1234567890
+              example: "9007199254740991"
             orderId:
-              type: integer
+              type: string
+              format: int64
               description: Order ID
-              example: 1234567890
+              example: "9007199254740991"
             totalPrice:
               type: object
               required:
@@ -1050,19 +1057,22 @@ components:
                   - price
                 properties:
                   productId:
-                    type: integer
+                    type: string
+                    format: int64
                     description: ID of the product
-                    example: 1234567890
+                    example: "9007199254740991"
                   variantId:
-                    type: integer
+                    type: string
+                    format: int64
                     description: ID of the product variant
-                    example: 0987654321
+                    example: "9007199254740991"
                   name:
                     type: string
                     description: Name of the product
                     example: "Product name"
                   quantity:
                     type: integer
+                    format: int32
                     description: Quantity of the product
                     example: 1
                   price:
@@ -1094,6 +1104,7 @@ components:
                     example: "DISCOUNT"
                   amount:
                     type: number
+                    format: double
                     description: Value of discount
                     example: 4.20
     UpdateOrder:
@@ -1151,19 +1162,22 @@ components:
                   - price
                 properties:
                   productId:
-                    type: integer
+                    type: string
+                    format: int64
                     description: ID of the product
-                    example: 1234567890
+                    example: "9007199254740991"
                   variantId:
-                    type: integer
+                    type: string
+                    format: int64
                     description: ID of the product variant
-                    example: 0987654321
+                    example: "9007199254740991"
                   name:
                     type: string
                     description: Name of the product
                     example: "Product name"
                   quantity:
                     type: integer
+                    format: int32
                     description: Quantity of the product
                     example: 1
                   price:
@@ -1195,6 +1209,7 @@ components:
                     example: "DISCOUNT"
                   amount:
                     type: number
+                    format: double
                     description: Value of discount
                     example: 4.20
     PostEvent:
