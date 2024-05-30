@@ -1,4 +1,21 @@
 openapi: 3.1.0
+tags:
+  - name: Abandonment
+    description: "Cart abandonments"
+  - name: Cart
+    description: "Carts"
+  - name: Event
+    description: Events
+  - name: Flow
+    description: "Flows"
+  - name: Message
+    description: Messages
+  - name: Order
+    description: Orders
+  - name: Subscription
+    description: Subscriptions
+  - name: Webhook
+    description: Webhooks
 servers:
     - url: https://api.recart.com/app-integrations/2023-12
       description: Production
@@ -311,7 +328,7 @@ paths:
     get:
       summary: Retrieve list of webhooks
       tags:
-        - Webhooks
+        - Webhook
       operationId: listWebhooks
       security:
         - ApiKeyAuth: [ ]
@@ -335,7 +352,7 @@ paths:
     post:
       summary: Create a new webhook
       tags:
-        - Webhooks
+        - Webhook
       operationId: createWebhook
       security:
         - ApiKeyAuth: [ ]
@@ -421,7 +438,7 @@ paths:
     get:
       summary: Recieve a single webhook
       tags:
-        - Webhooks
+        - Webhook
       operationId: getWebhook
       security:
         - ApiKeyAuth: [ ]
@@ -450,7 +467,7 @@ paths:
     delete:
       summary: Remove an existing webhook
       tags:
-        - Webhooks
+        - Webhook
       operationId: deleteWebhook
       security:
         - ApiKeyAuth: [ ]
@@ -473,7 +490,7 @@ paths:
     post:
       summary: Send message(s) to a subscriber
       tags:
-        - Messages
+        - Message
       operationId: postMessages
       security:
         - ApiKeyAuth: [ ]
@@ -499,13 +516,15 @@ paths:
     get:
       summary: Returns the message's status by its ID
       tags:
-        - Messages
+        - Message
+      operationId: getMessage
       security:
         - ApiKeyAuth: [ ]
       description: Returns the status of the selected message.
       parameters:
         - in: path
           name: id
+          description: ID of the message
           required: true
           schema:
             type: string
@@ -798,7 +817,7 @@ components:
                   type: string
                   format: ipv4
                   description: IP address of the subscriber
-                  example: "192.158.1.38."
+                  example: "192.158.1.38"
     Webhook:
       type: object
       required:
@@ -1280,5 +1299,5 @@ components:
               type: string
               enum: [custom, optin]
               description: Type of source
-              example: "invoice #1234"
+              example: "optin"
 
