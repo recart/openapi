@@ -760,6 +760,10 @@ components:
               format: int64
               description: Order ID
               example: '9007199254740991'
+            phoneNumber:
+              type: string
+              description: Preferably E.164 format
+              example: '+36301234567'
             sessionId:
               type: string
               description: Recart identifier of the purchase session. Use `_recart.getSessionId()` on the merchant's store when Recart script is running.
