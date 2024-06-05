@@ -1,13 +1,13 @@
 openapi: 3.1.0
 tags:
   - name: Abandonment
-    description: "Cart abandonments"
+    description: Cart abandonments
   - name: Cart
-    description: "Carts"
+    description: Carts
   - name: Event
     description: Events
   - name: Flow
-    description: "Flows"
+    description: Flows
   - name: Message
     description: Messages
   - name: Order
@@ -17,8 +17,8 @@ tags:
   - name: Webhook
     description: Webhooks
 servers:
-    - url: https://api.recart.com/app-integrations/2023-12
-      description: Production
+  - url: 'https://api.recart.com/app-integrations/2023-12'
+    description: Production
 info:
   title: Recart API
   description: Open API description of the Recart API
@@ -31,11 +31,11 @@ paths:
         - Flow
       operationId: listFlows
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: |
         List flows.
       responses:
-        "200":
+        '200':
           description: Ok
           content:
             application/vnd.api+json:
@@ -45,19 +45,19 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Flow"
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
-  /flows/{id}:
+                      $ref: '#/components/schemas/Flow'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/flows/{id}':
     get:
       summary: Receive a single flow
       tags:
         - Flow
       operationId: getFlow
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: |
         Get flow by ID
       parameters:
@@ -68,7 +68,7 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: Ok
           content:
             application/vnd.api+json:
@@ -76,19 +76,19 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: "#/components/schemas/Flow"
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
-  /carts/{id}:
+                    $ref: '#/components/schemas/Flow'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/carts/{id}':
     put:
       summary: Update cart
       tags:
         - Cart
       operationId: updateCart
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: |
         Update the cart's content. Endpoint overwrites the cart's content with the new one.
       parameters:
@@ -106,21 +106,21 @@ paths:
               type: object
               properties:
                 data:
-                  $ref: "#/components/schemas/UpdateCart"
+                  $ref: '#/components/schemas/UpdateCart'
       responses:
-        "204":
+        '204':
           description: No content
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
     delete:
       summary: Clear cart
       tags:
         - Cart
       operationId: clearCart
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: |
         Clear the cart's content.
       parameters:
@@ -131,12 +131,12 @@ paths:
           schema:
             type: string
       responses:
-        "204":
+        '204':
           description: No content
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
   /abandonments:
     post:
       summary: Abandon a session
@@ -144,7 +144,7 @@ paths:
         - Abandonment
       operationId: postAbandonment
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: |
         Trigger an abandonment event in Recart. It sends the associated abandonment flow to the recipient. Flow must be active to send the message.
       requestBody:
@@ -155,14 +155,14 @@ paths:
               type: object
               properties:
                 data:
-                  $ref: "#/components/schemas/AbandonCart"
+                  $ref: '#/components/schemas/AbandonCart'
       responses:
-        "200":
+        '200':
           description: OK
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
   /orders:
     post:
       summary: Create an order
@@ -170,7 +170,7 @@ paths:
         - Order
       operationId: postOrder
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: |
         Create an order in Recart. It sends the associated receipt flow to the recipient. Flow must be active to send the message.
       requestBody:
@@ -181,22 +181,22 @@ paths:
               type: object
               properties:
                 data:
-                  $ref: "#/components/schemas/CreateOrder"
+                  $ref: '#/components/schemas/CreateOrder'
       responses:
-        "202":
+        '202':
           description: Created
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
-  /orders/{id}:
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/orders/{id}':
     put:
       summary: Update an order
       tags:
         - Order
       operationId: updateOrder
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: |
         Update an order in Recart.
       parameters:
@@ -215,14 +215,42 @@ paths:
               type: object
               properties:
                 data:
-                  $ref: "#/components/schemas/UpdateOrder"
+                  $ref: '#/components/schemas/UpdateOrder'
       responses:
-        "202":
+        '202':
           description: No content
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/fulfillments':
+    post:
+      summary: Fulfill an order
+      tags:
+        - Order
+      operationId: fulfillOrder
+      security:
+        - ApiKeyAuth: []
+      description: |
+        Fulfill an order.
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/FulfillOrder'
+      responses:
+        '202':
+          description: No content
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+      x-stoplight:
+        id: rq2sqi3tprksv
   /subscriptions:
     post:
       summary: Initiate SMS subscription
@@ -230,7 +258,7 @@ paths:
         - Subscription
       operationId: postSubscription
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: |
         Trigger an SMS subscription flow in Recart. It sends the associated welcome flow to the recipient. Flow must be active to comply TCPA regulations.
       requestBody:
@@ -241,14 +269,14 @@ paths:
               type: object
               properties:
                 data:
-                  $ref: "#/components/schemas/PostSubscription"
+                  $ref: '#/components/schemas/PostSubscription'
       responses:
-        "202":
+        '202':
           description: Accepted
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
     delete:
       summary: Unsubscribe SMS subscriber
       tags:
@@ -266,12 +294,12 @@ paths:
           schema:
             type: string
       responses:
-        "204":
-          description: "No content"
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
+        '204':
+          description: No content
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
   /event-sources:
     post:
       summary: Create new event source
@@ -279,7 +307,7 @@ paths:
         - Event
       operationId: createEventSource
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: |
         Create a new source to start sending events
       requestBody:
@@ -290,14 +318,14 @@ paths:
               type: object
               properties:
                 data:
-                  $ref: "#/components/schemas/PostEventSource"
+                  $ref: '#/components/schemas/PostEventSource'
       responses:
-        "201":
+        '201':
           description: Created
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
   /events:
     post:
       summary: Post an event
@@ -305,7 +333,7 @@ paths:
         - Event
       operationId: postEvent
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: |
         Post an event which can be used to trigger flows in Recart.
       requestBody:
@@ -316,14 +344,14 @@ paths:
               type: object
               properties:
                 data:
-                  $ref: "#/components/schemas/PostEvent"
+                  $ref: '#/components/schemas/PostEvent'
       responses:
-        "200":
+        '200':
           description: OK
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
   /webhooks:
     get:
       summary: Retrieve list of webhooks
@@ -331,10 +359,10 @@ paths:
         - Webhook
       operationId: listWebhooks
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: Retrieve list of webhooks
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/vnd.api+json:
@@ -344,18 +372,18 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Webhook"
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
+                      $ref: '#/components/schemas/Webhook'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
     post:
       summary: Create a new webhook
       tags:
         - Webhook
       operationId: createWebhook
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: Create a new webhook
       requestBody:
         required: true
@@ -365,14 +393,14 @@ paths:
               type: object
               properties:
                 data:
-                  $ref: "#/components/schemas/Webhook"
+                  $ref: '#/components/schemas/Webhook'
       responses:
-        "201":
+        '201':
           description: Created
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
       callbacks:
         Incoming message:
           '{$request.body#/data/attributes/address}':
@@ -385,7 +413,7 @@ paths:
                       type: object
                       properties:
                         data:
-                          $ref: "#/components/schemas/IncomingMessage"
+                          $ref: '#/components/schemas/IncomingMessage'
               responses:
                 '200':
                   description: Your server returns this code if it accepts the callback
@@ -400,7 +428,7 @@ paths:
                       type: object
                       properties:
                         data:
-                          $ref: "#/components/schemas/OutgoingMessage"
+                          $ref: '#/components/schemas/OutgoingMessage'
               responses:
                 '200':
                   description: Your server returns this code if it accepts the callback
@@ -415,7 +443,7 @@ paths:
                       type: object
                       properties:
                         data:
-                          $ref: "#/components/schemas/SubscribersUnsubscribe"
+                          $ref: '#/components/schemas/SubscribersUnsubscribe'
               responses:
                 '200':
                   description: Your server returns this code if it accepts the callback
@@ -430,18 +458,18 @@ paths:
                       type: object
                       properties:
                         data:
-                          $ref: "#/components/schemas/SubscribersSubscribe"
+                          $ref: '#/components/schemas/SubscribersSubscribe'
               responses:
                 '200':
                   description: Your server returns this code if it accepts the callback
-  /webhooks/{id}:
+  '/webhooks/{id}':
     get:
       summary: Recieve a single webhook
       tags:
         - Webhook
       operationId: getWebhook
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: Recieve a single webhook
       parameters:
         - name: id
@@ -451,7 +479,7 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/vnd.api+json:
@@ -459,18 +487,18 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: "#/components/schemas/Webhook"
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
+                    $ref: '#/components/schemas/Webhook'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
     delete:
       summary: Remove an existing webhook
       tags:
         - Webhook
       operationId: deleteWebhook
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: Remove an existing webhook
       parameters:
         - name: id
@@ -480,12 +508,12 @@ paths:
           schema:
             type: string
       responses:
-        "204":
+        '204':
           description: No content
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
   /messages:
     post:
       summary: Send message(s) to a subscriber
@@ -493,7 +521,7 @@ paths:
         - Message
       operationId: postMessages
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: |
         Trigger SMS/MMS messages. Maximum 10 messages can be sent in a single request. Requester must comply with TCPA regulations, and make sure the message is not sent in quiet hours.
       requestBody:
@@ -504,22 +532,22 @@ paths:
               type: object
               properties:
                 data:
-                  $ref: "#/components/schemas/PostMessages"
+                  $ref: '#/components/schemas/PostMessages'
       responses:
-        "202":
+        '202':
           description: Accepted
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
-  /messages/{id}:
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/messages/{id}':
     get:
       summary: Returns the message's status by its ID
       tags:
         - Message
       operationId: getMessage
       security:
-        - ApiKeyAuth: [ ]
+        - ApiKeyAuth: []
       description: Returns the status of the selected message.
       parameters:
         - in: path
@@ -529,7 +557,7 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application/vnd.api+json:
@@ -538,10 +566,10 @@ paths:
                 properties:
                   data:
                     $ref: '#/components/schemas/OutgoingMessage'
-        "4XX":
-          $ref: "#/components/responses/HttpError"
-        "5XX":
-          $ref: "#/components/responses/HttpError"
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -571,16 +599,16 @@ components:
                   properties:
                     id:
                       type: string
-                      example: "17035478-01a9-4aeb-a13c-88ab51e6fee3"
+                      example: 17035478-01a9-4aeb-a13c-88ab51e6fee3
                     code:
                       type: string
-                      example: "ERR_BAD_REQUEST"
+                      example: ERR_BAD_REQUEST
                     title:
                       type: string
-                      example: "Bad request"
+                      example: Bad request
                     detail:
                       type: string
-                      example: ""
+                      example: ''
   schemas:
     Flow:
       type:
@@ -591,7 +619,8 @@ components:
       properties:
         type:
           type: string
-          enum: [flows]
+          enum:
+            - flows
         attributes:
           type: object
           required:
@@ -603,19 +632,25 @@ components:
             id:
               type: string
               description: ID of flow
-              example: "655637c97825e6ae655fe1b5"
+              example: 655637c97825e6ae655fe1b5
             name:
               type: string
               description: Name of flow
-              example: "Welcome flow"
+              example: Welcome flow
             tags:
               type: array
               description: Flow tags
-              example: ["automated", "welcome"]
+              example:
+                - automated
+                - welcome
             status:
               type: string
               description: Status of flow
-              enum: [draft, active, inactive, cancelled]
+              enum:
+                - draft
+                - active
+                - inactive
+                - cancelled
     UpdateCart:
       type:
         - object
@@ -625,7 +660,8 @@ components:
       properties:
         type:
           type: string
-          enum: [carts]
+          enum:
+            - carts
         attributes:
           type: object
           required:
@@ -643,15 +679,15 @@ components:
                   type: number
                   format: double
                   description: Value of cart
-                  example: 4.20
+                  example: 4.2
                 currency:
                   type: string
                   description: Currency of the cart
-                  example: "USD"
+                  example: USD
             recoveryUrl:
               type: string
               description: URL of the cart recovery page
-              example: "https://example.com/cart"
+              example: 'https://example.com/cart'
             lineItems:
               type: array
               items:
@@ -666,16 +702,16 @@ components:
                     type: string
                     format: int64
                     description: ID of the product
-                    example: "9007199254740991"
+                    example: '9007199254740991'
                   variantId:
                     type: string
                     format: int64
                     description: ID of the product variant
-                    example: "9007199254740991"
+                    example: '9007199254740991'
                   name:
                     type: string
                     description: Name of the product
-                    example: "Product name"
+                    example: Product name
                   quantity:
                     type: integer
                     format: int32
@@ -691,11 +727,64 @@ components:
                         type: number
                         format: double
                         description: Value of cartItem
-                        example: 4.20
+                        example: 4.2
                       currency:
                         type: string
                         description: Currency of the cartItem
-                        example: "USD"
+                        example: USD
+    FulfillOrder:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - fulfillments
+        attributes:
+          type: object
+          required:
+            - orderNumber
+            - orderId
+            - createdAt
+          properties:
+            orderNumber:
+              type: string
+              format: int64
+              description: Order number
+              example: '9007199254740991'
+            orderId:
+              type: string
+              format: int64
+              description: Order ID
+              example: '9007199254740991'
+            phoneNumber:
+              type: string
+              description: Preferably E.164 format
+              example: '+36301234567'
+            sessionId:
+              type: string
+              description: Recart identifier of the purchase session. Use `_recart.getSessionId()` on the merchant's store when Recart script is running.
+              example: 655637bfaf3c6463c0f06d3e
+            createdAt:
+              type: string
+              description: UTC Date and time in ISO 8601 format
+              example: '2021-08-10T14:00:00.000+02:00'
+            trackingCompany:
+              type: string
+              description: Name of the tracking company
+              example: UPS
+            trackingNumber:
+              type: string
+              description: Tracking number
+              example: '12344321'
+            trackingUrl:
+              type: string
+              format: uri
+              description: Tracking URL
+              example: 'https://track.me'
     AbandonCart:
       type:
         - object
@@ -705,7 +794,8 @@ components:
       properties:
         type:
           type: string
-          enum: [abandonments]
+          enum:
+            - abandonments
         attributes:
           type: object
           required:
@@ -714,12 +804,12 @@ components:
           properties:
             type:
               type: string
-              description: Type of the abandonment, only "cart" is supported
-              example: "cart"
+              description: 'Type of the abandonment, only "cart" is supported'
+              example: cart
             sessionId:
               type: string
               description: Recart identifier of the purchase session. Use `_recart.getSessionId()` on the merchant's store when Recart script is running.
-              example: "655637bfaf3c6463c0f06d3e"
+              example: 655637bfaf3c6463c0f06d3e
     PostSubscription:
       type: object
       required:
@@ -728,7 +818,8 @@ components:
       properties:
         type:
           type: string
-          enum: [subscriptions]
+          enum:
+            - subscriptions
         attributes:
           type: object
           description: Attributes of the subscriber
@@ -739,7 +830,7 @@ components:
             phoneNumber:
               type: string
               description: Preferably E.164 format
-              example: "+36301234567"
+              example: '+36301234567'
             source:
               type: object
               required:
@@ -749,75 +840,75 @@ components:
                 category:
                   type: string
                   description: Source category
-                  example: "amped"
+                  example: amped
                 name:
                   type: string
                   description: Source name
-                  example: "subscription"
+                  example: subscription
                 externalId:
                   type: string
                   description: Optional identifier
-                  example: "2024 june campaign"
+                  example: 2024 june campaign
             browser:
               type: object
               properties:
                 userAgent:
                   type: string
                   description: User agent of the browser
-                  example: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)"
+                  example: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)'
                 language:
                   type: string
                   description: Language of the browser
-                  example: "en"
+                  example: en
                 url:
                   type: string
                   format: uri
                   description: URL of the browser page
-                  example: "https://cars.myshopify.com/buy-this"
+                  example: 'https://cars.myshopify.com/buy-this'
             sessionId:
               type: string
               description: Recart identifier of the purchase session.  Use `_recart.getSessionId()` on the merchant's store when Recart script is running.
-              example: "655637bfaf3c6463c0f06d3e"
+              example: 655637bfaf3c6463c0f06d3e
             shopperId:
               type: string
               description: Recart identifier of the visitor. Use `_recart.getShopperId()` on the merchant's store when Recart script is running.
-              example: "655637c97825e6ae655fe1b5"
+              example: 655637c97825e6ae655fe1b5
             firstName:
               type: string
               description: First name of the subscriber
-              example: "John"
+              example: John
             lastName:
               type: string
               description: Last name of the subscriber
-              example: "Doe"
+              example: Doe
             timezone:
               type: string
               description: Timezone of the subscriber
-              example: "Europe/Budapest"
+              example: Europe/Budapest
             location:
               type: object
               properties:
                 city:
                   type: string
                   description: City
-                  example: "New York"
+                  example: New York
                 province:
                   type: string
                   description: Province
-                  example: "New York"
+                  example: New York
                 zip:
                   type: string
                   description: ZIP code
-                  example: "12345"
+                  example: '12345'
                 country:
                   type: string
                   description: Country
-                  example: "US"
+                  example: US
                 ipAddress:
                   type: string
                   format: ipv4
                   description: IP address of the subscriber
-                  example: "192.158.1.38"
+                  example: 192.158.1.38
     Webhook:
       type: object
       required:
@@ -826,18 +917,19 @@ components:
       properties:
         type:
           type: string
-          enum: [webhooks]
+          enum:
+            - webhooks
         attributes:
           type: object
           properties:
             topic:
               type: string
-              description: Event type, messages/incoming, messages/outgoing, subscribers/unsubscribe, subscribers/subscribe
-              example: "messages/incoming"
+              description: 'Event type, messages/incoming, messages/outgoing, subscribers/unsubscribe, subscribers/subscribe'
+              example: messages/incoming
             address:
               type: string
               description: Destination URL for webhook delivery
-              example: "https://call.me"
+              example: 'https://call.me'
     PostMessages:
       type: object
       required:
@@ -846,7 +938,8 @@ components:
       properties:
         type:
           type: string
-          enum: [messages]
+          enum:
+            - messages
         attributes:
           type: object
           required:
@@ -856,7 +949,7 @@ components:
             phoneNumber:
               type: string
               description: Preferably E.164 format
-              example: "+36301234567"
+              example: '+36301234567'
             messages:
               type: array
               items:
@@ -867,16 +960,16 @@ components:
                 properties:
                   type:
                     type: string
-                    description: Type of the message, only promotional is supported
-                    example: "promotional"
+                    description: 'Type of the message, only promotional is supported'
+                    example: promotional
                   body:
                     type: string
-                    description: Content of the message, maximum 1024 characters
-                    example: "Hi, welcome to our store."
+                    description: 'Content of the message, maximum 1024 characters'
+                    example: 'Hi, welcome to our store.'
                   attachment:
                     type: string
-                    description: URL of the attachment, extension must be .jpg, .jpeg, .png, or .gif
-                    example: "https://img.url.jpg"
+                    description: 'URL of the attachment, extension must be .jpg, .jpeg, .png, or .gif'
+                    example: 'https://img.url.jpg'
     IncomingMessage:
       type: object
       required:
@@ -885,14 +978,15 @@ components:
       properties:
         type:
           type: string
-          enum: [messages]
+          enum:
+            - messages
         attributes:
           type: object
           properties:
             id:
               type: string
               description: Id
-              example: "65ba227ffa0ad3e1bef89449"
+              example: 65ba227ffa0ad3e1bef89449
             body:
               type: string
               descripton: Content of the message
@@ -904,15 +998,15 @@ components:
             from:
               type: string
               description: from
-              example: "+123456789"
+              example: '+123456789'
             to:
               type: string
               description: to
-              example: "+987654321"
+              example: '+987654321'
             receivedAt:
               type: string
               description: UTC Date and time in ISO 8601 format
-              example: "2021-08-10T14:00:00.000+02:00"
+              example: '2021-08-10T14:00:00.000+02:00'
     OutgoingMessage:
       type: object
       required:
@@ -921,17 +1015,18 @@ components:
       properties:
         type:
           type: string
-          enum: [messages]
+          enum:
+            - messages
         attributes:
           type: object
           properties:
             id:
               type: string
               description: Id
-              example: "65ba227ffa0ad3e1bef89449"
+              example: 65ba227ffa0ad3e1bef89449
             status:
               type: string
-              description: Status of the message. It can be processing, sent or error
+              description: 'Status of the message. It can be processing, sent or error'
               example: sent
             body:
               type: string
@@ -940,15 +1035,15 @@ components:
             sentAt:
               type: string
               description: UTC Date and time in ISO 8601 format
-              example: "2021-08-10T14:00:00.000+02:00"
+              example: '2021-08-10T14:00:00.000+02:00'
             from:
               type: string
               description: Phone number of the sender in E.164 format
-              example: "+36301234567"
+              example: '+36301234567'
             to:
               type: string
               description: Phone number of the recipient in E.164 format
-              example: "+36301234567"
+              example: '+36301234567'
     SubscribersUnsubscribe:
       type: object
       required:
@@ -957,18 +1052,19 @@ components:
       properties:
         type:
           type: string
-          enum: [subscriptions]
+          enum:
+            - subscriptions
         attributes:
           type: object
           properties:
             subscriberId:
               type: string
               description: Recart identifier of the subscriber
-              example: "655637c97825e6ae655fe1b5"
+              example: 655637c97825e6ae655fe1b5
             phoneNumber:
               type: string
               description: Preferably E.164 format
-              example: "+36301234567"
+              example: '+36301234567'
     SubscribersSubscribe:
       type: object
       required:
@@ -977,34 +1073,35 @@ components:
       properties:
         type:
           type: string
-          enum: [subscriptions]
+          enum:
+            - subscriptions
         attributes:
           type: object
           properties:
             subscriberId:
               type: string
               description: Recart identifier of the subscriber
-              example: "655637c97825e6ae655fe1b5"
+              example: 655637c97825e6ae655fe1b5
             phoneNumber:
               type: string
               description: Preferably E.164 format
-              example: "+36301234567"
+              example: '+36301234567'
             source:
               type: string
               description: Source of the subscription
-              example: "welcome popup"
+              example: welcome popup
             sourceId:
               type: string
               description: Recart identifier of the source
-              example: "655637c97825e6ae655fe1b5"
+              example: 655637c97825e6ae655fe1b5
             subscribedAt:
               type: string
               description: UTC Date and time in ISO 8601 format
-              example: "2021-08-10T14:00:00.000+02:00"
+              example: '2021-08-10T14:00:00.000+02:00'
             optinType:
               type: string
               description: Subscription optin level
-              example: "promotional"
+              example: promotional
     CreateOrder:
       type: object
       required:
@@ -1013,7 +1110,7 @@ components:
       properties:
         type:
           type: string
-          example: "orders"
+          example: orders
         attributes:
           type: object
           required:
@@ -1027,25 +1124,25 @@ components:
             phoneNumber:
               type: string
               description: Preferably E.164 format
-              example: "+36301234567"
+              example: '+36301234567'
             sessionId:
               type: string
               description: Recart identifier of the purchase session. Use `_recart.getSessionId()` on the merchant's store when Recart script is running.
-              example: "655637bfaf3c6463c0f06d3e"
+              example: 655637bfaf3c6463c0f06d3e
             orderStatusUrl:
               type: string
               description: URL of the order status page
-              example: "https://example.com/order"
+              example: 'https://example.com/order'
             orderNumber:
               type: string
               format: int64
               description: Order number
-              example: "9007199254740991"
+              example: '9007199254740991'
             orderId:
               type: string
               format: int64
               description: Order ID
-              example: "9007199254740991"
+              example: '9007199254740991'
             totalPrice:
               type: object
               required:
@@ -1056,15 +1153,15 @@ components:
                   type: number
                   format: double
                   description: Value of order
-                  example: 4.20
+                  example: 4.2
                 currency:
                   type: string
                   description: Currency of the order
-                  example: "USD"
+                  example: USD
             createdAt:
               type: string
               description: UTC Date and time in ISO 8601 format
-              example: "2021-08-10T14:00:00.000+02:00"
+              example: '2021-08-10T14:00:00.000+02:00'
             lineItems:
               type: array
               items:
@@ -1079,16 +1176,16 @@ components:
                     type: string
                     format: int64
                     description: ID of the product
-                    example: "9007199254740991"
+                    example: '9007199254740991'
                   variantId:
                     type: string
                     format: int64
                     description: ID of the product variant
-                    example: "9007199254740991"
+                    example: '9007199254740991'
                   name:
                     type: string
                     description: Name of the product
-                    example: "Product name"
+                    example: Product name
                   quantity:
                     type: integer
                     format: int32
@@ -1104,11 +1201,11 @@ components:
                         type: number
                         format: double
                         description: Value of orderItem
-                        example: 4.20
+                        example: 4.2
                       currency:
                         type: string
                         description: Currency of the orderItem
-                        example: "USD"
+                        example: USD
             discountCodes:
               type: array
               items:
@@ -1120,12 +1217,12 @@ components:
                   code:
                     type: string
                     description: Discount code
-                    example: "DISCOUNT"
+                    example: DISCOUNT
                   amount:
                     type: number
                     format: double
                     description: Value of discount
-                    example: 4.20
+                    example: 4.2
     UpdateOrder:
       type: object
       required:
@@ -1134,7 +1231,7 @@ components:
       properties:
         type:
           type: string
-          example: "orders"
+          example: orders
         attributes:
           type: object
           required:
@@ -1146,11 +1243,11 @@ components:
             phoneNumber:
               type: string
               description: Preferably E.164 format
-              example: "+36301234567"
+              example: '+36301234567'
             orderStatusUrl:
               type: string
               description: URL of the order status page
-              example: "https://example.com/order"
+              example: 'https://example.com/order'
             totalPrice:
               type: object
               required:
@@ -1161,15 +1258,15 @@ components:
                   type: number
                   format: double
                   description: Value of order
-                  example: 4.20
+                  example: 4.2
                 currency:
                   type: string
                   description: Currency of the order
-                  example: "USD"
+                  example: USD
             updatedAt:
               type: string
               description: UTC Date and time in ISO 8601 format
-              example: "2021-08-10T14:00:00.000+02:00"
+              example: '2021-08-10T14:00:00.000+02:00'
             lineItems:
               type: array
               items:
@@ -1184,16 +1281,16 @@ components:
                     type: string
                     format: int64
                     description: ID of the product
-                    example: "9007199254740991"
+                    example: '9007199254740991'
                   variantId:
                     type: string
                     format: int64
                     description: ID of the product variant
-                    example: "9007199254740991"
+                    example: '9007199254740991'
                   name:
                     type: string
                     description: Name of the product
-                    example: "Product name"
+                    example: Product name
                   quantity:
                     type: integer
                     format: int32
@@ -1209,11 +1306,11 @@ components:
                         type: number
                         format: double
                         description: Value of orderItem
-                        example: 4.20
+                        example: 4.2
                       currency:
                         type: string
                         description: Currency of the orderItem
-                        example: "USD"
+                        example: USD
             discountCodes:
               type: array
               items:
@@ -1225,12 +1322,12 @@ components:
                   code:
                     type: string
                     description: Discount code
-                    example: "DISCOUNT"
+                    example: DISCOUNT
                   amount:
                     type: number
                     format: double
                     description: Value of discount
-                    example: 4.20
+                    example: 4.2
     PostEvent:
       type: object
       required:
@@ -1239,7 +1336,8 @@ components:
       properties:
         type:
           type: string
-          enum: [events]
+          enum:
+            - events
         attributes:
           type: object
           required:
@@ -1249,7 +1347,7 @@ components:
             phoneNumber:
               type: string
               description: Preferably E.164 format
-              example: "+36301234567"
+              example: '+36301234567'
             source:
               type: object
               required:
@@ -1259,18 +1357,17 @@ components:
                 category:
                   type: string
                   description: Source category
-                  example: "payment"
+                  example: payment
                 name:
                   type: string
                   description: Source name
-                  example: "billing attempt failed"
+                  example: billing attempt failed
             properties:
               type: object
               description: Data of the event. It can be string/number. Nested objects are not supported. Maximum 10 properties are allowed.
-              example: {
-                "updatePaymentMethodURL": "https://example.com/update-payment-method",
-                "billingAttemptCount": 3
-              }
+              example:
+                updatePaymentMethodURL: 'https://example.com/update-payment-method'
+                billingAttemptCount: 3
     PostEventSource:
       type: object
       required:
@@ -1279,7 +1376,8 @@ components:
       properties:
         type:
           type: string
-          enum: [events]
+          enum:
+            - events
         attributes:
           type: object
           required:
@@ -1290,14 +1388,15 @@ components:
             category:
               type: string
               description: Source category
-              example: "payment"
+              example: payment
             name:
               type: string
               description: Source name
-              example: "billing attempt failed"
+              example: billing attempt failed
             type:
               type: string
-              enum: [custom, optin]
+              enum:
+                - custom
+                - optin
               description: Type of source
-              example: "optin"
-
+              example: optin
