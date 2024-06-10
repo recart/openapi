@@ -21,8 +21,9 @@ servers:
     description: Production
 info:
   title: Recart API
-  description: Open API description of the Recart API
+  description: ''
   version: 2023-12
+  summary: POST phoneNumbers to a list
 paths:
   /flows:
     get:
@@ -223,7 +224,7 @@ paths:
           $ref: '#/components/responses/HttpError'
         5XX:
           $ref: '#/components/responses/HttpError'
-  '/fulfillments':
+  /fulfillments:
     post:
       summary: Fulfill an order
       tags:
@@ -570,6 +571,91 @@ paths:
           $ref: '#/components/responses/HttpError'
         5XX:
           $ref: '#/components/responses/HttpError'
+  '/list/{id}/phone-numbers':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+        description: Id of the list in Recart
+    post:
+      summary: Add phoneNumbers to a list in Recart
+      tags: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    x-stoplight:
+                      id: rxjoj7ywftaw2
+                    enum:
+                      - lists
+                  attributes:
+                    type: object
+                    x-stoplight:
+                      id: up4kt2b1jr9hn
+                    properties:
+                      results:
+                        type: array
+                        x-stoplight:
+                          id: vxo0xjr2yp1e7
+                        items:
+                          x-stoplight:
+                            id: ep3ky9rjop3u3
+                          type: object
+                          properties:
+                            phoneNumber:
+                              type: string
+                              x-stoplight:
+                                id: 00ftd3g9vey73
+                            status:
+                              x-stoplight:
+                                id: t9zloa2bko983
+                              enum:
+                                - added
+                                - removed
+                                - not_found
+                      operation:
+                        x-stoplight:
+                          id: 2j8w0gbna4aml
+                        enum:
+                          - add
+                          - remove
+        4XX:
+          description: Client Error
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        5XX:
+          description: Server Error
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: postList
+      x-stoplight:
+        id: 3he649s8c9zv8
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/vnd.api+json:
+            schema:
+              $ref: '#/components/schemas/PhoneNumbersToListRequest'
+            examples:
+              Example 1:
+                value:
+                  type: lists
+                  attributes:
+                    phoneNumbers:
+                      - '+13011111111'
+                      - '+13021111111'
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -1400,3 +1486,66 @@ components:
                 - optin
               description: Type of source
               example: optin
+    PhoneNumbersToListRequest:
+      title: PhoneNumberToListRequest
+      x-stoplight:
+        id: gwpfudrp4wj2w
+      type: object
+      description: Handling phoneNumbers add/remove to a specified list
+      properties:
+        type:
+          x-stoplight:
+            id: 45fxi8mplq0hh
+          enum:
+            - lists
+        attributes:
+          type: object
+          x-stoplight:
+            id: 8d5e11twifw82
+          properties:
+            phoneNumbers:
+              type: array
+              x-stoplight:
+                id: rhchz1jlknqzy
+              items:
+                x-stoplight:
+                  id: f4csstxye23x3
+                type: string
+            operation:
+              x-stoplight:
+                id: 2289xarobpfu5
+              enum:
+                - add
+                - remove
+    Error:
+      title: Error
+      x-stoplight:
+        id: zn35yalqz7dvn
+      type: object
+      properties:
+        errors:
+          type: array
+          x-stoplight:
+            id: joibevk4kusbb
+          items:
+            x-stoplight:
+              id: drl1ayysw56s3
+            type: object
+            properties:
+              id:
+                type: string
+                x-stoplight:
+                  id: gx41o3xcqvix9
+              code:
+                type: string
+                x-stoplight:
+                  id: tl4fa3844dp41
+              title:
+                type: string
+                x-stoplight:
+                  id: nvqge779456gn
+              detail:
+                type: string
+                x-stoplight:
+                  id: rzcqreyzjcvdg
+      description: General error response
