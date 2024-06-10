@@ -8,6 +8,8 @@ tags:
     description: Events
   - name: Flow
     description: Flows
+  - name: List
+    description: List
   - name: Message
     description: Messages
   - name: Order
@@ -583,11 +585,12 @@ paths:
         required: true
         description: Id of the list in Recart
     post:
-      summary: Add phoneNumbers to a list in Recart
-      tags: []
+      description: Handle phonenumber addition to Recart lists
+      summary: Handle phoneNumber operations in Recart lists
+      tags: ['List']
       responses:
         '200':
-          description: ''
+          description: 'ok'
           content:
             application/vnd.api+json:
               schema:
