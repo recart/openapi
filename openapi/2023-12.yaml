@@ -21,11 +21,11 @@ servers:
     description: Production
 info:
   title: Recart API
-  description: 'Open API description of the Recart API'
+  description: Open API description of the Recart API
   version: 2023-12
   contact:
-    email: 'developer@recart.com'
-    name: 'Recart'
+    email: developer@recart.com
+    name: Recart
     url: recart.com
 paths:
   /flows:
@@ -574,7 +574,7 @@ paths:
           $ref: '#/components/responses/HttpError'
         5XX:
           $ref: '#/components/responses/HttpError'
-  '/list/{id}/phone-numbers':
+  '/lists/{id}/phone-numbers':
     parameters:
       - schema:
           type: string
@@ -591,56 +591,11 @@ paths:
           content:
             application/vnd.api+json:
               schema:
-                type: object
-                properties:
-                  type:
-                    x-stoplight:
-                      id: rxjoj7ywftaw2
-                    enum:
-                      - lists
-                  attributes:
-                    type: object
-                    x-stoplight:
-                      id: up4kt2b1jr9hn
-                    properties:
-                      results:
-                        type: array
-                        x-stoplight:
-                          id: vxo0xjr2yp1e7
-                        items:
-                          x-stoplight:
-                            id: ep3ky9rjop3u3
-                          type: object
-                          properties:
-                            phoneNumber:
-                              type: string
-                              x-stoplight:
-                                id: 00ftd3g9vey73
-                            status:
-                              x-stoplight:
-                                id: t9zloa2bko983
-                              enum:
-                                - added
-                                - removed
-                                - not_found
-                      operation:
-                        x-stoplight:
-                          id: 2j8w0gbna4aml
-                        enum:
-                          - add
-                          - remove
+                $ref: '#/components/schemas/PhoneNumbersToListResponse'
         4XX:
-          description: Client Error
-          content:
-            application/vnd.api+json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/HttpError'
         5XX:
-          description: Server Error
-          content:
-            application/vnd.api+json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/HttpError'
       operationId: postList
       x-stoplight:
         id: 3he649s8c9zv8
@@ -651,14 +606,25 @@ paths:
           application/vnd.api+json:
             schema:
               $ref: '#/components/schemas/PhoneNumbersToListRequest'
+              x-examples:
+                Example 1:
+                  data:
+                    - type: lists
+                      attributes:
+                        operation: add
+                        phoneNumbers:
+                          - '+13011111111'
+                          - '+13021111111'
             examples:
               Example 1:
                 value:
-                  type: lists
-                  attributes:
-                    phoneNumbers:
-                      - '+13011111111'
-                      - '+13021111111'
+                  data:
+                    - type: lists
+                      attributes:
+                        operation: add
+                        phoneNumbers:
+                          - '+13011111111'
+                          - '+13021111111'
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -1498,59 +1464,67 @@ components:
       type: object
       description: Handling phoneNumbers add/remove to a specified list
       properties:
+        data:
+          type: array
+          x-stoplight:
+            id: 5m8e1f3mvnnlc
+          items:
+            x-stoplight:
+              id: bviei5et1bcu1
+            type: object
+            properties:
+              type:
+                x-stoplight:
+                  id: lg81p71k93c5u
+                enum:
+                  - lists
+              phoneNumbers:
+                type: array
+                x-stoplight:
+                  id: roitmbxhzwemw
+                items:
+                  x-stoplight:
+                    id: f9l29r08yj7ec
+                  type: string
+              operation:
+                x-stoplight:
+                  id: 30e2dxqpq5ahy
+                enum:
+                  - add
+                  - remove
+    PhoneNumbersToListResponse:
+      title: PhoneNumbersToListResponse
+      x-stoplight:
+        id: ukj49owf2psnn
+      type: object
+      properties:
         type:
           x-stoplight:
-            id: 45fxi8mplq0hh
+            id: v7wd7r9f0i4rm
           enum:
             - lists
         attributes:
           type: object
           x-stoplight:
-            id: 8d5e11twifw82
+            id: gneh5c2ry0eee
           properties:
-            phoneNumbers:
+            results:
               type: array
               x-stoplight:
-                id: rhchz1jlknqzy
+                id: ugdkr1unh64jm
               items:
                 x-stoplight:
-                  id: f4csstxye23x3
-                type: string
-            operation:
-              x-stoplight:
-                id: 2289xarobpfu5
-              enum:
-                - add
-                - remove
-    Error:
-      title: Error
-      x-stoplight:
-        id: zn35yalqz7dvn
-      type: object
-      properties:
-        errors:
-          type: array
-          x-stoplight:
-            id: joibevk4kusbb
-          items:
-            x-stoplight:
-              id: drl1ayysw56s3
-            type: object
-            properties:
-              id:
-                type: string
-                x-stoplight:
-                  id: gx41o3xcqvix9
-              code:
-                type: string
-                x-stoplight:
-                  id: tl4fa3844dp41
-              title:
-                type: string
-                x-stoplight:
-                  id: nvqge779456gn
-              detail:
-                type: string
-                x-stoplight:
-                  id: rzcqreyzjcvdg
-      description: General error response
+                  id: xz42tnapd56nk
+                type: object
+                properties:
+                  phoneNumber:
+                    type: string
+                    x-stoplight:
+                      id: ctdhrf4d2uy0v
+                  status:
+                    x-stoplight:
+                      id: k4sm30ubxw1ak
+                    enum:
+                      - added
+                      - removed
+                      - not_found
