@@ -26,7 +26,7 @@ info:
   description: Open API description of the Recart API
   version: 2023-12
   contact:
-    email: developer@recart.com
+    email: office@recart.com
     name: Recart
     url: recart.com
 paths:
@@ -585,12 +585,13 @@ paths:
         required: true
         description: Id of the list in Recart
     post:
-      description: Handle phonenumber addition to Recart lists
+      description: Handle phonenumber operations in Recart lists
       summary: Handle phoneNumber operations in Recart lists
-      tags: ['List']
+      tags:
+        - List
       responses:
         '200':
-          description: 'ok'
+          description: ''
           content:
             application/vnd.api+json:
               schema:
