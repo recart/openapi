@@ -596,6 +596,18 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/PhoneNumbersToListResponse'
+              examples:
+                Example 1:
+                  value:
+                    type: lists
+                    attributes:
+                      results:
+                        - phoneNumber: '+1311111111'
+                          status: added
+                        - phoneNumber: '+1311111111'
+                          status: removed
+                        - phoneNumber: '+1311111111'
+                          status: not_found
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
