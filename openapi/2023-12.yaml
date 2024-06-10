@@ -21,9 +21,12 @@ servers:
     description: Production
 info:
   title: Recart API
-  description: ''
+  description: 'Open API description of the Recart API'
   version: 2023-12
-  summary: POST phoneNumbers to a list
+  contact:
+    email: 'developer@recart.com'
+    name: 'Recart'
+    url: recart.com
 paths:
   /flows:
     get:
@@ -725,6 +728,8 @@ components:
               example: Welcome flow
             tags:
               type: array
+              items:
+                type: string
               description: Flow tags
               example:
                 - automated
