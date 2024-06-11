@@ -26,7 +26,6 @@ info:
   description: Open API description of the Recart API
   version: 2023-12
   contact:
-    email: office@recart.com
     name: Recart
     url: recart.com
 paths:
@@ -585,7 +584,7 @@ paths:
         required: true
         description: Id of the list in Recart
     post:
-      description: Handle phonenumber operations in Recart lists
+      description: Add or remove phone numbers to a list
       summary: Handle phoneNumber operations in Recart lists
       tags:
         - List
@@ -595,24 +594,33 @@ paths:
           content:
             application/vnd.api+json:
               schema:
-                $ref: '#/components/schemas/PhoneNumbersToListResponse'
+                type: object
+                properties:
+                  data:
+                    x-stoplight:
+                      id: 0tyc1rgrzppmq
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ModifyListMembersResponse'
+                      x-stoplight:
+                        id: nwxg0jdtldr3t
               examples:
                 Example 1:
                   value:
-                    type: lists
-                    attributes:
-                      results:
-                        - phoneNumber: '+1311111111'
+                    data:
+                      - type: lists
+                        attributes:
+                          phoneNumber: '+1311111111'
                           status: added
-                        - phoneNumber: '+1311111111'
+                      - type: lists
+                        attributes:
+                          phoneNumber: '+1311111111'
                           status: removed
-                        - phoneNumber: '+1311111111'
-                          status: not_found
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
           $ref: '#/components/responses/HttpError'
-      operationId: postList
+      operationId: modifyListMembers
       x-stoplight:
         id: 3he649s8c9zv8
       security:
@@ -621,7 +629,6 @@ paths:
         content:
           application/vnd.api+json:
             schema:
-              $ref: '#/components/schemas/PhoneNumbersToListRequest'
               x-examples:
                 Example 1:
                   data:
@@ -631,6 +638,16 @@ paths:
                         phoneNumbers:
                           - '+13011111111'
                           - '+13021111111'
+              type: object
+              properties:
+                data:
+                  type: array
+                  x-stoplight:
+                    id: 5fxylbmf9xemx
+                  items:
+                    $ref: '#/components/schemas/ModifyListMembersRequest'
+                    x-stoplight:
+                      id: scvfxj09p21t3
             examples:
               Example 1:
                 value:
@@ -1473,43 +1490,34 @@ components:
                 - optin
               description: Type of source
               example: optin
-    PhoneNumbersToListRequest:
-      title: PhoneNumberToListRequest
+    ModifyListMembersRequest:
+      title: ModifyListMembersRequest
       x-stoplight:
         id: gwpfudrp4wj2w
       type: object
-      description: Handling phoneNumbers add/remove to a specified list
+      description: Add or remove phone numbers to a list
       properties:
-        data:
+        type:
+          x-stoplight:
+            id: 49iq03nx3xb2a
+          enum:
+            - lists
+        phoneNumbers:
           type: array
           x-stoplight:
-            id: 5m8e1f3mvnnlc
+            id: uwj2nejaflqn8
           items:
             x-stoplight:
-              id: bviei5et1bcu1
-            type: object
-            properties:
-              type:
-                x-stoplight:
-                  id: lg81p71k93c5u
-                enum:
-                  - lists
-              phoneNumbers:
-                type: array
-                x-stoplight:
-                  id: roitmbxhzwemw
-                items:
-                  x-stoplight:
-                    id: f9l29r08yj7ec
-                  type: string
-              operation:
-                x-stoplight:
-                  id: 30e2dxqpq5ahy
-                enum:
-                  - add
-                  - remove
-    PhoneNumbersToListResponse:
-      title: PhoneNumbersToListResponse
+              id: 34edrtlsvagp0
+            type: string
+        operation:
+          x-stoplight:
+            id: l4xoy2ixb0e97
+          enum:
+            - add
+            - remove
+    ModifyListMembersResponse:
+      title: ModifyListMembers Response
       x-stoplight:
         id: ukj49owf2psnn
       type: object
@@ -1524,23 +1532,14 @@ components:
           x-stoplight:
             id: gneh5c2ry0eee
           properties:
-            results:
-              type: array
+            phoneNumber:
+              type: string
               x-stoplight:
-                id: ugdkr1unh64jm
-              items:
-                x-stoplight:
-                  id: xz42tnapd56nk
-                type: object
-                properties:
-                  phoneNumber:
-                    type: string
-                    x-stoplight:
-                      id: ctdhrf4d2uy0v
-                  status:
-                    x-stoplight:
-                      id: k4sm30ubxw1ak
-                    enum:
-                      - added
-                      - removed
-                      - not_found
+                id: u3exvoyb35tja
+            status:
+              x-stoplight:
+                id: 7fwn9gv9xue09
+              enum:
+                - added
+                - removed
+                - not_found
