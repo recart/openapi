@@ -629,15 +629,6 @@ paths:
         content:
           application/vnd.api+json:
             schema:
-              x-examples:
-                Example 1:
-                  data:
-                    - type: lists
-                      attributes:
-                        operation: add
-                        phoneNumbers:
-                          - '+13011111111'
-                          - '+13021111111'
               type: object
               properties:
                 data:
