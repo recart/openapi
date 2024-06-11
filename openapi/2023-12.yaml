@@ -645,13 +645,15 @@ paths:
                 value:
                   data:
                     - type: lists
-                      phoneNumbers:
-                        - '+1321131232131'
-                      operation: add
+                      attributes:
+                        phoneNumbers:
+                          - '+1321131232131'
+                        operation: add
                     - type: lists
-                      phoneNumbers:
-                        - '+1321131232131'
-                      operation: remove
+                      attributes:
+                        phoneNumbers:
+                          - '+1321131232131'
+                        operation: add
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -1492,28 +1494,47 @@ components:
       description: Add or remove phone numbers to a list
       required:
         - type
-        - phoneNumbers
-        - operation
+        - attributes
       properties:
         type:
           x-stoplight:
             id: 49iq03nx3xb2a
           enum:
             - lists
-        phoneNumbers:
-          type: array
-          x-stoplight:
+        attributes:
+          phoneNumbers:
+            type: array
+            x-stoplight: null
             id: uwj2nejaflqn8
-          items:
+            items:
+              x-stoplight:
+                id: 34edrtlsvagp0
+              type: string
+          operation:
             x-stoplight:
-              id: 34edrtlsvagp0
-            type: string
-        operation:
-          x-stoplight:
-            id: l4xoy2ixb0e97
-          enum:
-            - add
-            - remove
+              id: l4xoy2ixb0e97
+            enum:
+              - add
+              - remove
+          required:
+            - phoneNumbers
+            - operation
+          type: object
+          properties:
+            phoneNumbers:
+              type: array
+              x-stoplight:
+                id: rtxc0yo38ssfg
+              items:
+                x-stoplight:
+                  id: b4flpo70d0s7f
+                type: string
+            operation:
+              x-stoplight:
+                id: g74q72pogkdud
+              enum:
+                - add
+                - remove
     ModifyListMembersResponse:
       title: ModifyListMembers Response
       x-stoplight:
