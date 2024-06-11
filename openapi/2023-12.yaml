@@ -626,6 +626,7 @@ paths:
       security:
         - ApiKeyAuth: []
       requestBody:
+        required: true
         content:
           application/vnd.api+json:
             schema:
@@ -644,11 +645,13 @@ paths:
                 value:
                   data:
                     - type: lists
-                      attributes:
-                        operation: add
-                        phoneNumbers:
-                          - '+13011111111'
-                          - '+13021111111'
+                      phoneNumbers:
+                        - '+1321131232131'
+                      operation: add
+                    - type: lists
+                      phoneNumbers:
+                        - '+1321131232131'
+                      operation: remove
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -1487,6 +1490,10 @@ components:
         id: gwpfudrp4wj2w
       type: object
       description: Add or remove phone numbers to a list
+      required:
+        - type
+        - phoneNumbers
+        - operation
       properties:
         type:
           x-stoplight:
@@ -1512,6 +1519,9 @@ components:
       x-stoplight:
         id: ukj49owf2psnn
       type: object
+      required:
+        - type
+        - attributes
       properties:
         type:
           x-stoplight:
@@ -1522,6 +1532,9 @@ components:
           type: object
           x-stoplight:
             id: gneh5c2ry0eee
+          required:
+            - phoneNumber
+            - status
           properties:
             phoneNumber:
               type: string
