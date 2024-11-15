@@ -1007,6 +1007,9 @@ components:
             - webhooks
         attributes:
           type: object
+          required:
+            - topic
+            - address
           properties:
             topic:
               type: string
@@ -1321,6 +1324,7 @@ components:
         attributes:
           type: object
           required:
+            - phoneNumber
             - orderStatusUrl
             - totalPrice
             - lineItems
