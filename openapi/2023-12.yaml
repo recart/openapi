@@ -1203,14 +1203,12 @@ components:
         attributes:
           type: object
           required:
-            - sessionId
             - orderStatusUrl
             - orderNumber
             - orderId
             - totalPrice
             - lineItems
             - createdAt
-            - discountCodes
           properties:
             phoneNumber:
               type: string
@@ -1330,7 +1328,6 @@ components:
             - orderStatusUrl
             - totalPrice
             - lineItems
-            - discountCodes
             - updatedAt
           properties:
             phoneNumber:
