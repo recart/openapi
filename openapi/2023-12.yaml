@@ -576,16 +576,16 @@ paths:
         5XX:
           $ref: '#/components/responses/HttpError'
   '/lists/{id}/phone-numbers':
-    parameters:
+    post:
+      description: Add or remove phone numbers to a list
+      summary: Handle phoneNumber operations in Recart lists
+      parameters:
       - schema:
           type: string
         name: id
         in: path
         required: true
         description: Id of the list in Recart
-    post:
-      description: Add or remove phone numbers to a list
-      summary: Handle phoneNumber operations in Recart lists
       tags:
         - List
       responses:
