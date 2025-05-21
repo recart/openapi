@@ -4,6 +4,9 @@ stoplight-id: xz7vhcvtwprrz
 
 # Listening to Recart Opt-in Tool Events
 
+## Attention 
+> Before you start to listen to these events, please let us know that we need to enable access for you.
+
 If you're integrating Recart with other tools or analytics platforms, you may want to listen to events emitted by Recart's Opt-in Tool. These events help you track user interactions and capture contact information in real-time.
 
 Recart emits **three types of custom events** via the browser’s `window` object. You can listen to these using JavaScript’s `window.addEventListener()` method.
