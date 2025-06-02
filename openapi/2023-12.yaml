@@ -848,7 +848,7 @@ components:
           properties:
             type:
               type: string
-              description: 'Type of the abandonment, "cart" and "browse" is supported'
+              description: 'Type of the abandonment, "cart" and "browse" are supported'
               example: cart
             sessionId:
               type: string
