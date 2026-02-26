@@ -1,6 +1,6 @@
 ---
-stoplight-id: 8deqh01rvb6px
-tags: [installation, integration]
+stoplight-id: kbown8gffwjjz
+tags: [installation]
 ---
 
 # Installing Recart on a Non-Shopify Store

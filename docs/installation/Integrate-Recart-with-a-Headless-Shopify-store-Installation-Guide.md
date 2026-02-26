@@ -1,6 +1,6 @@
 ---
-stoplight-id: nwp2zx2tzc2ze
-tags: [installation, integration]
+stoplight-id: p4iim5lsy4g0u
+tags: [installation]
 ---
 
 # Installing Recart on a Headless Shopify Store
