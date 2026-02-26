@@ -88,6 +88,8 @@ We recommend loading both scripts with the `async` attribute as shown above. If 
 
 # Part 2: Server-Side API Integration
 
+> API endpoints below require a `sessionId` parameter. </br></br>You can read the `sessionId` value from the browser by calling `window._recart.getSessionId()` function.
+
 ## API Basics
 
 **Base URL:** `https://api.recart.com/app-integrations/2023-12`
