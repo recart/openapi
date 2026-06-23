@@ -14,6 +14,8 @@ tags:
     description: Messages
   - name: Order
     description: Orders
+  - name: Subscriber
+    description: Subscribers
   - name: Subscription
     description: Subscriptions
   - name: Webhook
@@ -249,6 +251,39 @@ paths:
                   $ref: '#/components/schemas/FulfillOrder'
       responses:
         '202':
+          description: No content
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  /subscribers:
+    patch:
+      summary: Update subscriber's custom attributes
+      tags:
+        - Subscriber
+      operationId: patchSubscriber
+      security:
+        - ApiKeyAuth: []
+      description: |
+        Update the custom attributes of an SMS subscriber identified by phone number. Only the custom attributes included in the request are modified; attributes that are not provided remain unchanged.
+      parameters:
+        - name: phoneNumber
+          in: query
+          required: true
+          description: Phone number of the subscriber
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/PatchSubscriber'
+      responses:
+        '204':
           description: No content
         4XX:
           $ref: '#/components/responses/HttpError'
@@ -730,6 +765,7 @@ components:
                   example: USD
             recoveryUrl:
               type: string
+              format: uri
               description: URL of the cart recovery page
               example: 'https://example.com/cart'
             lineItems:
@@ -958,6 +994,60 @@ components:
                   format: ipv4
                   description: IP address of the subscriber
                   example: 192.158.1.38
+    PatchSubscriber:
+      type: object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - subscribers
+        attributes:
+          type: object
+          description: Attributes of the subscriber to update
+          required:
+            - customAttributes
+          properties:
+            customAttributes:
+              type: object
+              description: >
+                Merchant-defined custom attributes as key/value pairs. PATCH/merge semantics:
+                keys included in the request are set or overwritten; a key with a `null` value
+                is deleted; keys not included are left unchanged.
+
+
+                Limits: maximum 30 attributes per subscriber; the entire `customAttributes`
+                object must not exceed 16 KB. Keys must match `^[A-Za-z][A-Za-z0-9_]{0,63}$`
+                (start with a letter, alphanumeric or underscore, max 64 characters, no spaces).
+                Keys prefixed with `recart_` are reserved and rejected. Values must be a string
+                (max 1024 characters), number, boolean, an array of up to 100 strings (each max
+                255 characters), or `null` to delete the attribute. Nested objects are not allowed.
+              maxProperties: 30
+              propertyNames:
+                pattern: '^[A-Za-z][A-Za-z0-9_]{0,63}$'
+                maxLength: 64
+              additionalProperties:
+                oneOf:
+                  - type: string
+                    maxLength: 1024
+                  - type: number
+                  - type: boolean
+                  - type: array
+                    maxItems: 100
+                    items:
+                      type: string
+                      maxLength: 255
+                  - type: 'null'
+              example:
+                loyalty_tier: gold
+                lifetime_orders: 7
+                vip: true
+                last_review_at: '2026-06-01T10:00:00Z'
+                favorite_categories:
+                  - shoes
+                  - bags
     Webhook:
       type: object
       required:
@@ -980,6 +1070,7 @@ components:
               example: messages/incoming
             address:
               type: string
+              format: uri
               description: Destination URL for webhook delivery
               example: 'https://call.me'
     PostMessages:
@@ -1020,6 +1111,7 @@ components:
                     example: 'Hi, welcome to our store.'
                   attachment:
                     type: string
+                    format: uri
                     description: 'URL of the attachment, extension must be .jpg, .jpeg, .png, or .gif'
                     example: 'https://img.url.jpg'
     IncomingMessage:
@@ -1183,6 +1275,7 @@ components:
               example: 655637bfaf3c6463c0f06d3e
             orderStatusUrl:
               type: string
+              format: uri
               description: URL of the order status page
               example: 'https://example.com/order'
             orderNumber:
@@ -1299,6 +1392,7 @@ components:
               example: '+36301234567'
             orderStatusUrl:
               type: string
+              format: uri
               description: URL of the order status page
               example: 'https://example.com/order'
             totalPrice:
