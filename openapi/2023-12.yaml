@@ -1019,15 +1019,15 @@ components:
 
 
                 Limits: maximum 30 attributes per subscriber; the entire `customAttributes`
-                object must not exceed 16 KB. Keys must match `^[A-Za-z][A-Za-z0-9_]{0,63}$`
-                (start with a letter, alphanumeric or underscore, max 64 characters, no spaces).
-                Keys prefixed with `recart_` are reserved and rejected. Values must be a string
+                object must not exceed 16 KB (enforced by the API server). Keys must match
+                `^(?!recart_)[A-Za-z][A-Za-z0-9_]{0,63}$` (start with a letter, alphanumeric or
+                underscore, max 64 characters, no spaces; the `recart_` prefix is reserved).
+                Values must be a string
                 (max 1024 characters), number, boolean, an array of up to 100 strings (each max
                 255 characters), or `null` to delete the attribute. Nested objects are not allowed.
               maxProperties: 30
               propertyNames:
-                pattern: '^[A-Za-z][A-Za-z0-9_]{0,63}$'
-                maxLength: 64
+                pattern: '^(?!recart_)[A-Za-z][A-Za-z0-9_]{0,63}$'
               additionalProperties:
                 oneOf:
                   - type: string
