@@ -33,6 +33,11 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.2] - 2026-07-07
+
+#### Deprecated
+- The `shopperId` field is deprecated. The `window._recart.getShopperId()` method that populated it has been removed with no replacement; the field remains for backward compatibility but should not be relied upon.
+
 ### [2023-12.1] - 2026-06-24
 
 #### Added
