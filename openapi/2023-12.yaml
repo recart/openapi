@@ -956,7 +956,8 @@ components:
               example: 655637bfaf3c6463c0f06d3e
             shopperId:
               type: string
-              description: Recart identifier of the visitor. Use `_recart.getShopperId()` on the merchant's store when Recart script is running.
+              deprecated: true
+              description: 'Deprecated: the `_recart.getShopperId()` method used to source this value has been removed and there is no replacement. This field is retained for backward compatibility but should no longer be relied upon.'
               example: 655637c97825e6ae655fe1b5
             firstName:
               type: string
