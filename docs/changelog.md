@@ -33,6 +33,12 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.3] - 2026-08-04
+
+#### Added
+- `GET /optin-tools` and `GET /optin-tools/{id}` endpoints for listing the site's opt-in tools (popups, landing pages, embedded forms, keywords) and retrieving a single opt-in tool with its full settings.
+- Rate limit response headers (`x-ratelimit-limit`, `x-ratelimit-remaining`, `x-ratelimit-reset`) and the `429` response (with `retry-after`) documented on the rate-limited endpoints: `GET /flows`, `GET /flows/{id}`, `GET /optin-tools` and `GET /optin-tools/{id}`. See the new [Rate Limits and Error Handling](Rate-Limits.md) guide.
+
 ### [2023-12.2] - 2026-07-07
 
 #### Deprecated
