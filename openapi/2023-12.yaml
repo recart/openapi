@@ -43,18 +43,9 @@ paths:
         - ApiKeyAuth: []
       description: |
         List flows.
-
-        **Rate limit tier:** `S` — 60 requests / minute
       responses:
         '200':
           description: Ok
-          headers:
-            x-ratelimit-limit:
-              $ref: '#/components/headers/XRateLimitLimit'
-            x-ratelimit-remaining:
-              $ref: '#/components/headers/XRateLimitRemaining'
-            x-ratelimit-reset:
-              $ref: '#/components/headers/XRateLimitReset'
           content:
             application/vnd.api+json:
               schema:
@@ -64,8 +55,6 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Flow'
-        '429':
-          $ref: '#/components/responses/RateLimitError'
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -80,8 +69,6 @@ paths:
         - ApiKeyAuth: []
       description: |
         Get flow by ID
-
-        **Rate limit tier:** `M` — 150 requests / minute
       parameters:
         - name: id
           in: path
@@ -92,13 +79,6 @@ paths:
       responses:
         '200':
           description: Ok
-          headers:
-            x-ratelimit-limit:
-              $ref: '#/components/headers/XRateLimitLimit'
-            x-ratelimit-remaining:
-              $ref: '#/components/headers/XRateLimitRemaining'
-            x-ratelimit-reset:
-              $ref: '#/components/headers/XRateLimitReset'
           content:
             application/vnd.api+json:
               schema:
@@ -106,8 +86,6 @@ paths:
                 properties:
                   data:
                     $ref: '#/components/schemas/Flow'
-        '429':
-          $ref: '#/components/responses/RateLimitError'
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -122,18 +100,9 @@ paths:
         - ApiKeyAuth: []
       description: |
         List the site's opt-in tools (popups, landing pages, embedded forms, keywords).
-
-        **Rate limit tier:** `S` — 60 requests / minute
       responses:
         '200':
           description: Ok
-          headers:
-            x-ratelimit-limit:
-              $ref: '#/components/headers/XRateLimitLimit'
-            x-ratelimit-remaining:
-              $ref: '#/components/headers/XRateLimitRemaining'
-            x-ratelimit-reset:
-              $ref: '#/components/headers/XRateLimitReset'
           content:
             application/vnd.api+json:
               schema:
@@ -143,8 +112,6 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/OptinTool'
-        '429':
-          $ref: '#/components/responses/RateLimitError'
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -159,8 +126,6 @@ paths:
         - ApiKeyAuth: []
       description: |
         Get opt-in tool by ID
-
-        **Rate limit tier:** `M` — 150 requests / minute
       parameters:
         - name: id
           in: path
@@ -171,13 +136,6 @@ paths:
       responses:
         '200':
           description: Ok
-          headers:
-            x-ratelimit-limit:
-              $ref: '#/components/headers/XRateLimitLimit'
-            x-ratelimit-remaining:
-              $ref: '#/components/headers/XRateLimitRemaining'
-            x-ratelimit-reset:
-              $ref: '#/components/headers/XRateLimitReset'
           content:
             application/vnd.api+json:
               schema:
@@ -185,8 +143,6 @@ paths:
                 properties:
                   data:
                     $ref: '#/components/schemas/OptinTool'
-        '429':
-          $ref: '#/components/responses/RateLimitError'
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -763,71 +719,33 @@ components:
       content:
         application/vnd.api+json:
           schema:
-            $ref: '#/components/schemas/HttpError'
-    RateLimitError:
-      description: Rate limit exceeded
-      headers:
-        retry-after:
-          $ref: '#/components/headers/RetryAfter'
-        x-ratelimit-limit:
-          $ref: '#/components/headers/XRateLimitLimit'
-        x-ratelimit-remaining:
-          $ref: '#/components/headers/XRateLimitRemaining'
-        x-ratelimit-reset:
-          $ref: '#/components/headers/XRateLimitReset'
-      content:
-        application/vnd.api+json:
-          schema:
-            $ref: '#/components/schemas/HttpError'
-  headers:
-    XRateLimitLimit:
-      description: Maximum number of requests allowed in the current window
-      schema:
-        type: integer
-      example: 60
-    XRateLimitRemaining:
-      description: Number of requests remaining in the current window
-      schema:
-        type: integer
-      example: 42
-    XRateLimitReset:
-      description: Seconds until the current window resets
-      schema:
-        type: integer
-      example: 30
-    RetryAfter:
-      description: Seconds to wait before retrying the request
-      schema:
-        type: integer
-      example: 30
-  schemas:
-    HttpError:
-      type: object
-      required:
-        - errors
-      properties:
-        errors:
-          type: array
-          items:
             type: object
             required:
-              - id
-              - code
-              - title
-              - detail
+              - errors
             properties:
-              id:
-                type: string
-                example: 17035478-01a9-4aeb-a13c-88ab51e6fee3
-              code:
-                type: string
-                example: ERR_BAD_REQUEST
-              title:
-                type: string
-                example: Bad request
-              detail:
-                type: string
-                example: ''
+              errors:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - code
+                    - title
+                    - detail
+                  properties:
+                    id:
+                      type: string
+                      example: 17035478-01a9-4aeb-a13c-88ab51e6fee3
+                    code:
+                      type: string
+                      example: ERR_BAD_REQUEST
+                    title:
+                      type: string
+                      example: Bad request
+                    detail:
+                      type: string
+                      example: ''
+  schemas:
     Flow:
       type:
         - object
