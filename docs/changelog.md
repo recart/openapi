@@ -33,6 +33,11 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.3] - 2026-08-04
+
+#### Added
+- `GET /optin-tools` and `GET /optin-tools/{id}` endpoints for listing the site's opt-in tools (popups, landing pages, embedded forms, keywords) and retrieving a single opt-in tool with its full settings.
+
 ### [2023-12.2] - 2026-07-07
 
 #### Deprecated

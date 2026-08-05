@@ -12,6 +12,8 @@ tags:
     description: List
   - name: Message
     description: Messages
+  - name: OptinTool
+    description: Opt-in tools
   - name: Order
     description: Orders
   - name: Subscriber
@@ -84,6 +86,63 @@ paths:
                 properties:
                   data:
                     $ref: '#/components/schemas/Flow'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  /optin-tools:
+    get:
+      summary: Retrieve list of opt-in tools
+      tags:
+        - OptinTool
+      operationId: listOptinTools
+      security:
+        - ApiKeyAuth: []
+      description: |
+        List the site's opt-in tools (popups, landing pages, embedded forms, keywords).
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OptinTool'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/optin-tools/{id}':
+    get:
+      summary: Receive a single opt-in tool
+      tags:
+        - OptinTool
+      operationId: getOptinTool
+      security:
+        - ApiKeyAuth: []
+      description: |
+        Get opt-in tool by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the opt-in tool
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/OptinTool'
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -730,6 +789,126 @@ components:
                 - active
                 - inactive
                 - cancelled
+    OptinTool:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - optin-tools
+        attributes:
+          type: object
+          required:
+            - id
+            - name
+            - type
+            - status
+            - devices
+            - channels
+          properties:
+            id:
+              type: string
+              description: ID of the opt-in tool
+              example: 655637c97825e6ae655fe1b5
+            name:
+              type: string
+              description: Name of the opt-in tool
+              example: Mobile - Preferences - Custom Images
+            type:
+              type: string
+              description: Type of the opt-in tool
+              enum:
+                - popup
+                - landing-page
+                - embedded-form
+                - keyword
+            status:
+              type: string
+              description: Status of the opt-in tool
+              enum:
+                - active
+                - draft
+                - inactive
+            devices:
+              type: array
+              description: Devices the tool targets
+              items:
+                type: string
+                enum:
+                  - mobile
+                  - desktop
+            channels:
+              type: array
+              description: Channels the tool collects
+              items:
+                type: string
+                enum:
+                  - email
+                  - sms
+            statusSchedule:
+              type: object
+              description: Upcoming scheduled status transitions. UTC Date and time in ISO 8601 format
+              properties:
+                activateAt:
+                  type: string
+                  format: date-time
+                  example: '2026-08-03T14:00:00.000+02:00'
+                inactivateAt:
+                  type: string
+                  format: date-time
+                  example: '2026-08-10T14:00:00.000+02:00'
+            optinMethod:
+              type: object
+              description: What handles a new opt-in
+              required:
+                - type
+              properties:
+                type:
+                  type: string
+                  description: Type of the message handler
+                  enum:
+                    - flow
+                    - integration
+                flowId:
+                  type: string
+                  description: ID of the flow the tool feeds (type flow only)
+                  example: 655637c97825e6ae655fe1c2
+            experimentIds:
+              type: array
+              description: IDs of A/B experiments the tool participates in
+              items:
+                type: string
+              example:
+                - 655637c97825e6ae655fe1d9
+            steps:
+              type: array
+              description: Steps of the tool (popup only)
+              items:
+                type: string
+                enum:
+                  - teaser
+                  - email
+                  - sms
+                  - smsWithEmail
+                  - oneTimePassword
+                  - oneClickVerification
+                  - oneClickOptin
+                  - success
+            messagingType:
+              type: string
+              description: Messaging type of the tool (popup only)
+              enum:
+                - two-way
+                - one-way
+            settings:
+              type: object
+              description: |
+                Full tool settings (type-dependent). Returned only by getOptinTool;
+                the collection endpoint omits it.
     UpdateCart:
       type:
         - object
