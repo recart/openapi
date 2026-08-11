@@ -190,17 +190,21 @@ paths:
         - name: dateFrom
           in: query
           description: |
-            Start of the range (ISO 8601, UTC). Defaults to 7 days before `dateTo`.
+            First day of the range, inclusive (YYYY-MM-DD, UTC).
+            Defaults to 7 days before `dateTo`.
           schema:
             type: string
-            format: date-time
+            format: date
+            example: '2026-08-04'
         - name: dateTo
           in: query
           description: |
-            End of the range (ISO 8601, UTC). Defaults to now.
+            Last day of the range, inclusive — `dateTo=2026-08-10` includes
+            the whole of 2026-08-10 (UTC). Defaults to today.
           schema:
             type: string
-            format: date-time
+            format: date
+            example: '2026-08-10'
         - name: targetResolution
           in: query
           description: Bucket size of the time series — history views and `all` only. Buckets are UTC; weeks start on Monday.
