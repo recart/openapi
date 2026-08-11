@@ -159,6 +159,12 @@ paths:
         One statistics view of a popup-type opt-in tool. `name` picks the view; `all`
         returns every section in one response. When the date range is
         omitted it defaults to the last 7 days.
+
+        Statistics fields are never null: buckets without activity and empty
+        ranges return 0 counts and 0 rates — zero and "no data" are
+        deliberately not distinguished, matching the dashboard. The only
+        fields that can be absent are the channel-gated email/SMS ones,
+        which are omitted when the tool does not collect that channel.
       parameters:
         - name: id
           in: path
@@ -183,13 +189,15 @@ paths:
               - all
         - name: dateFrom
           in: query
-          description: Start of the range (ISO 8601, UTC). Defaults to 7 days before `dateTo`.
+          description: |
+            Start of the range (ISO 8601, UTC). Defaults to 7 days before `dateTo`.
           schema:
             type: string
             format: date-time
         - name: dateTo
           in: query
-          description: End of the range (ISO 8601, UTC). Defaults to now.
+          description: |
+            End of the range (ISO 8601, UTC). Defaults to now.
           schema:
             type: string
             format: date-time
@@ -1160,7 +1168,8 @@ components:
       description: |
         Revenue attributed to the opt-in tool: orders placed within 7 days
         of an interaction with the tool in the same session. Amounts are in
-        USD; rates are 0 when the denominator is 0.
+        USD. Fields are never null: a range without attributed orders
+        returns 0 amounts, and rates are 0 when the denominator is 0.
       required:
         - associatedRevenue
         - orders
@@ -1192,8 +1201,9 @@ components:
       type: object
       description: |
         Opt-in performance totals for the range. Counts are unique sessions.
-        Email/SMS fields appear only when the tool collects that channel;
-        rates are 0 when there are no impressions.
+        Email/SMS fields appear only when the tool collects that channel.
+        Fields are never null: a range without data returns 0 counts and
+        0 rates.
       required:
         - impression
         - teaserConfirm
@@ -1248,8 +1258,9 @@ components:
       properties:
         timestamp:
           type: string
-          format: date-time
+          format: date
           description: Start of the bucket, in UTC (weeks start on Monday)
+          example: '2026-07-27'
         impression:
           type: integer
           description: Unique sessions in which the popup was displayed within the bucket
@@ -1273,8 +1284,9 @@ components:
           properties:
             timestamp:
               type: string
-              format: date-time
+              format: date
               description: Start of the bucket, in UTC (weeks start on Monday)
+              example: '2026-07-27'
         - $ref: '#/components/schemas/RevenueMetrics'
     OptinToolRevenueByOptinSegmentsItem:
       allOf:
@@ -1323,8 +1335,9 @@ components:
       properties:
         timestamp:
           type: string
-          format: date-time
+          format: date
           description: Start of the bucket, in UTC (weeks start on Monday)
+          example: '2026-07-27'
         subscriptions:
           type: integer
           description: New SMS subscribers the opt-in tool collected within the bucket
