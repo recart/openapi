@@ -147,6 +147,264 @@ paths:
           $ref: '#/components/responses/HttpError'
         5XX:
           $ref: '#/components/responses/HttpError'
+  '/optin-tools/{id}/views/{name}':
+    get:
+      summary: Statistics view of an opt-in tool
+      tags:
+        - OptinTool
+      operationId: getOptinToolView
+      security:
+        - ApiKeyAuth: []
+      description: |
+        One statistics view of a popup-type opt-in tool. `name` picks the view; `all`
+        returns every section in one response. When the date range is
+        omitted it defaults to the last 7 days.
+
+        Statistics fields are never null: buckets without activity and empty
+        ranges return 0 counts and 0 rates — zero and "no data" are
+        deliberately not distinguished, matching the dashboard. The only
+        fields that can be absent are the channel-gated email/SMS ones,
+        which are omitted when the tool does not collect that channel.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the opt-in tool
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          description: The view to return
+          schema:
+            type: string
+            enum:
+              - optin-summary
+              - optin-history
+              - revenue-summary
+              - revenue-history
+              - revenue-by-optin-segments
+              - revenue-by-countries
+              - subscriptions-history
+              - all
+        - name: dateFrom
+          in: query
+          description: |
+            First day of the range, inclusive (YYYY-MM-DD, UTC).
+            Defaults to 7 days before `dateTo`.
+          schema:
+            type: string
+            format: date
+            example: '2026-08-04'
+        - name: dateTo
+          in: query
+          description: |
+            Last day of the range, inclusive — `dateTo=2026-08-10` includes
+            the whole of 2026-08-10 (UTC). Defaults to today.
+          schema:
+            type: string
+            format: date
+            example: '2026-08-10'
+        - name: targetResolution
+          in: query
+          description: Bucket size of the time series — history views and `all` only. Buckets are UTC; weeks start on Monday.
+          schema:
+            type: string
+            enum:
+              - day
+              - week
+              - month
+              - year
+            default: day
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    description: |
+                      Always one resource of type optin-tool-views. attributes
+                      holds the requested view's data under its name — one key
+                      for a single view, all seven for name=all.
+                    $ref: '#/components/schemas/OptinToolViews'
+              examples:
+                optin-summary:
+                  summary: name=optin-summary
+                  value:
+                    data:
+                      type: optin-tool-views
+                      attributes:
+                        optin-summary:
+                          impression: 41200
+                          teaserConfirm: 890
+                          teaserConfirmRate: 0.0216
+                          teaserDecline: 2140
+                          emailOptin: 610
+                          emailOptinRate: 0.0148
+                          phoneNumberSubmitted: 530
+                          phoneNumberSubmittedRate: 0.0129
+                          smsOptin: 480
+                          smsOptinRate: 0.0117
+                optin-history:
+                  summary: name=optin-history — one bucket per targetResolution unit
+                  value:
+                    data:
+                      type: optin-tool-views
+                      attributes:
+                        optin-history:
+                          - timestamp: '2026-07-27'
+                            impression: 5480
+                            emailOptin: 84
+                            emailOptinRate: 0.0153
+                            smsOptin: 66
+                            smsOptinRate: 0.012
+                          - timestamp: '2026-07-28'
+                            impression: 0
+                            emailOptin: 0
+                            emailOptinRate: 0
+                            smsOptin: 0
+                            smsOptinRate: 0
+                revenue-summary:
+                  summary: name=revenue-summary
+                  value:
+                    data:
+                      type: optin-tool-views
+                      attributes:
+                        revenue-summary:
+                          associatedRevenue: 12403.5
+                          orders: 96
+                          averageOrderValue: 129.2
+                          revenuePerVisitor: 0.3
+                          orderConversionRate: 0.0023
+                revenue-history:
+                  summary: name=revenue-history — one bucket per targetResolution unit
+                  value:
+                    data:
+                      type: optin-tool-views
+                      attributes:
+                        revenue-history:
+                          - timestamp: '2026-07-27'
+                            associatedRevenue: 1710
+                            orders: 13
+                            averageOrderValue: 131.54
+                            revenuePerVisitor: 0.31
+                            orderConversionRate: 0.0024
+                revenue-by-optin-segments:
+                  summary: name=revenue-by-optin-segments
+                  value:
+                    data:
+                      type: optin-tool-views
+                      attributes:
+                        revenue-by-optin-segments:
+                          - optinSegmentType: smsOptin
+                            optinSegmentCount: 480
+                            associatedRevenue: 5100
+                            orders: 41
+                            averageOrderValue: 124.39
+                            revenuePerVisitor: 10.63
+                            orderConversionRate: 0.0854
+                          - optinSegmentType: total
+                            optinSegmentCount: 41200
+                            associatedRevenue: 12403.5
+                            orders: 96
+                            averageOrderValue: 129.2
+                            revenuePerVisitor: 0.3
+                            orderConversionRate: 0.0023
+                revenue-by-countries:
+                  summary: name=revenue-by-countries
+                  value:
+                    data:
+                      type: optin-tool-views
+                      attributes:
+                        revenue-by-countries:
+                          - countryCode: US
+                            impressionCount: 31200
+                            associatedRevenue: 10900
+                            orders: 82
+                            averageOrderValue: 132.93
+                            revenuePerVisitor: 0.35
+                            orderConversionRate: 0.0026
+                          - countryCode: UNKNOWN_COUNTRY
+                            impressionCount: 1210
+                            associatedRevenue: 1503.5
+                            orders: 14
+                            averageOrderValue: 107.39
+                            revenuePerVisitor: 1.24
+                            orderConversionRate: 0.0116
+                subscriptions-history:
+                  summary: name=subscriptions-history — one bucket per targetResolution unit
+                  value:
+                    data:
+                      type: optin-tool-views
+                      attributes:
+                        subscriptions-history:
+                          - timestamp: '2026-07-27'
+                            subscriptions: 118
+                          - timestamp: '2026-07-28'
+                            subscriptions: 0
+                all:
+                  summary: name=all — every view under its own key
+                  value:
+                    data:
+                      type: optin-tool-views
+                      attributes:
+                        optin-summary:
+                          impression: 41200
+                          teaserConfirm: 890
+                          teaserConfirmRate: 0.0216
+                          teaserDecline: 2140
+                          emailOptin: 610
+                          emailOptinRate: 0.0148
+                          phoneNumberSubmitted: 530
+                          phoneNumberSubmittedRate: 0.0129
+                          smsOptin: 480
+                          smsOptinRate: 0.0117
+                        optin-history:
+                          - timestamp: '2026-07-27'
+                            impression: 5480
+                            emailOptin: 84
+                            emailOptinRate: 0.0153
+                            smsOptin: 66
+                            smsOptinRate: 0.012
+                        revenue-summary:
+                          associatedRevenue: 12403.5
+                          orders: 96
+                          averageOrderValue: 129.2
+                          revenuePerVisitor: 0.3
+                          orderConversionRate: 0.0023
+                        revenue-history:
+                          - timestamp: '2026-07-27'
+                            associatedRevenue: 1710
+                            orders: 13
+                            averageOrderValue: 131.54
+                            revenuePerVisitor: 0.31
+                            orderConversionRate: 0.0024
+                        revenue-by-optin-segments:
+                          - optinSegmentType: smsOptin
+                            optinSegmentCount: 480
+                            associatedRevenue: 5100
+                            orders: 41
+                            averageOrderValue: 124.39
+                            revenuePerVisitor: 10.63
+                            orderConversionRate: 0.0854
+                        revenue-by-countries:
+                          - countryCode: US
+                            impressionCount: 31200
+                            associatedRevenue: 10900
+                            orders: 82
+                            averageOrderValue: 132.93
+                            revenuePerVisitor: 0.35
+                            orderConversionRate: 0.0026
+                        subscriptions-history:
+                          - timestamp: '2026-07-27'
+                            subscriptions: 118
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
   '/carts/{id}':
     put:
       summary: Update cart
@@ -909,6 +1167,235 @@ components:
               description: |
                 Full tool settings (type-dependent). Returned only by getOptinTool;
                 the collection endpoint omits it.
+    RevenueMetrics:
+      type: object
+      description: |
+        Revenue attributed to the opt-in tool: orders placed within 7 days
+        of an interaction with the tool in the same session. Amounts are in
+        USD, rounded to 2 decimal places. Fields are never null: a range
+        without attributed orders returns 0 amounts, and rates are 0 when
+        the denominator is 0.
+      required:
+        - associatedRevenue
+        - orders
+        - averageOrderValue
+        - revenuePerVisitor
+        - orderConversionRate
+      properties:
+        associatedRevenue:
+          type: number
+          description: Total value of the orders attributed to the opt-in tool, in USD
+          example: 12403.5
+        orders:
+          type: integer
+          description: Number of orders attributed to the opt-in tool
+          example: 96
+        averageOrderValue:
+          type: number
+          description: associatedRevenue / orders, in USD
+          example: 129.2
+        revenuePerVisitor:
+          type: number
+          description: associatedRevenue / impressions, in USD
+          example: 0.3
+        orderConversionRate:
+          type: number
+          description: orders / impressions
+          example: 0.0023
+    OptinToolOptinSummaryData:
+      type: object
+      description: |
+        Opt-in performance totals for the range. Counts are unique sessions.
+        Email/SMS fields appear only when the tool collects that channel.
+        Fields are never null: a range without data returns 0 counts and
+        0 rates.
+      required:
+        - impression
+        - teaserConfirm
+        - teaserConfirmRate
+        - teaserDecline
+      properties:
+        impression:
+          type: integer
+          description: Unique sessions in which the popup was displayed
+          example: 41200
+        teaserConfirm:
+          type: integer
+          description: Unique sessions that clicked the teaser and opened the popup
+          example: 890
+        teaserConfirmRate:
+          type: number
+          description: teaserConfirm / impression
+          example: 0.0216
+        teaserDecline:
+          type: integer
+          description: Unique sessions that dismissed the teaser
+          example: 2140
+        emailOptin:
+          type: integer
+          description: Unique sessions that submitted an email address on the popup
+          example: 610
+        emailOptinRate:
+          type: number
+          description: emailOptin / impression
+          example: 0.0148
+        phoneNumberSubmitted:
+          type: integer
+          description: Unique sessions that submitted a phone number on the popup
+          example: 530
+        phoneNumberSubmittedRate:
+          type: number
+          description: phoneNumberSubmitted / impression
+          example: 0.0129
+        smsOptin:
+          type: integer
+          description: Unique sessions that completed the SMS opt-in
+          example: 480
+        smsOptinRate:
+          type: number
+          description: smsOptin / impression
+          example: 0.0117
+    OptinToolOptinHistoryBucket:
+      type: object
+      required:
+        - timestamp
+        - impression
+      properties:
+        timestamp:
+          type: string
+          format: date
+          description: Start of the bucket, in UTC (weeks start on Monday)
+          example: '2026-07-27'
+        impression:
+          type: integer
+          description: Unique sessions in which the popup was displayed within the bucket
+        emailOptin:
+          type: integer
+          description: Unique sessions that submitted an email address within the bucket
+        emailOptinRate:
+          type: number
+          description: emailOptin / impression within the bucket
+        smsOptin:
+          type: integer
+          description: Unique sessions that completed the SMS opt-in within the bucket
+        smsOptinRate:
+          type: number
+          description: smsOptin / impression within the bucket
+    OptinToolRevenueHistoryBucket:
+      allOf:
+        - type: object
+          required:
+            - timestamp
+          properties:
+            timestamp:
+              type: string
+              format: date
+              description: Start of the bucket, in UTC (weeks start on Monday)
+              example: '2026-07-27'
+        - $ref: '#/components/schemas/RevenueMetrics'
+    OptinToolRevenueByOptinSegmentsItem:
+      allOf:
+        - type: object
+          required:
+            - optinSegmentType
+            - optinSegmentCount
+          properties:
+            optinSegmentType:
+              type: string
+              description: |
+                The deepest opt-in stage the sessions in this row reached
+                (noOptin / emailOptin / smsOptin / emailAndSMSOptin); the
+                total row sums the whole funnel
+              enum:
+                - noOptin
+                - emailOptin
+                - smsOptin
+                - emailAndSMSOptin
+                - total
+            optinSegmentCount:
+              type: integer
+              description: Unique sessions whose deepest opt-in stage is this segment
+        - $ref: '#/components/schemas/RevenueMetrics'
+    OptinToolRevenueByCountriesItem:
+      allOf:
+        - type: object
+          required:
+            - countryCode
+            - impressionCount
+          properties:
+            countryCode:
+              type: string
+              description: |
+                ISO 3166-1 alpha-2 country code of the visitors;
+              example: US
+            impressionCount:
+              type: integer
+              description: Unique sessions in which the popup was displayed in this country
+        - $ref: '#/components/schemas/RevenueMetrics'
+    OptinToolSubscriptionsHistoryBucket:
+      type: object
+      required:
+        - timestamp
+        - subscriptions
+      properties:
+        timestamp:
+          type: string
+          format: date
+          description: Start of the bucket, in UTC (weeks start on Monday)
+          example: '2026-07-27'
+        subscriptions:
+          type: integer
+          description: New SMS subscribers the opt-in tool collected within the bucket
+    OptinToolViews:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - optin-tool-views
+        attributes:
+          type: object
+          description: |
+            The requested view's data under its name — exactly one key for a
+            single view, all seven for name=all. History and breakdown values
+            are arrays (one element per bucket / country / segment).
+          minProperties: 1
+          properties:
+            optin-summary:
+              description: Opt-in performance totals for the range
+              $ref: '#/components/schemas/OptinToolOptinSummaryData'
+            optin-history:
+              type: array
+              description: Opt-in performance per bucket; one bucket per targetResolution unit, gaps zero-filled
+              items:
+                $ref: '#/components/schemas/OptinToolOptinHistoryBucket'
+            revenue-summary:
+              description: Revenue attributed to the tool, totals for the range
+              $ref: '#/components/schemas/RevenueMetrics'
+            revenue-history:
+              type: array
+              description: Attributed revenue per bucket; one bucket per targetResolution unit, gaps zero-filled
+              items:
+                $ref: '#/components/schemas/OptinToolRevenueHistoryBucket'
+            revenue-by-optin-segments:
+              type: array
+              description: Attributed revenue split by opt-in segment; one element per segment plus a total row
+              items:
+                $ref: '#/components/schemas/OptinToolRevenueByOptinSegmentsItem'
+            revenue-by-countries:
+              type: array
+              description: Impressions and attributed revenue per country, sorted desc by associatedRevenue; UNKNOWN_COUNTRY included
+              items:
+                $ref: '#/components/schemas/OptinToolRevenueByCountriesItem'
+            subscriptions-history:
+              type: array
+              description: New SMS subscribers collected by the tool per bucket; one bucket per targetResolution unit, gaps zero-filled
+              items:
+                $ref: '#/components/schemas/OptinToolSubscriptionsHistoryBucket'
     UpdateCart:
       type:
         - object
