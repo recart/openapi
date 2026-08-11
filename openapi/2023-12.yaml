@@ -1168,8 +1168,9 @@ components:
       description: |
         Revenue attributed to the opt-in tool: orders placed within 7 days
         of an interaction with the tool in the same session. Amounts are in
-        USD. Fields are never null: a range without attributed orders
-        returns 0 amounts, and rates are 0 when the denominator is 0.
+        USD, rounded to 2 decimal places. Fields are never null: a range
+        without attributed orders returns 0 amounts, and rates are 0 when
+        the denominator is 0.
       required:
         - associatedRevenue
         - orders
