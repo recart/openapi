@@ -33,6 +33,11 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.4] - 2026-08-10
+
+#### Added
+- `GET /optin-tools/{id}/views/{name}` endpoint exposing popup performance statistics — one view per section (`optin-summary`, `optin-history`, `revenue-summary`, `revenue-history`, `revenue-by-optin-segments`, `revenue-by-countries`, `subscriptions-history`), plus `all` returning every section in one response. History views return time-series buckets at a selectable `targetResolution` (day/week/month/year, UTC, Monday-start weeks) with gaps zero-filled; summaries and breakdowns are range totals. `dateFrom`/`dateTo` are optional and default to the last 7 days.
+
 ### [2023-12.3] - 2026-08-04
 
 #### Added
