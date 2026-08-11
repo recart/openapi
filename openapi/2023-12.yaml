@@ -183,19 +183,19 @@ paths:
               - all
         - name: dateFrom
           in: query
-          description: Start of the range (ISO 8601). Defaults to 7 days before `dateTo`.
+          description: Start of the range (ISO 8601, UTC). Defaults to 7 days before `dateTo`.
           schema:
             type: string
             format: date-time
         - name: dateTo
           in: query
-          description: End of the range (ISO 8601). Defaults to now.
+          description: End of the range (ISO 8601, UTC). Defaults to now.
           schema:
             type: string
             format: date-time
         - name: targetResolution
           in: query
-          description: Bucket size of the time series — history views and `all` only
+          description: Bucket size of the time series — history views and `all` only. Buckets are UTC; weeks start on Monday.
           schema:
             type: string
             enum:
@@ -1157,7 +1157,10 @@ components:
                 the collection endpoint omits it.
     RevenueMetrics:
       type: object
-      description: Amounts in USD. Rates with a zero denominator are returned as 0.
+      description: |
+        Revenue attributed to the opt-in tool: orders placed within 7 days
+        of an interaction with the tool in the same session. Amounts are in
+        USD; rates are 0 when the denominator is 0.
       required:
         - associatedRevenue
         - orders
@@ -1167,24 +1170,30 @@ components:
       properties:
         associatedRevenue:
           type: number
+          description: Total value of the orders attributed to the opt-in tool, in USD
           example: 12403.5
         orders:
           type: integer
+          description: Number of orders attributed to the opt-in tool
           example: 96
         averageOrderValue:
           type: number
+          description: associatedRevenue / orders, in USD
           example: 129.2
         revenuePerVisitor:
           type: number
+          description: associatedRevenue / impressions, in USD
           example: 0.3
         orderConversionRate:
           type: number
+          description: orders / impressions
           example: 0.0023
     OptinToolOptinSummaryData:
       type: object
       description: |
-        Range totals. Email/SMS fields appear only when the tool
-        collects that channel.
+        Opt-in performance totals for the range. Counts are unique sessions.
+        Email/SMS fields appear only when the tool collects that channel;
+        rates are 0 when there are no impressions.
       required:
         - impression
         - teaserConfirm
@@ -1193,33 +1202,43 @@ components:
       properties:
         impression:
           type: integer
+          description: Unique sessions in which the popup was displayed
           example: 41200
         teaserConfirm:
           type: integer
+          description: Unique sessions that clicked the teaser and opened the popup
           example: 890
         teaserConfirmRate:
           type: number
+          description: teaserConfirm / impression
           example: 0.0216
         teaserDecline:
           type: integer
+          description: Unique sessions that dismissed the teaser
           example: 2140
         emailOptin:
           type: integer
+          description: Unique sessions that submitted an email address on the popup
           example: 610
         emailOptinRate:
           type: number
+          description: emailOptin / impression
           example: 0.0148
         phoneNumberSubmitted:
           type: integer
+          description: Unique sessions that submitted a phone number on the popup
           example: 530
         phoneNumberSubmittedRate:
           type: number
+          description: phoneNumberSubmitted / impression
           example: 0.0129
         smsOptin:
           type: integer
+          description: Unique sessions that completed the SMS opt-in
           example: 480
         smsOptinRate:
           type: number
+          description: smsOptin / impression
           example: 0.0117
     OptinToolOptinHistoryBucket:
       type: object
@@ -1230,16 +1249,22 @@ components:
         timestamp:
           type: string
           format: date-time
+          description: Start of the bucket, in UTC (weeks start on Monday)
         impression:
           type: integer
+          description: Unique sessions in which the popup was displayed within the bucket
         emailOptin:
           type: integer
+          description: Unique sessions that submitted an email address within the bucket
         emailOptinRate:
           type: number
+          description: emailOptin / impression within the bucket
         smsOptin:
           type: integer
+          description: Unique sessions that completed the SMS opt-in within the bucket
         smsOptinRate:
           type: number
+          description: smsOptin / impression within the bucket
     OptinToolRevenueHistoryBucket:
       allOf:
         - type: object
@@ -1249,6 +1274,7 @@ components:
             timestamp:
               type: string
               format: date-time
+              description: Start of the bucket, in UTC (weeks start on Monday)
         - $ref: '#/components/schemas/RevenueMetrics'
     OptinToolRevenueByOptinSegmentsItem:
       allOf:
@@ -1259,6 +1285,10 @@ components:
           properties:
             optinSegmentType:
               type: string
+              description: |
+                The deepest opt-in stage the sessions in this row reached
+                (noOptin / emailOptin / smsOptin / emailAndSMSOptin); the
+                total row sums the whole funnel
               enum:
                 - noOptin
                 - emailOptin
@@ -1267,6 +1297,7 @@ components:
                 - total
             optinSegmentCount:
               type: integer
+              description: Unique sessions whose deepest opt-in stage is this segment
         - $ref: '#/components/schemas/RevenueMetrics'
     OptinToolRevenueByCountriesItem:
       allOf:
@@ -1277,9 +1308,12 @@ components:
           properties:
             countryCode:
               type: string
+              description: |
+                ISO 3166-1 alpha-2 country code of the visitors;
               example: US
             impressionCount:
               type: integer
+              description: Unique sessions in which the popup was displayed in this country
         - $ref: '#/components/schemas/RevenueMetrics'
     OptinToolSubscriptionsHistoryBucket:
       type: object
@@ -1290,8 +1324,10 @@ components:
         timestamp:
           type: string
           format: date-time
+          description: Start of the bucket, in UTC (weeks start on Monday)
         subscriptions:
           type: integer
+          description: New SMS subscribers the opt-in tool collected within the bucket
     OptinToolViews:
       type:
         - object
@@ -1312,32 +1348,34 @@ components:
           minProperties: 1
           properties:
             optin-summary:
+              description: Opt-in performance totals for the range
               $ref: '#/components/schemas/OptinToolOptinSummaryData'
             optin-history:
               type: array
-              description: One bucket per targetResolution unit; gaps zero-filled
+              description: Opt-in performance per bucket; one bucket per targetResolution unit, gaps zero-filled
               items:
                 $ref: '#/components/schemas/OptinToolOptinHistoryBucket'
             revenue-summary:
+              description: Revenue attributed to the tool, totals for the range
               $ref: '#/components/schemas/RevenueMetrics'
             revenue-history:
               type: array
-              description: One bucket per targetResolution unit; gaps zero-filled
+              description: Attributed revenue per bucket; one bucket per targetResolution unit, gaps zero-filled
               items:
                 $ref: '#/components/schemas/OptinToolRevenueHistoryBucket'
             revenue-by-optin-segments:
               type: array
-              description: One element per opt-in segment plus a total row
+              description: Attributed revenue split by opt-in segment; one element per segment plus a total row
               items:
                 $ref: '#/components/schemas/OptinToolRevenueByOptinSegmentsItem'
             revenue-by-countries:
               type: array
-              description: One element per country, sorted desc by associatedRevenue; UNKNOWN_COUNTRY included
+              description: Impressions and attributed revenue per country, sorted desc by associatedRevenue; UNKNOWN_COUNTRY included
               items:
                 $ref: '#/components/schemas/OptinToolRevenueByCountriesItem'
             subscriptions-history:
               type: array
-              description: One bucket per targetResolution unit; gaps zero-filled
+              description: New SMS subscribers collected by the tool per bucket; one bucket per targetResolution unit, gaps zero-filled
               items:
                 $ref: '#/components/schemas/OptinToolSubscriptionsHistoryBucket'
     UpdateCart:
