@@ -538,6 +538,7 @@ paths:
                             impression: 20400
                             teaserConfirm: 512
                             teaserConfirmRate: 0.0251
+                            teaserDecline: 1230
                             emailOptin: 0
                             emailOptinRate: 0
                             phoneNumberSubmitted: 310
@@ -549,6 +550,7 @@ paths:
                             impression: 20600
                             teaserConfirm: 445
                             teaserConfirmRate: 0.0216
+                            teaserDecline: 1180
                             emailOptin: 0
                             emailOptinRate: 0
                             phoneNumberSubmitted: 271
@@ -640,6 +642,9 @@ paths:
                             teaserConfirmation:
                               count: 512
                               orderValueUSD: 0
+                            teaserDecline:
+                              count: 1230
+                              orderValueUSD: 0
                             closePopup:
                               count: 3100
                               orderValueUSD: 0
@@ -655,6 +660,9 @@ paths:
                               orderValueUSD: 0
                             teaserConfirmation:
                               count: 445
+                              orderValueUSD: 0
+                            teaserDecline:
+                              count: 1180
                               orderValueUSD: 0
                             engagement:
                               count: 5210
@@ -676,6 +684,7 @@ paths:
                             impression: 20400
                             teaserConfirm: 512
                             teaserConfirmRate: 0.0251
+                            teaserDecline: 1230
                             smsOptin: 276
                             smsOptinRate: 0.0135
                             subscriptions: 268
@@ -683,6 +692,7 @@ paths:
                             impression: 20600
                             teaserConfirm: 445
                             teaserConfirmRate: 0.0216
+                            teaserDecline: 1180
                             smsOptin: 240
                             smsOptinRate: 0.0117
                             subscriptions: 233
@@ -1810,58 +1820,20 @@ components:
               description: Last modification time of the experiment. UTC date and time in ISO 8601 format
               example: '2026-08-10T00:00:01.000Z'
     OptinToolExperimentOptinSummaryData:
-      type: object
       description: |
-        Opt-in performance totals of one variant for the experiment's window.
-        Counts are unique sessions. Email/SMS fields appear only when the tool
-        collects that channel. Fields are never null: a variant without data
-        returns 0 counts and 0 rates.
-      required:
-        - impression
-        - teaserConfirm
-        - teaserConfirmRate
-        - subscriptions
-      properties:
-        impression:
-          type: integer
-          description: Unique sessions in which the popup was displayed
-          example: 20400
-        teaserConfirm:
-          type: integer
-          description: Unique sessions that clicked the teaser and opened the popup
-          example: 512
-        teaserConfirmRate:
-          type: number
-          description: teaserConfirm / impression
-          example: 0.0251
-        emailOptin:
-          type: integer
-          description: Unique sessions that submitted an email address on the popup
-          example: 0
-        emailOptinRate:
-          type: number
-          description: emailOptin / impression
-          example: 0
-        phoneNumberSubmitted:
-          type: integer
-          description: Unique sessions that submitted a phone number on the popup
-          example: 310
-        phoneNumberSubmittedRate:
-          type: number
-          description: phoneNumberSubmitted / impression
-          example: 0.0152
-        smsOptin:
-          type: integer
-          description: Unique sessions that completed the SMS opt-in
-          example: 276
-        smsOptinRate:
-          type: number
-          description: smsOptin / impression
-          example: 0.0135
-        subscriptions:
-          type: integer
-          description: New SMS subscribers the variant collected
-          example: 268
+        Opt-in performance totals of one variant for the experiment's window —
+        the same fields as an opt-in tool's optin-summary, plus the subscribers
+        the variant collected.
+      allOf:
+        - $ref: '#/components/schemas/OptinToolOptinSummaryData'
+        - type: object
+          required:
+            - subscriptions
+          properties:
+            subscriptions:
+              type: integer
+              description: New SMS subscribers the variant collected
+              example: 268
     MetricEvent:
       type: string
       description: |
