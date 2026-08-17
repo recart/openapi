@@ -405,6 +405,336 @@ paths:
           $ref: '#/components/responses/HttpError'
         5XX:
           $ref: '#/components/responses/HttpError'
+  /optin-tool-experiments:
+    get:
+      summary: Retrieve list of A/B test experiments
+      tags:
+        - OptinTool
+      operationId: listOptinToolExperiments
+      security:
+        - ApiKeyAuth: []
+      description: |
+        List the site's opt-in tool A/B test experiments — scheduled, running and ended.
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OptinToolExperiment'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/optin-tool-experiments/{id}':
+    get:
+      summary: Receive a single A/B test experiment
+      tags:
+        - OptinTool
+      operationId: getOptinToolExperiment
+      security:
+        - ApiKeyAuth: []
+      description: |
+        Get A/B test experiment by ID. An experiment belonging to another site
+        is not visible and returns 404.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the experiment
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/OptinToolExperiment'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/optin-tool-experiments/{id}/views/{name}':
+    get:
+      summary: Statistics view of an A/B test experiment
+      tags:
+        - OptinTool
+      operationId: getOptinToolExperimentView
+      security:
+        - ApiKeyAuth: []
+      description: |
+        One statistics view of an A/B test experiment — the same numbers as the
+        dashboard's experiment results. `name` picks the section; `all` returns
+        every section in one response. A single request always returns every
+        variant of the experiment: each section is an object keyed by the
+        variant's opt-in tool ID, so the caller never passes `optinToolIds` —
+        the participants are read from the experiment itself.
+
+        There are no date parameters and no `targetResolution` — every section
+        is a total for the experiment's own window, which is derived from its
+        status: an `ended` experiment uses its full window, a `running` one
+        spans its start until now, and a `scheduled` one has no statistics yet
+        and returns 400.
+
+        Statistics fields behave as in the opt-in tool views: counts and rates
+        are never null, so a variant without activity returns 0 rather than
+        being omitted, and rates are 0 when the denominator is 0. The
+        exceptions are the channel-gated email/SMS fields, absent when the
+        tool does not collect that channel, and `metric-event-statistics`,
+        whose per-variant map is sparse — only events that occurred appear, and
+        a missing key means 0.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the experiment
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          description: The view to return
+          schema:
+            type: string
+            enum:
+              - optin-statistics
+              - revenue-statistics
+              - revenue-by-optin-segments
+              - metric-event-statistics
+              - all
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    description: |
+                      Always one resource of type optin-tool-experiments-views.
+                      attributes holds the requested section under its name,
+                      keyed by variant optinToolId — one section key for a
+                      single view, all four for name=all.
+                    $ref: '#/components/schemas/OptinToolExperimentViews'
+              examples:
+                optin-statistics:
+                  summary: name=optin-statistics — both variants keyed by opt-in tool ID
+                  value:
+                    data:
+                      type: optin-tool-experiments-views
+                      attributes:
+                        optin-statistics:
+                          655637c97825e6ae655fe1c9:
+                            impression: 20400
+                            teaserConfirm: 512
+                            teaserConfirmRate: 0.0251
+                            emailOptin: 0
+                            emailOptinRate: 0
+                            phoneNumberSubmitted: 310
+                            phoneNumberSubmittedRate: 0.0152
+                            smsOptin: 276
+                            smsOptinRate: 0.0135
+                            subscriptions: 268
+                          655637c97825e6ae655fe1b5:
+                            impression: 20600
+                            teaserConfirm: 445
+                            teaserConfirmRate: 0.0216
+                            emailOptin: 0
+                            emailOptinRate: 0
+                            phoneNumberSubmitted: 271
+                            phoneNumberSubmittedRate: 0.0132
+                            smsOptin: 240
+                            smsOptinRate: 0.0117
+                            subscriptions: 233
+                revenue-statistics:
+                  summary: name=revenue-statistics
+                  value:
+                    data:
+                      type: optin-tool-experiments-views
+                      attributes:
+                        revenue-statistics:
+                          655637c97825e6ae655fe1c9:
+                            associatedRevenue: 2410.5
+                            orders: 31
+                            averageOrderValue: 77.76
+                            revenuePerVisitor: 0.12
+                            orderConversionRate: 0.0015
+                          655637c97825e6ae655fe1b5:
+                            associatedRevenue: 1988.2
+                            orders: 24
+                            averageOrderValue: 82.84
+                            revenuePerVisitor: 0.1
+                            orderConversionRate: 0.0012
+                revenue-by-optin-segments:
+                  summary: name=revenue-by-optin-segments — one array per variant
+                  value:
+                    data:
+                      type: optin-tool-experiments-views
+                      attributes:
+                        revenue-by-optin-segments:
+                          655637c97825e6ae655fe1c9:
+                            - optinSegmentType: noOptin
+                              optinSegmentCount: 20124
+                              associatedRevenue: 430.1
+                              orders: 6
+                              averageOrderValue: 71.68
+                              revenuePerVisitor: 0.02
+                              orderConversionRate: 0.0003
+                            - optinSegmentType: smsOptin
+                              optinSegmentCount: 276
+                              associatedRevenue: 1980.4
+                              orders: 25
+                              averageOrderValue: 79.22
+                              revenuePerVisitor: 7.18
+                              orderConversionRate: 0.0906
+                            - optinSegmentType: total
+                              optinSegmentCount: 20400
+                              associatedRevenue: 2410.5
+                              orders: 31
+                              averageOrderValue: 77.76
+                              revenuePerVisitor: 0.12
+                              orderConversionRate: 0.0015
+                          655637c97825e6ae655fe1b5:
+                            - optinSegmentType: noOptin
+                              optinSegmentCount: 20360
+                              associatedRevenue: 358.2
+                              orders: 5
+                              averageOrderValue: 71.64
+                              revenuePerVisitor: 0.02
+                              orderConversionRate: 0.0002
+                            - optinSegmentType: smsOptin
+                              optinSegmentCount: 240
+                              associatedRevenue: 1630
+                              orders: 19
+                              averageOrderValue: 85.79
+                              revenuePerVisitor: 6.79
+                              orderConversionRate: 0.0792
+                            - optinSegmentType: total
+                              optinSegmentCount: 20600
+                              associatedRevenue: 1988.2
+                              orders: 24
+                              averageOrderValue: 82.84
+                              revenuePerVisitor: 0.1
+                              orderConversionRate: 0.0012
+                metric-event-statistics:
+                  summary: name=metric-event-statistics — sparse per-variant maps; a missing event means 0
+                  value:
+                    data:
+                      type: optin-tool-experiments-views
+                      attributes:
+                        metric-event-statistics:
+                          655637c97825e6ae655fe1c9:
+                            impression:
+                              count: 20400
+                              orderValueUSD: 0
+                            teaserConfirmation:
+                              count: 512
+                              orderValueUSD: 0
+                            closePopup:
+                              count: 3100
+                              orderValueUSD: 0
+                            smsOptin:
+                              count: 276
+                              orderValueUSD: 0
+                            smsOptinRevenue:
+                              count: 31
+                              orderValueUSD: 2410.5
+                          655637c97825e6ae655fe1b5:
+                            impression:
+                              count: 20600
+                              orderValueUSD: 0
+                            teaserConfirmation:
+                              count: 445
+                              orderValueUSD: 0
+                            engagement:
+                              count: 5210
+                              orderValueUSD: 0
+                            smsOptin:
+                              count: 240
+                              orderValueUSD: 0
+                            smsOptinRevenue:
+                              count: 24
+                              orderValueUSD: 1988.2
+                all:
+                  summary: name=all — every section under its own key
+                  value:
+                    data:
+                      type: optin-tool-experiments-views
+                      attributes:
+                        optin-statistics:
+                          655637c97825e6ae655fe1c9:
+                            impression: 20400
+                            teaserConfirm: 512
+                            teaserConfirmRate: 0.0251
+                            smsOptin: 276
+                            smsOptinRate: 0.0135
+                            subscriptions: 268
+                          655637c97825e6ae655fe1b5:
+                            impression: 20600
+                            teaserConfirm: 445
+                            teaserConfirmRate: 0.0216
+                            smsOptin: 240
+                            smsOptinRate: 0.0117
+                            subscriptions: 233
+                        revenue-statistics:
+                          655637c97825e6ae655fe1c9:
+                            associatedRevenue: 2410.5
+                            orders: 31
+                            averageOrderValue: 77.76
+                            revenuePerVisitor: 0.12
+                            orderConversionRate: 0.0015
+                          655637c97825e6ae655fe1b5:
+                            associatedRevenue: 1988.2
+                            orders: 24
+                            averageOrderValue: 82.84
+                            revenuePerVisitor: 0.1
+                            orderConversionRate: 0.0012
+                        revenue-by-optin-segments:
+                          655637c97825e6ae655fe1c9:
+                            - optinSegmentType: total
+                              optinSegmentCount: 20400
+                              associatedRevenue: 2410.5
+                              orders: 31
+                              averageOrderValue: 77.76
+                              revenuePerVisitor: 0.12
+                              orderConversionRate: 0.0015
+                          655637c97825e6ae655fe1b5:
+                            - optinSegmentType: total
+                              optinSegmentCount: 20600
+                              associatedRevenue: 1988.2
+                              orders: 24
+                              averageOrderValue: 82.84
+                              revenuePerVisitor: 0.1
+                              orderConversionRate: 0.0012
+                        metric-event-statistics:
+                          655637c97825e6ae655fe1c9:
+                            impression:
+                              count: 20400
+                              orderValueUSD: 0
+                            smsOptinRevenue:
+                              count: 31
+                              orderValueUSD: 2410.5
+                          655637c97825e6ae655fe1b5:
+                            impression:
+                              count: 20600
+                              orderValueUSD: 0
+                            smsOptinRevenue:
+                              count: 24
+                              orderValueUSD: 1988.2
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
   '/carts/{id}':
     put:
       summary: Update cart
@@ -1396,6 +1726,278 @@ components:
               description: New SMS subscribers collected by the tool per bucket; one bucket per targetResolution unit, gaps zero-filled
               items:
                 $ref: '#/components/schemas/OptinToolSubscriptionsHistoryBucket'
+    OptinToolExperiment:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - optin-tool-experiments
+        attributes:
+          type: object
+          required:
+            - id
+            - name
+            - status
+            - dateFrom
+            - dateTo
+            - optinToolIds
+            - createdAt
+          properties:
+            id:
+              type: string
+              description: ID of the experiment
+              example: 655637c97825e6ae655fe1d9
+            name:
+              type: string
+              description: Name of the experiment
+              example: Teaser vs no teaser
+            status:
+              type: string
+              description: |
+                Status of the experiment. A scheduled experiment has no
+                statistics yet, so its views return 400.
+              enum:
+                - scheduled
+                - running
+                - ended
+            dateFrom:
+              type: string
+              format: date-time
+              description: Start of the experiment window. UTC date and time in ISO 8601 format
+              example: '2026-07-27T00:00:00.000Z'
+            dateTo:
+              type: string
+              format: date-time
+              description: |
+                End of the experiment window, exclusive. UTC date and time in
+                ISO 8601 format. For a running experiment this is the planned
+                end; statistics stop at the current time instead.
+              example: '2026-08-10T00:00:00.000Z'
+            optinToolIds:
+              type: array
+              description: |
+                IDs of the opt-in tools taking part in the experiment — its
+                variants. Statistics views return one entry per ID.
+              items:
+                type: string
+              example:
+                - 655637c97825e6ae655fe1c9
+                - 655637c97825e6ae655fe1b5
+            winnerOptinToolId:
+              type: string
+              description: |
+                ID of the variant Recart picked as the winner, present once the
+                experiment has ended. Picked on opt-in rate alone — this is not
+                a statistical significance test.
+              example: 655637c97825e6ae655fe1c9
+            winnerOptinRate:
+              type: number
+              description: Opt-in rate of the winning variant
+              example: 0.0135
+            createdAt:
+              type: string
+              format: date-time
+              description: Creation time of the experiment. UTC date and time in ISO 8601 format
+              example: '2026-07-20T09:14:33.000Z'
+            updatedAt:
+              type: string
+              format: date-time
+              description: Last modification time of the experiment. UTC date and time in ISO 8601 format
+              example: '2026-08-10T00:00:01.000Z'
+    OptinToolExperimentOptinStatistics:
+      type: object
+      description: |
+        Opt-in performance totals of one variant for the experiment's window.
+        Counts are unique sessions. Email/SMS fields appear only when the tool
+        collects that channel. Fields are never null: a variant without data
+        returns 0 counts and 0 rates.
+      required:
+        - impression
+        - teaserConfirm
+        - teaserConfirmRate
+        - subscriptions
+      properties:
+        impression:
+          type: integer
+          description: Unique sessions in which the popup was displayed
+          example: 20400
+        teaserConfirm:
+          type: integer
+          description: Unique sessions that clicked the teaser and opened the popup
+          example: 512
+        teaserConfirmRate:
+          type: number
+          description: teaserConfirm / impression
+          example: 0.0251
+        emailOptin:
+          type: integer
+          description: Unique sessions that submitted an email address on the popup
+          example: 0
+        emailOptinRate:
+          type: number
+          description: emailOptin / impression
+          example: 0
+        phoneNumberSubmitted:
+          type: integer
+          description: Unique sessions that submitted a phone number on the popup
+          example: 310
+        phoneNumberSubmittedRate:
+          type: number
+          description: phoneNumberSubmitted / impression
+          example: 0.0152
+        smsOptin:
+          type: integer
+          description: Unique sessions that completed the SMS opt-in
+          example: 276
+        smsOptinRate:
+          type: number
+          description: smsOptin / impression
+          example: 0.0135
+        subscriptions:
+          type: integer
+          description: New SMS subscribers the variant collected
+          example: 268
+    MetricEvent:
+      type: string
+      description: |
+        Raw popup metric event identifier. Revenue is carried only by
+        impressionRevenue, emailClickRevenue and smsOptinRevenue; orderValueUSD
+        is 0 for every other event.
+      enum:
+        - teaserConfirmation
+        - teaserDecline
+        - smsClick
+        - emailClick
+        - emailOptin
+        - closePopup
+        - openMinimized
+        - closeMinimized
+        - impression
+        - minimizedImpression
+        - close
+        - smsOptin
+        - optinRequestSent
+        - successClick
+        - engagement
+        - emailAutofill
+        - smsAutofill
+        - oneTimePasswordAutofill
+        - oneTimePasswordClick
+        - oneTimePasswordResend
+        - oneClickVerificationClick
+        - oneClickVerificationAutofill
+        - oneClickVerificationResend
+        - oneClickThisIsntMe
+        - impressionRevenue
+        - emailClickRevenue
+        - smsOptinRevenue
+        - oneClickReturningVisitorSMSClick
+        - oneClickReturningVisitorEmailClick
+        - oneClickReturningVisitorSuccessClick
+        - oneClickReturningVisitorClose
+        - oneClickReturningVisitorClosePopup
+        - oneClickReturningVisitorCloseMinimized
+        - oneClickReturningVisitorImpression
+        - oneClickReturningVisitorMinimizedImpression
+        - oneClickReturningVisitorVerificationClick
+        - oneClickReturningVisitorVerificationAutofill
+        - oneClickReturningVisitorVerificationResend
+        - oneClickReturningVisitorThisIsntMe
+        - oneClickReturningVisitorTeaserDecline
+        - oneClickReturningVisitorTeaserConfirmation
+        - oneClickReturningVisitorOpenMinimized
+        - oneClickReturningVisitorAutofill
+        - oneClickNewVisitorSMSClick
+        - oneClickNewVisitorEmailClick
+        - oneClickNewVisitorSuccessClick
+        - oneClickNewVisitorClose
+        - oneClickNewVisitorClosePopup
+        - oneClickNewVisitorCloseMinimized
+        - oneClickNewVisitorImpression
+        - oneClickNewVisitorMinimizedImpression
+        - oneClickNewVisitorVerificationClick
+        - oneClickNewVisitorVerificationAutofill
+        - oneClickNewVisitorVerificationResend
+        - oneClickNewVisitorThisIsntMe
+        - oneClickNewVisitorTeaserDecline
+        - oneClickNewVisitorTeaserConfirmation
+        - oneClickNewVisitorOpenMinimized
+        - oneClickNewVisitorAutofill
+    MetricEventStatistic:
+      type: object
+      description: Raw count and attributed order value of a single metric event
+      required:
+        - count
+        - orderValueUSD
+      properties:
+        count:
+          type: integer
+          description: Number of times the event occurred
+          example: 31
+        orderValueUSD:
+          type: number
+          description: |
+            Value of the orders attributed to the event, in USD, rounded to 2
+            decimal places. 0 for every event other than impressionRevenue,
+            emailClickRevenue and smsOptinRevenue.
+          example: 2410.5
+    OptinToolExperimentViews:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - optin-tool-experiments-views
+        attributes:
+          type: object
+          description: |
+            The requested section under its name — exactly one key for a single
+            view, all four for name=all. Every section is an object keyed by the
+            variant's opt-in tool ID, holding that variant's totals for the
+            experiment's window.
+          minProperties: 1
+          properties:
+            optin-statistics:
+              type: object
+              description: Opt-in performance totals per variant
+              additionalProperties:
+                $ref: '#/components/schemas/OptinToolExperimentOptinStatistics'
+            revenue-statistics:
+              type: object
+              description: Attributed revenue totals per variant
+              additionalProperties:
+                $ref: '#/components/schemas/RevenueMetrics'
+            revenue-by-optin-segments:
+              type: object
+              description: |
+                Attributed revenue split by opt-in segment per variant; one
+                element per segment plus a total row
+              additionalProperties:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OptinToolRevenueByOptinSegmentsItem'
+            metric-event-statistics:
+              type: object
+              description: |
+                Raw metric event counts per variant, available for significance
+                math. Each variant holds a sparse map whose keys are MetricEvent
+                values — only events that occurred within the experiment's
+                window appear, and a missing key means 0.
+              additionalProperties:
+                type: object
+                propertyNames:
+                  $ref: '#/components/schemas/MetricEvent'
+                additionalProperties:
+                  $ref: '#/components/schemas/MetricEventStatistic'
     UpdateCart:
       type:
         - object
