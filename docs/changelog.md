@@ -37,7 +37,7 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 #### Added
 - `GET /optin-tool-experiments` and `GET /optin-tool-experiments/{id}` endpoints for listing the site's opt-in tool A/B test experiments (scheduled, running and ended) and retrieving a single experiment with its window, participating variants and winner.
-- `GET /optin-tool-experiments/{id}/views/{name}` endpoint exposing A/B test results — one view per section (`optin-statistics`, `revenue-statistics`, `revenue-by-optin-segments`, `metric-event-statistics`), plus `all` returning every section in one response. Each section returns every variant of the experiment, keyed by the variant's opt-in tool ID. There are no date parameters: the range is derived from the experiment itself — an ended experiment uses its full window, a running one spans its start until now, and a scheduled one has no statistics yet and returns 400.
+- `GET /optin-tool-experiments/{id}/views/{name}` endpoint exposing A/B test results — one view per section (`optin-summary`, `revenue-summary`, `revenue-by-optin-segments`, `metric-event-summary`), plus `all` returning every section in one response. Each section returns every variant of the experiment, keyed by the variant's opt-in tool ID. There are no date parameters: the range is derived from the experiment itself — an ended experiment uses its full window, a running one spans its start until now, and a scheduled one has no statistics yet and returns 400.
 
 ### [2023-12.4] - 2026-08-10
 

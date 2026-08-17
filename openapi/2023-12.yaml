@@ -489,7 +489,7 @@ paths:
         are never null, so a variant without activity returns 0 rather than
         being omitted, and rates are 0 when the denominator is 0. The
         exceptions are the channel-gated email/SMS fields, absent when the
-        tool does not collect that channel, and `metric-event-statistics`,
+        tool does not collect that channel, and `metric-event-summary`,
         whose per-variant map is sparse — only events that occurred appear, and
         a missing key means 0.
       parameters:
@@ -506,10 +506,10 @@ paths:
           schema:
             type: string
             enum:
-              - optin-statistics
-              - revenue-statistics
+              - optin-summary
+              - revenue-summary
               - revenue-by-optin-segments
-              - metric-event-statistics
+              - metric-event-summary
               - all
       responses:
         '200':
@@ -527,13 +527,13 @@ paths:
                       single view, all four for name=all.
                     $ref: '#/components/schemas/OptinToolExperimentViews'
               examples:
-                optin-statistics:
-                  summary: name=optin-statistics — both variants keyed by opt-in tool ID
+                optin-summary:
+                  summary: name=optin-summary — both variants keyed by opt-in tool ID
                   value:
                     data:
                       type: optin-tool-experiments-views
                       attributes:
-                        optin-statistics:
+                        optin-summary:
                           655637c97825e6ae655fe1c9:
                             impression: 20400
                             teaserConfirm: 512
@@ -556,13 +556,13 @@ paths:
                             smsOptin: 240
                             smsOptinRate: 0.0117
                             subscriptions: 233
-                revenue-statistics:
-                  summary: name=revenue-statistics
+                revenue-summary:
+                  summary: name=revenue-summary
                   value:
                     data:
                       type: optin-tool-experiments-views
                       attributes:
-                        revenue-statistics:
+                        revenue-summary:
                           655637c97825e6ae655fe1c9:
                             associatedRevenue: 2410.5
                             orders: 31
@@ -626,13 +626,13 @@ paths:
                               averageOrderValue: 82.84
                               revenuePerVisitor: 0.1
                               orderConversionRate: 0.0012
-                metric-event-statistics:
-                  summary: name=metric-event-statistics — sparse per-variant maps; a missing event means 0
+                metric-event-summary:
+                  summary: name=metric-event-summary — sparse per-variant maps; a missing event means 0
                   value:
                     data:
                       type: optin-tool-experiments-views
                       attributes:
-                        metric-event-statistics:
+                        metric-event-summary:
                           655637c97825e6ae655fe1c9:
                             impression:
                               count: 20400
@@ -671,7 +671,7 @@ paths:
                     data:
                       type: optin-tool-experiments-views
                       attributes:
-                        optin-statistics:
+                        optin-summary:
                           655637c97825e6ae655fe1c9:
                             impression: 20400
                             teaserConfirm: 512
@@ -686,7 +686,7 @@ paths:
                             smsOptin: 240
                             smsOptinRate: 0.0117
                             subscriptions: 233
-                        revenue-statistics:
+                        revenue-summary:
                           655637c97825e6ae655fe1c9:
                             associatedRevenue: 2410.5
                             orders: 31
@@ -716,7 +716,7 @@ paths:
                               averageOrderValue: 82.84
                               revenuePerVisitor: 0.1
                               orderConversionRate: 0.0012
-                        metric-event-statistics:
+                        metric-event-summary:
                           655637c97825e6ae655fe1c9:
                             impression:
                               count: 20400
@@ -1809,7 +1809,7 @@ components:
               format: date-time
               description: Last modification time of the experiment. UTC date and time in ISO 8601 format
               example: '2026-08-10T00:00:01.000Z'
-    OptinToolExperimentOptinStatistics:
+    OptinToolExperimentOptinSummaryData:
       type: object
       description: |
         Opt-in performance totals of one variant for the experiment's window.
@@ -1966,12 +1966,12 @@ components:
             experiment's window.
           minProperties: 1
           properties:
-            optin-statistics:
+            optin-summary:
               type: object
               description: Opt-in performance totals per variant
               additionalProperties:
-                $ref: '#/components/schemas/OptinToolExperimentOptinStatistics'
-            revenue-statistics:
+                $ref: '#/components/schemas/OptinToolExperimentOptinSummaryData'
+            revenue-summary:
               type: object
               description: Attributed revenue totals per variant
               additionalProperties:
@@ -1985,7 +1985,7 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/OptinToolRevenueByOptinSegmentsItem'
-            metric-event-statistics:
+            metric-event-summary:
               type: object
               description: |
                 Raw metric event counts per variant, available for significance
