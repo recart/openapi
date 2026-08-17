@@ -685,6 +685,10 @@ paths:
                             teaserConfirm: 512
                             teaserConfirmRate: 0.0251
                             teaserDecline: 1230
+                            emailOptin: 0
+                            emailOptinRate: 0
+                            phoneNumberSubmitted: 310
+                            phoneNumberSubmittedRate: 0.0152
                             smsOptin: 276
                             smsOptinRate: 0.0135
                             subscriptions: 268
@@ -693,6 +697,10 @@ paths:
                             teaserConfirm: 445
                             teaserConfirmRate: 0.0216
                             teaserDecline: 1180
+                            emailOptin: 0
+                            emailOptinRate: 0
+                            phoneNumberSubmitted: 271
+                            phoneNumberSubmittedRate: 0.0132
                             smsOptin: 240
                             smsOptinRate: 0.0117
                             subscriptions: 233
@@ -711,6 +719,20 @@ paths:
                             orderConversionRate: 0.0012
                         revenue-by-optin-segments:
                           655637c97825e6ae655fe1c9:
+                            - optinSegmentType: noOptin
+                              optinSegmentCount: 20124
+                              associatedRevenue: 430.1
+                              orders: 6
+                              averageOrderValue: 71.68
+                              revenuePerVisitor: 0.02
+                              orderConversionRate: 0.0003
+                            - optinSegmentType: smsOptin
+                              optinSegmentCount: 276
+                              associatedRevenue: 1980.4
+                              orders: 25
+                              averageOrderValue: 79.22
+                              revenuePerVisitor: 7.18
+                              orderConversionRate: 0.0906
                             - optinSegmentType: total
                               optinSegmentCount: 20400
                               associatedRevenue: 2410.5
@@ -719,6 +741,20 @@ paths:
                               revenuePerVisitor: 0.12
                               orderConversionRate: 0.0015
                           655637c97825e6ae655fe1b5:
+                            - optinSegmentType: noOptin
+                              optinSegmentCount: 20360
+                              associatedRevenue: 358.2
+                              orders: 5
+                              averageOrderValue: 71.64
+                              revenuePerVisitor: 0.02
+                              orderConversionRate: 0.0002
+                            - optinSegmentType: smsOptin
+                              optinSegmentCount: 240
+                              associatedRevenue: 1630
+                              orders: 19
+                              averageOrderValue: 85.79
+                              revenuePerVisitor: 6.79
+                              orderConversionRate: 0.0792
                             - optinSegmentType: total
                               optinSegmentCount: 20600
                               associatedRevenue: 1988.2
@@ -731,12 +767,36 @@ paths:
                             impression:
                               count: 20400
                               orderValueUSD: 0
+                            teaserConfirmation:
+                              count: 512
+                              orderValueUSD: 0
+                            teaserDecline:
+                              count: 1230
+                              orderValueUSD: 0
+                            closePopup:
+                              count: 3100
+                              orderValueUSD: 0
+                            smsOptin:
+                              count: 276
+                              orderValueUSD: 0
                             smsOptinRevenue:
                               count: 31
                               orderValueUSD: 2410.5
                           655637c97825e6ae655fe1b5:
                             impression:
                               count: 20600
+                              orderValueUSD: 0
+                            teaserConfirmation:
+                              count: 445
+                              orderValueUSD: 0
+                            teaserDecline:
+                              count: 1180
+                              orderValueUSD: 0
+                            engagement:
+                              count: 5210
+                              orderValueUSD: 0
+                            smsOptin:
+                              count: 240
                               orderValueUSD: 0
                             smsOptinRevenue:
                               count: 24
