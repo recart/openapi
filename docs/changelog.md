@@ -33,6 +33,12 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.6] - 2026-08-25
+
+#### Added
+- `GET /optin-tools/views/{name}` endpoint exposing account-level opt-in tool statistics — the collection-level counterpart of `GET /optin-tools/{id}/views/{name}`, returning every opt-in tool of the site in one response. One view: `optin-tools-summary` — one entry per opt-in tool with its raw metric-event unique-session counts (sparse; counts only, no USD amounts) merged with the new SMS subscriptions it collected in the range. `dateFrom`/`dateTo` are optional and default to the last 7 days.
+- `GET /subscribers/views/{name}` endpoint exposing subscriber statistics views. One view: `subscription-sources` — the new SMS subscriptions collected in the range, one entry per source (opt-in tool types and non-tool sources like import, custom-integration, public-api, shopify_checkout), sorted descending by `smsSubscriptions`. `dateFrom`/`dateTo` are optional and default to the last 7 days.
+
 ### [2023-12.5] - 2026-08-17
 
 #### Added

@@ -405,6 +405,97 @@ paths:
           $ref: '#/components/responses/HttpError'
         5XX:
           $ref: '#/components/responses/HttpError'
+  '/optin-tools/views/{name}':
+    get:
+      summary: Statistics view of all opt-in tools of the site
+      tags:
+        - OptinTool
+      operationId: getOptinToolListView
+      security:
+        - ApiKeyAuth: []
+      description: |
+        The account-level opt-in tool statistics view — every opt-in tool of
+        the site in a single response, the collection counterpart of
+        `/optin-tools/{id}/views/{name}`. `name` picks the view. When the
+        date range is omitted it defaults to the last 7 days.
+
+        `optin-tools-summary` returns one entry per opt-in tool that
+        recorded any metric event or collected any SMS subscription in the
+        range: the tool's raw metric-event unique-session counts merged with
+        its new SMS subscription count. Event keys are sparse — a missing
+        key means 0; `smsSubscriptions` is always present, 0 when none.
+        Values are counts, not amounts: this view carries no USD figures;
+        for attributed revenue use the per-tool revenue views. Subscriptions
+        from non-tool sources (imports, customer chat, …) are not part of
+        this view.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: The view to return
+          schema:
+            type: string
+            enum:
+              - optin-tools-summary
+        - name: dateFrom
+          in: query
+          description: |
+            First day of the range, inclusive (YYYY-MM-DD, UTC).
+            Defaults to 7 days before `dateTo`. Must not be older than
+            18 months — the API does not serve older data, and an older
+            `dateFrom` returns 400.
+          schema:
+            type: string
+            format: date
+            example: '2026-08-18'
+        - name: dateTo
+          in: query
+          description: |
+            Last day of the range, inclusive — `dateTo=2026-08-24` includes
+            the whole of 2026-08-24 (UTC). Defaults to today.
+          schema:
+            type: string
+            format: date
+            example: '2026-08-24'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    description: |
+                      Always one resource of type optin-tool-list-views.
+                      attributes holds the requested view under its name,
+                      keyed by source (opt-in tool ID or slug) inside.
+                    $ref: '#/components/schemas/OptinToolListViews'
+              examples:
+                optin-tools-summary:
+                  summary: name=optin-tools-summary — sparse event counts; a missing event means 0
+                  value:
+                    data:
+                      type: optin-tool-list-views
+                      attributes:
+                        optin-tools-summary:
+                          - optinToolId: 655637c97825e6ae655fe1c9
+                            impression: 20400
+                            teaserConfirmation: 512
+                            closePopup: 3100
+                            emailClick: 512
+                            smsOptin: 276
+                            smsSubscriptions: 150
+                          - optinToolId: 655637c97825e6ae655fe1b5
+                            impression: 18100
+                            teaserConfirmation: 445
+                            engagement: 5210
+                            smsOptin: 190
+                            smsSubscriptions: 120
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
   /optin-tool-experiments:
     get:
       summary: Retrieve list of A/B test experiments
@@ -1002,6 +1093,88 @@ paths:
       responses:
         '204':
           description: No content
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/subscribers/views/{name}':
+    get:
+      summary: Statistics view of the site's subscribers
+      tags:
+        - Subscriber
+      operationId: getSubscribersView
+      security:
+        - ApiKeyAuth: []
+      description: |
+        One statistics view over the site's subscribers. `name` picks the
+        view. When the date range is omitted it defaults to the last 7 days.
+
+        `subscription-sources` returns the new SMS subscriptions collected
+        in the range, one entry per source — where the subscribers came
+        from: opt-in tools by type (popup, landing-page, embedded-form,
+        keyword), and non-tool sources (import, custom-integration,
+        public-api, shopify_checkout, …). Every subscription counts toward
+        exactly one source; a source without SMS subscriptions in the range
+        is absent. Entries are sorted descending by smsSubscriptions. For
+        the per-tool split use /optin-tools/views/optin-tools-summary.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: The view to return
+          schema:
+            type: string
+            enum:
+              - subscription-sources
+        - name: dateFrom
+          in: query
+          description: |
+            First day of the range, inclusive (YYYY-MM-DD, UTC).
+            Defaults to 7 days before `dateTo`. Must not be older than
+            18 months — the API does not serve older data, and an older
+            `dateFrom` returns 400.
+          schema:
+            type: string
+            format: date
+            example: '2026-08-18'
+        - name: dateTo
+          in: query
+          description: |
+            Last day of the range, inclusive — `dateTo=2026-08-24` includes
+            the whole of 2026-08-24 (UTC). Defaults to today.
+          schema:
+            type: string
+            format: date
+            example: '2026-08-24'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    description: |
+                      Always one resource of type subscribers-views;
+                      attributes holds the requested view under its name.
+                    $ref: '#/components/schemas/SubscribersViews'
+              examples:
+                subscription-sources:
+                  summary: name=subscription-sources — one entry per source
+                  value:
+                    data:
+                      type: subscribers-views
+                      attributes:
+                        subscription-sources:
+                          - source: import
+                            smsSubscriptions: 1200
+                          - source: popup
+                            smsSubscriptions: 419
+                          - source: shopify_checkout
+                            smsSubscriptions: 86
+                          - source: public-api
+                            smsSubscriptions: 12
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -1796,6 +1969,54 @@ components:
               description: New SMS subscribers collected by the tool per bucket; one bucket per targetResolution unit, gaps zero-filled
               items:
                 $ref: '#/components/schemas/OptinToolSubscriptionsHistoryBucket'
+    OptinToolsSummaryItem:
+      type: object
+      description: |
+        One opt-in tool's totals for the range — the tool's raw metric-event
+        unique-session counts merged with the new SMS subscriptions it
+        collected. Besides optinToolId and smsSubscriptions, every key is a
+        MetricEvent value (see the MetricEvent schema) with its count; only
+        events that occurred appear, a missing key means 0.
+      required:
+        - optinToolId
+        - smsSubscriptions
+      properties:
+        optinToolId:
+          type: string
+          example: '655637c97825e6ae655fe1c9'
+        smsSubscriptions:
+          type: integer
+          description: New SMS subscriptions collected by the tool in the range
+          example: 150
+      additionalProperties:
+        type: integer
+        description: MetricEvent → number of unique sessions the event occurred in
+        example: 20400
+    OptinToolListViews:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - optin-tool-list-views
+        attributes:
+          type: object
+          description: |
+            The requested view's data under its name — exactly one key per
+            request.
+          minProperties: 1
+          properties:
+            optin-tools-summary:
+              type: array
+              description: |
+                One entry per opt-in tool that recorded any metric event or
+                collected any SMS subscription in the range.
+              items:
+                $ref: '#/components/schemas/OptinToolsSummaryItem'
     OptinToolExperiment:
       type:
         - object
@@ -2295,6 +2516,48 @@ components:
                   format: ipv4
                   description: IP address of the subscriber
                   example: 192.158.1.38
+    SubscriptionSourcesItem:
+      type: object
+      description: |
+        New SMS subscriptions collected from one source in the range. A
+        source is either an opt-in tool type (popup, landing-page,
+        embedded-form, keyword) or a non-tool source slug (import,
+        custom-integration, public-api, shopify_checkout, …).
+      required:
+        - source
+        - smsSubscriptions
+      properties:
+        source:
+          type: string
+          example: popup
+        smsSubscriptions:
+          type: integer
+          example: 419
+    SubscribersViews:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - subscribers-views
+        attributes:
+          type: object
+          description: |
+            The requested view's data under its name — exactly one key per
+            request.
+          minProperties: 1
+          properties:
+            subscription-sources:
+              type: array
+              description: |
+                One entry per subscription source, sorted descending by
+                smsSubscriptions.
+              items:
+                $ref: '#/components/schemas/SubscriptionSourcesItem'
     PatchSubscriber:
       type: object
       required:
