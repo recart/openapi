@@ -421,15 +421,16 @@ paths:
 
         `optin-tools-summary` returns one entry per opt-in tool that
         recorded any metric event or collected any SMS subscription in the
-        range: the tool's `name` and `type`, then its raw metric-event
-        unique-session counts merged with its new SMS subscription count.
-        Event keys are sparse — a missing key means 0; `smsSubscriptions` is
-        always present, 0 when none. Because every entry names and types its
-        own tool, a per-type total can be computed from this response alone,
-        without a separate `/optin-tools` call. Values are counts, not
-        amounts: this view carries no USD figures; for attributed revenue use
-        the per-tool revenue views. Subscriptions from non-tool sources
-        (imports, customer chat, …) are not part of this view.
+        range: the tool's `optinToolName` and `optinToolType`, then its raw
+        metric-event unique-session counts merged with its new SMS
+        subscription count. Event keys are sparse — a missing key means 0;
+        `smsSubscriptions` is always present, 0 when none. Because every
+        entry names and types its own tool, a per-type total can be computed
+        from this response alone, without a separate `/optin-tools` call.
+        Values are counts, not amounts: this view carries no USD figures; for
+        attributed revenue use the per-tool revenue views. Subscriptions from
+        non-tool sources (imports, customer chat, …) are not part of this
+        view.
       parameters:
         - name: name
           in: path
@@ -482,8 +483,8 @@ paths:
                       attributes:
                         optin-tools-summary:
                           - optinToolId: 655637c97825e6ae655fe1c9
-                            name: Summer sale — Main
-                            type: popup
+                            optinToolName: Summer sale — Main
+                            optinToolType: popup
                             impression: 20400
                             teaserConfirmation: 512
                             closePopup: 3100
@@ -491,8 +492,8 @@ paths:
                             smsOptin: 276
                             smsSubscriptions: 150
                           - optinToolId: 655637c97825e6ae655fe1b5
-                            name: Summer sale — Preferences
-                            type: popup
+                            optinToolName: Summer sale — Preferences
+                            optinToolType: popup
                             impression: 18100
                             teaserConfirmation: 445
                             engagement: 5210
@@ -1980,24 +1981,24 @@ components:
       description: |
         One opt-in tool's totals for the range — the tool's identity, then its
         raw metric-event unique-session counts merged with the new SMS
-        subscriptions it collected. Besides optinToolId, name, type and
-        smsSubscriptions, every key is a MetricEvent value (see the MetricEvent
-        schema) with its count; only events that occurred appear, a missing key
-        means 0.
+        subscriptions it collected. Besides optinToolId, optinToolName,
+        optinToolType and smsSubscriptions, every key is a MetricEvent value
+        (see the MetricEvent schema) with its count; only events that occurred
+        appear, a missing key means 0.
       required:
         - optinToolId
-        - name
-        - type
+        - optinToolName
+        - optinToolType
         - smsSubscriptions
       properties:
         optinToolId:
           type: string
           example: '655637c97825e6ae655fe1c9'
-        name:
+        optinToolName:
           type: string
           description: Name of the opt-in tool
           example: Mobile - Preferences - Custom Images
-        type:
+        optinToolType:
           type: string
           description: Type of the opt-in tool
           enum:

@@ -36,7 +36,7 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 ### [2023-12.7] - 2026-08-26
 
 #### Added
-- `name` and `type` on every `optin-tools-summary` entry of `GET /optin-tools/views/{name}`. Each entry already carried the tool's `optinToolId`; it now identifies the tool outright, so a response can be grouped or filtered by opt-in tool type (`popup`, `landing-page`, `embedded-form`, `keyword`) and its tools named without a second `GET /optin-tools` call.
+- `optinToolName` and `optinToolType` on every `optin-tools-summary` entry of `GET /optin-tools/views/{name}`. Each entry already carried the tool's `optinToolId`; it now identifies the tool outright, so a response can be grouped or filtered by opt-in tool type (`popup`, `landing-page`, `embedded-form`, `keyword`) and its tools named without a second `GET /optin-tools` call.
 
 ### [2023-12.6] - 2026-08-25
 
