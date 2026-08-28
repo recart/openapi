@@ -1271,6 +1271,25 @@ paths:
         - ApiKeyAuth: []
       description: |
         Post an event which can be used to trigger flows in Recart.
+
+        Three preconditions must hold, each of which fails with its own status code:
+
+        - the event source (`source.category` and `source.name`) is registered for the site
+          via `POST /event-sources`,
+        - `phoneNumber` belongs to an existing subscriber — this endpoint never creates one,
+        - that subscriber has an active SMS subscription.
+
+        Registered event sources are cached briefly, so allow a few seconds between creating
+        an event source and posting the first event against it.
+
+        Whether a flow is actually listening for the event is *not* checked. If no active
+        Integration flow uses the event source as its trigger, the event is still accepted
+        and simply results in no message — so confirm the flow is active in the Recart
+        dashboard when events succeed but nothing is sent.
+
+        The event is queued for processing, so `200` confirms that it was accepted, not that
+        a message was sent. The `200` response body is the plain-text string `OK`, not a
+        JSON:API document — do not parse it as JSON.
       requestBody:
         required: true
         content:
@@ -1282,7 +1301,68 @@ paths:
                   $ref: '#/components/schemas/PostEvent'
       responses:
         '200':
-          description: OK
+          description: |
+            The event was accepted and queued for processing. The body is the plain-text
+            string `OK`.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+        '400':
+          description: |
+            `ERR_BAD_REQUEST` — the payload failed validation, in which case `detail` lists
+            the offending fields, or `phoneNumber` could not be parsed as a phone number.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '401':
+          description: '`ERR_UNAUTHORIZED` — the `X-Recart-API-Key` header is missing.'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '403':
+          description: '`ERR_FORBIDDEN` — the API key is unknown or has been revoked.'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '404':
+          description: |
+            `ERR_NOT_FOUND` — no subscriber exists for `phoneNumber`. Subscribe the phone
+            number first; posting an event does not create a subscriber.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '415':
+          description: |
+            `ERR_UNSUPPORTED_MEDIA_TYPE` — `Content-Type` must be `application/vnd.api+json`
+            or `application/json`.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '417':
+          description: |
+            `ERR_EXPECTATION_FAILED` — a precondition on the account is not met. Either no
+            event source is registered for the site with this `source.category` and
+            `source.name` pair, or the subscriber exists but does not have an active SMS
+            subscription. The two cases are distinguished by `detail`.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '500':
+          description: |
+            `ERR_INTERNAL_SERVER_ERROR` — the event passed validation but could not be
+            queued. The event was not processed, so it is safe to retry.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -1459,6 +1539,14 @@ paths:
         - ApiKeyAuth: []
       description: |
         Trigger SMS/MMS messages. Maximum 10 messages can be sent in a single request. Requester must comply with TCPA regulations, and make sure the message is not sent in quiet hours.
+
+        The site must have an active or trial SMS subscription, otherwise the request fails
+        with `417`.
+
+        Messages are queued in the order given rather than sent inline, so `202` confirms
+        that they were accepted for delivery, not that they were delivered. The response
+        returns one entry per message; poll `GET /messages/{id}` with the returned IDs to
+        follow their delivery status.
       requestBody:
         required: true
         content:
@@ -1470,7 +1558,59 @@ paths:
                   $ref: '#/components/schemas/PostMessages'
       responses:
         '202':
-          description: Accepted
+          description: |
+            The messages were accepted and queued for delivery, one entry per message, in
+            the order they were given.
+        '400':
+          description: |
+            `ERR_BAD_REQUEST` — the payload failed validation, in which case `detail` lists
+            the offending fields, or `phoneNumber` could not be parsed as a phone number.
+            Validation covers the documented limits: at most 10 messages, `body` at most
+            1024 characters, `type` must be `promotional`, and `attachment` must end in
+            `.jpg`, `.jpeg`, `.png`, or `.gif`.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '401':
+          description: '`ERR_UNAUTHORIZED` — the `X-Recart-API-Key` header is missing.'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '403':
+          description: '`ERR_FORBIDDEN` — the API key is unknown or has been revoked.'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '415':
+          description: |
+            `ERR_UNSUPPORTED_MEDIA_TYPE` — `Content-Type` must be `application/vnd.api+json`
+            or `application/json`.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '417':
+          description: |
+            `ERR_EXPECTATION_FAILED` — the site does not have an active or trial SMS
+            subscription, so no messages can be sent until billing is resolved. No message
+            in the request was queued.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '500':
+          description: |
+            `ERR_INTERNAL_SERVER_ERROR` — the request passed validation but the messages
+            could not be queued. Messages are queued one by one, so a failure partway
+            through leaves the earlier messages of the request already accepted; check
+            `GET /messages/{id}` before retrying to avoid sending duplicates.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -1557,33 +1697,35 @@ components:
       content:
         application/vnd.api+json:
           schema:
+            $ref: '#/components/schemas/HttpErrorBody'
+  schemas:
+    HttpErrorBody:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
             type: object
             required:
-              - errors
+              - id
+              - code
+              - title
+              - detail
             properties:
-              errors:
-                type: array
-                items:
-                  type: object
-                  required:
-                    - id
-                    - code
-                    - title
-                    - detail
-                  properties:
-                    id:
-                      type: string
-                      example: 17035478-01a9-4aeb-a13c-88ab51e6fee3
-                    code:
-                      type: string
-                      example: ERR_BAD_REQUEST
-                    title:
-                      type: string
-                      example: Bad request
-                    detail:
-                      type: string
-                      example: ''
-  schemas:
+              id:
+                type: string
+                example: 17035478-01a9-4aeb-a13c-88ab51e6fee3
+              code:
+                type: string
+                example: ERR_BAD_REQUEST
+              title:
+                type: string
+                example: Bad request
+              detail:
+                type: string
+                example: ''
     Flow:
       type:
         - object
@@ -3097,10 +3239,23 @@ components:
                   example: billing attempt failed
             properties:
               type: object
-              description: Data of the event. It can be string/number. Nested objects are not supported. Maximum 10 properties are allowed.
+              description: |
+                Data of the event, as flat key/value pairs. At most 10 properties are
+                allowed; more than that is rejected with `400`.
+
+                Properties are not automatically available to the flow. A property reaches
+                the message only if a matching variable has been set up for your account,
+                in which case the message inserts it from the flow editor's variable picker.
+                Contact Support to have a variable enabled for a property you want to use.
+
+                Any property without such a variable is accepted and then discarded. The
+                request still returns `200` and the flow is still triggered, but the value
+                never reaches the message, so a discarded property is indistinguishable from
+                a delivered one. Do not design a message around event data that has not been
+                set up. To personalise or target on your own data, store it on the subscriber
+                with `PATCH /subscribers` and use it as a segment condition instead.
               example:
-                updatePaymentMethodURL: 'https://example.com/update-payment-method'
-                billingAttemptCount: 3
+                yourVariableName: 'your value'
     PostEventSource:
       type: object
       required:
