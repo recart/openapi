@@ -165,7 +165,7 @@ With the event source registered and the flow activated, post an event whenever 
 
 ### Triggering Requirements
 - The event source `category` and `name` must match the values in the event exactly — a mismatch is reported as `417`, not as a silent failure
-- Registered sources are cached for up to 15 seconds, per service instance, so allow at least that long before posting the first event. Because the cache is per instance, the first events can still fail with `417` after another instance has picked the source up
+- A newly registered event source does not become usable instantly. Allow a short delay before posting the first event against it, and expect the first events to be able to fail with `417` until it has propagated
 - The integration flow must be active. Flow state is *not* validated when the event is posted: if no active flow uses the event source as its trigger, the event is still accepted with `200` and simply results in no message. When events succeed but nothing is sent, check the flow first
 - The phone number must belong to an existing SMS subscriber; custom events do not create subscriptions
 - Phone numbers should be in E.164 format (e.g., +1234567890)

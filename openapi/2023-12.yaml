@@ -1279,10 +1279,9 @@ paths:
         - `phoneNumber` belongs to an existing subscriber — this endpoint never creates one,
         - that subscriber has an active SMS subscription.
 
-        Registered event sources are cached for up to 15 seconds, per service instance, so
-        allow at least that long between creating an event source and posting the first event
-        against it. Because the cache is per instance, the first events can still fail with
-        `417` after another instance has already picked the new source up.
+        A newly registered event source does not become usable instantly. Allow a short delay
+        after creating one before posting the first event against it, and expect the first
+        events to be able to fail with `417` until it has propagated.
 
         Whether a flow is actually listening for the event is *not* checked. If no active
         Integration flow uses the event source as its trigger, the event is still accepted
