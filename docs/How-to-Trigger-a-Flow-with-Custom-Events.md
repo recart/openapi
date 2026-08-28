@@ -27,11 +27,18 @@ An event source declares the kind of event you will be sending, so it can be sel
    Example payload:
    ```json
    {
-     "category": "payment",
-     "name": "billing attempt failed",
-     "type": "custom"
+     "data": {
+       "type": "events",
+       "attributes": {
+         "category": "payment",
+         "name": "billing attempt failed",
+         "type": "custom"
+       }
+     }
    }
    ```
+
+   Note the two different `type` fields: the outer `data.type` is the JSON:API resource type and must always be the literal `events`, even when creating an event *source*. The inner `attributes.type` is what selects `custom` or `optin`.
 
    The `category` and `name` pair is what you will select in the dashboard, and what every event must repeat verbatim:
    - `category` — the integration or system the event comes from (e.g. `payment`, `inventory`, `booking`)
@@ -72,26 +79,28 @@ With the event source registered and the flow activated, post an event whenever 
 ### Process
 1. **Detect the Event**: Trigger this step from whatever happens in your system — a webhook from your payment provider, a job that detects restocked inventory, a state change in your own database.
 
-2. **Reference the Event Source**: Set `source.category` and `source.name` to exactly the values used in Step 1. A mismatch means no flow is triggered.
+2. **Reference the Event Source**: Set `source.category` and `source.name` to exactly the values used in Step 1. A mismatch is rejected with `417` — the pair must match a registered event source.
 
 3. **Attach Event Data (optional)**: Pass event data in `properties`.
 
-   Properties are not automatically available to the flow. A property reaches the message only if a matching variable has been set up for your account, in which case the message inserts it from the flow editor's variable picker. Contact Support to have a variable enabled for a property you want to use.
+   Properties are not automatically available to the flow. Only properties that Recart already supports are delivered to messages, where the message inserts one from the flow editor's variable picker. Contact Support to find out which properties your account can use, or to request support for a new one.
 
-   Any property without such a variable is accepted and then discarded. The request still returns `200` and the flow still triggers, so a discarded property looks exactly like a delivered one — there is no warning. Do not design a message around event data that has not been set up. To personalise or target on your own data, store it on the subscriber with `PATCH /subscribers` and use it as a segment condition instead.
+   Any other property is accepted and then discarded. The request still returns `200` and the flow still triggers, so a discarded property looks exactly like a delivered one — there is no warning. Do not design a message around a property you have not confirmed is supported. To personalise or target on your own data, store it on the subscriber with `PATCH /subscribers` and use it as a segment condition instead.
 
    Example payload:
    ```json
    {
-     "type": "events",
-     "attributes": {
-       "phoneNumber": "+36301234567",
-       "source": {
-         "category": "payment",
-         "name": "billing attempt failed"
-       },
-       "properties": {
-         "yourVariableName": "your value"
+     "data": {
+       "type": "events",
+       "attributes": {
+         "phoneNumber": "+36301234567",
+         "source": {
+           "category": "payment",
+           "name": "billing attempt failed"
+         },
+         "properties": {
+           "yourVariableName": "your value"
+         }
        }
      }
    }
@@ -142,20 +151,21 @@ With the event source registered and the flow activated, post an event whenever 
    | `404` | `ERR_NOT_FOUND` | No subscriber exists for `phoneNumber`. |
    | `415` | `ERR_UNSUPPORTED_MEDIA_TYPE` | `Content-Type` must be `application/vnd.api+json` or `application/json`. |
    | `417` | `ERR_EXPECTATION_FAILED` | Either the event source is not registered for the site, or the subscriber has no active SMS subscription. `detail` distinguishes the two. |
-   | `500` | `ERR_INTERNAL_SERVER_ERROR` | The event could not be queued. Safe to retry. |
+   | `500` | `ERR_INTERNAL_SERVER_ERROR` | The subscriber could not be looked up, or the event could not be queued. The event was not processed, so it is safe to retry. |
 
-   `400`, `404`, `415` and `417` are permanent for the given payload — retrying unchanged will fail the same way. Retry only `500` and network failures, so an event is not silently lost.
+   `400`, `404`, `415` and `417` are permanent for the given payload — retrying unchanged will fail the same way. Retry only `5XX` and network failures, so an event is not silently lost.
+
+   Two cases fall outside this envelope and return an unstructured plain-text body instead of an `errors` array: a `Content-Type` the API cannot parse at all, and a malformed JSON body (`400`). Check the status code before parsing the body as JSON.
 
 ## Important Considerations
 
 ### Event Properties
-- Values can be strings or numbers
-- Nested objects are not supported — flatten your payload before sending
-- Maximum 10 properties per event
+- Maximum 10 properties per event — an eleventh is rejected with `400`
+- Keep values flat strings or numbers. Nested objects, arrays and booleans are accepted by validation rather than rejected, but they are ignored like any unsupported property
 
 ### Triggering Requirements
 - The event source `category` and `name` must match the values in the event exactly — a mismatch is reported as `417`, not as a silent failure
-- Allow a few seconds between creating an event source and posting the first event against it; registered sources are cached briefly
+- Registered sources are cached for up to 15 seconds, per service instance, so allow at least that long before posting the first event. Because the cache is per instance, the first events can still fail with `417` after another instance has picked the source up
 - The integration flow must be active. Flow state is *not* validated when the event is posted: if no active flow uses the event source as its trigger, the event is still accepted with `200` and simply results in no message. When events succeed but nothing is sent, check the flow first
 - The phone number must belong to an existing SMS subscriber; custom events do not create subscriptions
 - Phone numbers should be in E.164 format (e.g., +1234567890)

@@ -1279,8 +1279,10 @@ paths:
         - `phoneNumber` belongs to an existing subscriber — this endpoint never creates one,
         - that subscriber has an active SMS subscription.
 
-        Registered event sources are cached briefly, so allow a few seconds between creating
-        an event source and posting the first event against it.
+        Registered event sources are cached for up to 15 seconds, per service instance, so
+        allow at least that long between creating an event source and posting the first event
+        against it. Because the cache is per instance, the first events can still fail with
+        `417` after another instance has already picked the new source up.
 
         Whether a flow is actually listening for the event is *not* checked. If no active
         Integration flow uses the event source as its trigger, the event is still accepted
@@ -1341,6 +1343,10 @@ paths:
           description: |
             `ERR_UNSUPPORTED_MEDIA_TYPE` — `Content-Type` must be `application/vnd.api+json`
             or `application/json`.
+
+            A `Content-Type` the API cannot parse at all is rejected earlier, before this
+            error format applies, and returns an unstructured plain-text body. A malformed
+            JSON body is rejected the same way, with `400`.
           content:
             application/vnd.api+json:
               schema:
@@ -1357,8 +1363,14 @@ paths:
                 $ref: '#/components/schemas/HttpErrorBody'
         '500':
           description: |
-            `ERR_INTERNAL_SERVER_ERROR` — the event passed validation but could not be
-            queued. The event was not processed, so it is safe to retry.
+            `ERR_INTERNAL_SERVER_ERROR` — the event passed validation but the request could
+            not be processed, either because the subscriber could not be looked up or
+            because the event could not be queued. The event was not processed, so it is
+            safe to retry.
+
+            Failures reaching an upstream service can also surface as other `5XX` statuses
+            with an unstructured body, so treat the whole `5XX` range as retryable rather
+            than matching on `500` alone.
           content:
             application/vnd.api+json:
               schema:
@@ -1561,6 +1573,15 @@ paths:
           description: |
             The messages were accepted and queued for delivery, one entry per message, in
             the order they were given.
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AcceptedMessage'
         '400':
           description: |
             `ERR_BAD_REQUEST` — the payload failed validation, in which case `detail` lists
@@ -1603,14 +1624,16 @@ paths:
                 $ref: '#/components/schemas/HttpErrorBody'
         '500':
           description: |
-            `ERR_INTERNAL_SERVER_ERROR` — the request passed validation but the messages
-            could not be queued. Messages are queued one by one, so a failure partway
-            through leaves the earlier messages of the request already accepted; check
-            `GET /messages/{id}` before retrying to avoid sending duplicates.
-          content:
-            application/vnd.api+json:
-              schema:
-                $ref: '#/components/schemas/HttpErrorBody'
+            The request passed validation but could not be processed.
+
+            Messages are queued one by one, so a failure partway through leaves the earlier
+            messages of the request already queued for delivery. No message IDs are returned
+            in this case, so a blind retry of the whole request can duplicate the messages
+            that already went through.
+
+            Unlike the `4XX` responses, this status is not guaranteed to use the standard
+            error envelope — an unstructured plain-text body is possible — so do not match
+            on `errors[].code` here.
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -2879,6 +2902,31 @@ components:
               type: string
               description: UTC Date and time in ISO 8601 format
               example: '2021-08-10T14:00:00.000+02:00'
+    AcceptedMessage:
+      type: object
+      description: A message accepted for delivery by `POST /messages`.
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - messages
+        attributes:
+          type: object
+          required:
+            - id
+            - message
+          properties:
+            id:
+              type: string
+              description: ID of the queued message. Use it with `GET /messages/{id}` to follow the delivery status.
+              example: 65ba227ffa0ad3e1bef89449
+            message:
+              type: string
+              description: Content of the message, echoed back from the request
+              example: 'Hi, welcome to our store.'
     OutgoingMessage:
       type: object
       required:
@@ -3243,17 +3291,18 @@ components:
                 Data of the event, as flat key/value pairs. At most 10 properties are
                 allowed; more than that is rejected with `400`.
 
-                Properties are not automatically available to the flow. A property reaches
-                the message only if a matching variable has been set up for your account,
-                in which case the message inserts it from the flow editor's variable picker.
-                Contact Support to have a variable enabled for a property you want to use.
+                Properties are not automatically available to the flow. Only properties that
+                Recart already supports are delivered to messages, where the message inserts
+                one from the flow editor's variable picker. Contact Support to find out which
+                properties your account can use, or to request support for a new one.
 
-                Any property without such a variable is accepted and then discarded. The
-                request still returns `200` and the flow is still triggered, but the value
-                never reaches the message, so a discarded property is indistinguishable from
-                a delivered one. Do not design a message around event data that has not been
-                set up. To personalise or target on your own data, store it on the subscriber
-                with `PATCH /subscribers` and use it as a segment condition instead.
+                Any other property is accepted and then discarded. The request still returns
+                `200` and the flow is still triggered, but the value never reaches the
+                message, so a discarded property is indistinguishable from a delivered one.
+                Do not design a message around a property you have not confirmed is
+                supported. To personalise or target on your own data, store it on the
+                subscriber with `PATCH /subscribers` and use it as a segment condition
+                instead.
               example:
                 yourVariableName: 'your value'
     PostEventSource:
