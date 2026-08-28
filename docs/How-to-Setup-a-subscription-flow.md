@@ -23,11 +23,18 @@ Before you can start collecting SMS subscriptions, you need to create an event s
    Example payload:
    ```json
    {
-     "category": "3rd-party-name",
-     "name": "subscription", 
-     "type": "optin"
+     "data": {
+       "type": "events",
+       "attributes": {
+         "category": "3rd-party-name",
+         "name": "subscription",
+         "type": "optin"
+       }
+     }
    }
    ```
+
+   Note the two different `type` fields: the outer `data.type` is the JSON:API resource type and must always be the literal `events`, even when creating an event *source*. The inner `attributes.type` is the one you set to `optin`.
 
 2. **Make API Request**: Send a request to [create the event source](https://recart-app.stoplight.io/docs/openapi/9c1e977516236-create-new-event-source) through the appropriate endpoint in the Recart API.
 
