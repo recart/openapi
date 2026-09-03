@@ -211,22 +211,25 @@ paths:
                         updatedAt: '2026-08-20T09:00:00.000Z'
                         entryFlowItemId: 655637c97825e6ae655fe401
                         items:
-                          - type: sms
+                          - type: flow-item
                             attributes:
+                              type: sms
                               id: 655637c97825e6ae655fe401
                               name: Welcome message
                               messages:
                                 - text: 'Welcome to our SMS list! Reply STOP to opt out.'
                                   imageUrl: null
                               nextItemId: 655637c97825e6ae655fe402
-                          - type: delay
+                          - type: flow-item
                             attributes:
+                              type: delay
                               id: 655637c97825e6ae655fe402
                               delayType: delay
                               durationInSeconds: 86400
                               nextItemId: 655637c97825e6ae655fe403
-                          - type: conditional-split
+                          - type: flow-item
                             attributes:
+                              type: conditional-split
                               id: 655637c97825e6ae655fe403
                               branches:
                                 - expression:
@@ -236,8 +239,9 @@ paths:
                                         value: true
                                   nextItemId: 655637c97825e6ae655fe404
                               defaultNextItemId: null
-                          - type: sms
+                          - type: flow-item
                             attributes:
+                              type: sms
                               id: 655637c97825e6ae655fe404
                               name: Follow-up message
                               messages:
@@ -434,8 +438,9 @@ paths:
                         updatedAt: '2026-09-01T18:03:00.000Z'
                         entryFlowItemId: 655637c97825e6ae655fe410
                         items:
-                          - type: adaptive-test
+                          - type: flow-item
                             attributes:
+                              type: adaptive-test
                               id: 655637c97825e6ae655fe410
                               adaptiveTest:
                                 variants:
@@ -445,16 +450,18 @@ paths:
                                   metric: clickRate
                                   evaluateAfterHours: 4
                                 audienceSplitPercentage: 20
-                          - type: sms
+                          - type: flow-item
                             attributes:
+                              type: sms
                               id: 655637c97825e6ae655fe411
                               name: Variant A
                               messages:
                                 - text: 'Labor Day is here — 20% off everything.'
                                   imageUrl: null
                               nextItemId: null
-                          - type: sms
+                          - type: flow-item
                             attributes:
+                              type: sms
                               id: 655637c97825e6ae655fe412
                               name: Variant B
                               messages:
@@ -2184,7 +2191,7 @@ components:
           example: Welcome flow
         status:
           type: string
-          description: Flow status of the automated flow
+          description: Status of the automated flow
           enum:
             - draft
             - active
@@ -2475,31 +2482,37 @@ components:
     FlowItem:
       type: object
       description: |
-        One item of the flow's item graph, in JSON:API resource shape.
+        One item of the flow's item graph. The resource `type` is always
+        `flow-item`; the shape is picked by `attributes.type`.
         Items link to each other by resolved ids — `nextItemId` (or a
         branch's `nextItemId`) — rather than nesting; null means end of
         branch. An internal item type this API doesn't model is returned
-        as type "unsupported" with only its id.
+        with `attributes.type` "unsupported" and only its id.
       required:
         - type
         - attributes
       properties:
         type:
           type: string
-          description: Kind of item
           enum:
-            - sms
-            - delay
-            - conditional-split
-            - random-split
-            - adaptive-test
-            - user-input
-            - unsupported
+            - flow-item
         attributes:
           type: object
           required:
+            - type
             - id
           properties:
+            type:
+              type: string
+              description: Kind of item
+              enum:
+                - sms
+                - delay
+                - conditional-split
+                - random-split
+                - adaptive-test
+                - user-input
+                - unsupported
             id:
               type: string
               description: ID of the item
