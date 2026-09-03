@@ -33,6 +33,14 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.8] - 2026-09-02
+
+#### Added
+- `GET /automated-flows` and `GET /automated-flows/{id}` endpoints for listing the site's automated flows and retrieving one with its full structure. Automated flows carry a flow status (`draft`, `active`, `inactive`, `cancelled`).
+- `GET /campaign-flows` and `GET /campaign-flows/{id}` endpoints for listing the site's campaigns and retrieving one with its full structure. Campaigns carry the dashboard's send status (`scheduled`, `sending`, `sent`, …) instead of a flow status.
+- Both `/automated-flows/{id}` and `/campaign-flows/{id}` return the flow's full item graph (messages, delays, splits, adaptive tests) with outbound edges resolved to item ids via `entryFlowItemId`/`nextItemId`.
+- The published `GET /flows` and `GET /flows/{id}` are unchanged.
+
 ### [2023-12.7] - 2026-08-26
 
 #### Added

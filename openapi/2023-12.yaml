@@ -90,6 +90,381 @@ paths:
           $ref: '#/components/responses/HttpError'
         5XX:
           $ref: '#/components/responses/HttpError'
+  /automated-flows:
+    get:
+      summary: Retrieve list of automated flows
+      tags:
+        - Flow
+      operationId: listAutomatedFlows
+      security:
+        - ApiKeyAuth: []
+      description: |
+        The site's automated flows — configuration only, no statistics.
+        Default page size 100.
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of automated flows to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 100
+        - name: offset
+          in: query
+          description: Number of automated flows to skip, for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: tags
+          in: query
+          description: |
+            Filter to flows carrying ALL given tags. Dashboard groups map
+            to umbrella tags: default-welcome, joined-a-segment,
+            abandonment, receipt, fulfillment, back-in-stock, integration
+            (plus the specific integration's own tag), subscriber-support.
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AutomatedFlow'
+              examples:
+                automated:
+                  summary: An automated flow
+                  value:
+                    data:
+                      - type: automated-flows
+                        attributes:
+                          id: 655637c97825e6ae655fe1b5
+                          name: Welcome flow
+                          status: active
+                          tags:
+                            - default-welcome
+                            - automated
+                          isQuietHoursEnabled: true
+                          isSmartSendingEnabled: false
+                          createdAt: '2026-01-10T09:00:00.000Z'
+                          updatedAt: '2026-08-20T09:00:00.000Z'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/automated-flows/{id}':
+    get:
+      summary: Receive a single automated flow
+      tags:
+        - Flow
+      operationId: getAutomatedFlow
+      security:
+        - ApiKeyAuth: []
+      description: |
+        One automated flow with its full structure: every item with its
+        content and outbound edges resolved to item ids —
+        `entryFlowItemId` is the first item; `nextItemId: null` means
+        end of branch. The id of a campaign-backed flow returns 404 — use
+        `/campaign-flows/{id}` instead.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the automated flow
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AutomatedFlowDetail'
+              examples:
+                automated:
+                  summary: Welcome message, delay, conditional split, follow-up message
+                  value:
+                    data:
+                      type: automated-flows
+                      attributes:
+                        id: 655637c97825e6ae655fe1b5
+                        name: Welcome flow
+                        status: active
+                        tags:
+                          - default-welcome
+                          - automated
+                        isQuietHoursEnabled: true
+                        isSmartSendingEnabled: false
+                        createdAt: '2026-01-10T09:00:00.000Z'
+                        updatedAt: '2026-08-20T09:00:00.000Z'
+                        entryFlowItemId: 655637c97825e6ae655fe401
+                        items:
+                          - type: sms
+                            attributes:
+                              id: 655637c97825e6ae655fe401
+                              name: Welcome message
+                              messages:
+                                - text: 'Welcome to our SMS list! Reply STOP to opt out.'
+                                  imageUrl: null
+                              nextItemId: 655637c97825e6ae655fe402
+                          - type: delay
+                            attributes:
+                              id: 655637c97825e6ae655fe402
+                              delayType: delay
+                              durationInSeconds: 86400
+                              nextItemId: 655637c97825e6ae655fe403
+                          - type: conditional-split
+                            attributes:
+                              id: 655637c97825e6ae655fe403
+                              branches:
+                                - expression:
+                                    any:
+                                      - fact: hasPurchased
+                                        operator: equal
+                                        value: true
+                                  nextItemId: 655637c97825e6ae655fe404
+                              defaultNextItemId: null
+                          - type: sms
+                            attributes:
+                              id: 655637c97825e6ae655fe404
+                              name: Follow-up message
+                              messages:
+                                - text: 'Thanks for joining! Here is 10% off your first order.'
+                                  imageUrl: null
+                              nextItemId: null
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  /campaign-flows:
+    get:
+      summary: Retrieve list of campaigns
+      tags:
+        - Flow
+      operationId: listCampaigns
+      security:
+        - ApiKeyAuth: []
+      description: |
+        The site's campaigns — configuration only, no statistics. Default
+        page size 100.
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of campaigns to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 100
+        - name: offset
+          in: query
+          description: Number of campaigns to skip, for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: status
+          in: query
+          description: Filter by the dashboard's send status
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - draft
+                - scheduled
+                - processing
+                - sending
+                - sent
+                - failed
+                - cancelled
+                - evaluating
+                - noWinner
+        - name: campaignType
+          in: query
+          description: Filter by campaign type
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - standard
+                - adaptive
+        - name: segmentId
+          in: query
+          description: Filter to campaigns whose audience includes or excludes this segment ID
+          schema:
+            type: string
+        - name: scheduledFrom
+          in: query
+          description: Filter to campaigns scheduled at or after this time (inclusive)
+          schema:
+            type: string
+            format: date-time
+        - name: scheduledTo
+          in: query
+          description: Filter to campaigns scheduled at or before this time (inclusive)
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Campaign'
+              examples:
+                sent-adaptive:
+                  summary: A sent adaptive campaign
+                  value:
+                    data:
+                      - type: campaigns
+                        attributes:
+                          id: 66aa11b7825e6ae655fe200
+                          name: Labor Day Sale
+                          status: sent
+                          campaignType: adaptive
+                          scheduledFor: '2026-09-01T14:00:00.000Z'
+                          scheduleType: siteTimezone
+                          sentAt: '2026-09-01T14:03:00.000Z'
+                          deliveredSubscriberCount: 11840
+                          includeSegments:
+                            - id: 655637c97825e6ae655fe300
+                          excludeSegments: []
+                          isQuietHoursEnabled: true
+                          adaptiveTest:
+                            adaptiveTestStatus: complete_with_winner
+                            adaptiveTestResult:
+                              winnerFlowItemId: 655637c97825e6ae655fe411
+                              wasTiebroken: false
+                              completedAt: '2026-09-01T18:03:00.000Z'
+                            testVariantsDispatchedAt: '2026-09-01T14:03:00.000Z'
+                          discountUsage:
+                            - id: 655637c97825e6ae655fe310
+                              referenceCount: 2
+                          discountCodePoolUsage:
+                            - id: 655637c97825e6ae655fe320
+                              referenceCount: 1
+                          createdAt: '2026-08-01T09:00:00.000Z'
+                          updatedAt: '2026-09-01T18:03:00.000Z'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/campaign-flows/{id}':
+    get:
+      summary: Receive a single campaign
+      tags:
+        - Flow
+      operationId: getCampaign
+      security:
+        - ApiKeyAuth: []
+      description: |
+        One campaign with its full message structure — the same item
+        graph as the automated flow detail. The id of an automated flow
+        returns 404 — use `/automated-flows/{id}` instead.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the campaign
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CampaignDetail'
+              examples:
+                sent-adaptive:
+                  summary: Adaptive test with two SMS variants
+                  value:
+                    data:
+                      type: campaigns
+                      attributes:
+                        id: 66aa11b7825e6ae655fe200
+                        name: Labor Day Sale
+                        status: sent
+                        campaignType: adaptive
+                        scheduledFor: '2026-09-01T14:00:00.000Z'
+                        scheduleType: siteTimezone
+                        sentAt: '2026-09-01T14:03:00.000Z'
+                        deliveredSubscriberCount: 11840
+                        includeSegments:
+                          - id: 655637c97825e6ae655fe300
+                        excludeSegments: []
+                        isQuietHoursEnabled: true
+                        adaptiveTest:
+                          adaptiveTestStatus: complete_with_winner
+                          adaptiveTestResult:
+                            winnerFlowItemId: 655637c97825e6ae655fe411
+                            wasTiebroken: false
+                            completedAt: '2026-09-01T18:03:00.000Z'
+                          testVariantsDispatchedAt: '2026-09-01T14:03:00.000Z'
+                        discountUsage:
+                          - id: 655637c97825e6ae655fe310
+                            referenceCount: 2
+                        discountCodePoolUsage:
+                          - id: 655637c97825e6ae655fe320
+                            referenceCount: 1
+                        createdAt: '2026-08-01T09:00:00.000Z'
+                        updatedAt: '2026-09-01T18:03:00.000Z'
+                        entryFlowItemId: 655637c97825e6ae655fe410
+                        items:
+                          - type: adaptive-test
+                            attributes:
+                              id: 655637c97825e6ae655fe410
+                              adaptiveTest:
+                                variants:
+                                  - flowItemId: 655637c97825e6ae655fe411
+                                  - flowItemId: 655637c97825e6ae655fe412
+                                evaluation:
+                                  metric: clickRate
+                                  evaluateAfterHours: 4
+                                audienceSplitPercentage: 20
+                          - type: sms
+                            attributes:
+                              id: 655637c97825e6ae655fe411
+                              name: Variant A
+                              messages:
+                                - text: 'Labor Day is here — 20% off everything.'
+                                  imageUrl: null
+                              nextItemId: null
+                          - type: sms
+                            attributes:
+                              id: 655637c97825e6ae655fe412
+                              name: Variant B
+                              messages:
+                                - text: 'Save big this Labor Day. Shop now.'
+                                  imageUrl: null
+                              nextItemId: null
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
   /optin-tools:
     get:
       summary: Retrieve list of opt-in tools
@@ -1791,6 +2166,434 @@ components:
                 - active
                 - inactive
                 - cancelled
+    AutomatedFlowAttributes:
+      type: object
+      required:
+        - id
+        - name
+        - status
+        - tags
+      properties:
+        id:
+          type: string
+          description: ID of the automated flow
+          example: 655637c97825e6ae655fe1b5
+        name:
+          type: string
+          description: Name of the automated flow
+          example: Welcome flow
+        status:
+          type: string
+          description: Flow status of the automated flow
+          enum:
+            - draft
+            - active
+            - inactive
+            - cancelled
+        tags:
+          type: array
+          items:
+            type: string
+          description: Flow tags
+          example:
+            - default-welcome
+            - automated
+        isQuietHoursEnabled:
+          type: boolean
+          description: Whether messages from this flow are held during the subscriber's quiet hours
+        isSmartSendingEnabled:
+          type: boolean
+          description: Whether Smart Sending is enabled, suppressing sends to recently-messaged subscribers
+        segmentId:
+          type: string
+          description: ID of the segment gating entry into the flow, if configured
+        triggerDiscountId:
+          type: string
+          description: ID of the discount code associated with the flow's trigger, if configured
+        createdAt:
+          type: string
+          format: date-time
+          description: When the flow was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the flow was last updated
+    AutomatedFlow:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - automated-flows
+        attributes:
+          $ref: '#/components/schemas/AutomatedFlowAttributes'
+    AutomatedFlowDetail:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - automated-flows
+        attributes:
+          allOf:
+            - $ref: '#/components/schemas/AutomatedFlowAttributes'
+            - type: object
+              required:
+                - entryFlowItemId
+                - items
+              properties:
+                entryFlowItemId:
+                  type: string
+                  description: ID of the first item in the flow
+                items:
+                  type: array
+                  description: Every item of the flow, linked by resolved ids
+                  items:
+                    $ref: '#/components/schemas/FlowItem'
+    CampaignAttributes:
+      type: object
+      required:
+        - id
+        - name
+        - status
+        - campaignType
+      properties:
+        id:
+          type: string
+          description: ID of the campaign
+          example: 66aa11b7825e6ae655fe200
+        name:
+          type: string
+          description: Name of the campaign
+          example: Labor Day Sale
+        status:
+          type: string
+          description: The dashboard's send status of the campaign
+          enum:
+            - draft
+            - scheduled
+            - processing
+            - sending
+            - sent
+            - failed
+            - cancelled
+            - evaluating
+            - noWinner
+        campaignType:
+          type: string
+          description: Whether the campaign sends one message or runs an adaptive test across variants
+          enum:
+            - standard
+            - adaptive
+        scheduledFor:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the campaign is scheduled to send; null when not scheduled
+        scheduleType:
+          type: string
+          description: Whether scheduledFor is interpreted in the site's timezone or in each subscriber's own timezone
+          enum:
+            - siteTimezone
+            - subscriberTimezone
+        sentAt:
+          type: string
+          format: date-time
+          description: When the campaign was actually sent
+        deliveredSubscriberCount:
+          type: integer
+          description: Number of subscribers the campaign was delivered to
+        includeSegments:
+          type: array
+          description: Segments the campaign audience includes
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+        excludeSegments:
+          type: array
+          description: Segments the campaign audience excludes
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+        isQuietHoursEnabled:
+          type: boolean
+          description: Whether messages from this campaign are held during the subscriber's quiet hours
+        adaptiveTest:
+          type: object
+          description: Adaptive test state (campaignType=adaptive only)
+          properties:
+            adaptiveTestStatus:
+              type: string
+              enum:
+                - running
+                - complete_with_winner
+                - complete_no_winner
+            adaptiveTestResult:
+              type: object
+              description: Outcome of the test, present once evaluated
+              properties:
+                winnerFlowItemId:
+                  type: string
+                  description: ID of the winning variant's flow item
+                wasTiebroken:
+                  type: boolean
+                completedAt:
+                  type: string
+                  format: date-time
+            testVariantsDispatchedAt:
+              type: string
+              format: date-time
+              description: When the test variants were sent to the sample audience
+        discountUsage:
+          type: array
+          description: |
+            Discounts the campaign's messages reference. referenceCount is the
+            number of places in the campaign that reference the discount —
+            configuration, not code consumption.
+          items:
+            type: object
+            required: [id, referenceCount]
+            properties:
+              id: { type: string }
+              referenceCount: { type: integer }
+        discountCodePoolUsage:
+          type: array
+          description: |
+            Discount code pools the campaign's messages reference. referenceCount
+            is the number of places in the campaign that reference the pool —
+            configuration, not code consumption.
+          items:
+            type: object
+            required: [id, referenceCount]
+            properties:
+              id: { type: string }
+              referenceCount: { type: integer }
+        failedReason:
+          type: string
+          description: Why the campaign send failed (status=failed only)
+        failedAt:
+          type: string
+          format: date-time
+          description: When the campaign send failed (status=failed only)
+        cancelledAt:
+          type: string
+          format: date-time
+          description: When the campaign was cancelled (status=cancelled only)
+        createdAt:
+          type: string
+          format: date-time
+          description: When the campaign was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the campaign was last updated
+    Campaign:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - campaigns
+        attributes:
+          $ref: '#/components/schemas/CampaignAttributes'
+    CampaignDetail:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - campaigns
+        attributes:
+          allOf:
+            - $ref: '#/components/schemas/CampaignAttributes'
+            - type: object
+              required:
+                - entryFlowItemId
+                - items
+              properties:
+                entryFlowItemId:
+                  type: string
+                  description: ID of the first item in the flow
+                items:
+                  type: array
+                  description: Every item of the flow, linked by resolved ids
+                  items:
+                    $ref: '#/components/schemas/FlowItem'
+    FlowMessage:
+      type: object
+      description: One SMS/MMS message of an sms flow item
+      properties:
+        text:
+          type: string
+          description: Message body
+        imageUrl:
+          type: string
+          nullable: true
+          description: MMS image attached to the message
+    FlowItemBranch:
+      type: object
+      description: |
+        One outgoing branch of a split item. conditional-split branches
+        use conditions or expression with nextItemId; random-split
+        branches use percentage with nextItemId.
+      properties:
+        conditions:
+          type: array
+          items:
+            type: object
+          description: v1 conditional split conditions
+        expression:
+          type: object
+          description: v2 conditional split expression
+        percentage:
+          type: number
+          description: Share of traffic sent down this arm (random split)
+        nextItemId:
+          type: string
+          nullable: true
+          description: ID of the next item on this branch; null means end of branch (dead arm)
+    FlowItem:
+      type: object
+      description: |
+        One item of the flow's item graph, in JSON:API resource shape.
+        Items link to each other by resolved ids — `nextItemId` (or a
+        branch's `nextItemId`) — rather than nesting; null means end of
+        branch. An internal item type this API doesn't model is returned
+        as type "unsupported" with only its id.
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          description: Kind of item
+          enum:
+            - sms
+            - delay
+            - conditional-split
+            - random-split
+            - adaptive-test
+            - user-input
+            - unsupported
+        attributes:
+          type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+              description: ID of the item
+            name:
+              type: string
+              description: Item's display name (sms only)
+            messages:
+              type: array
+              description: Messages to send (sms only)
+              items:
+                $ref: '#/components/schemas/FlowMessage'
+            discountCodes:
+              type: array
+              description: Static discount codes attached to the message (sms only)
+              items:
+                type: string
+            discounts:
+              type: array
+              description: Discounts attached to the message (sms only)
+              items:
+                type: object
+            discountCodePoolId:
+              type: string
+              description: ID of the discount code pool the message draws a unique code from (sms only)
+            uniqueDiscountIssuanceType:
+              type: string
+              description: How a unique discount code is issued to the subscriber (sms only)
+            replyKeywordSettings:
+              type: object
+              description: Keyword auto-reply configuration for this message (sms only)
+            delayType:
+              type: string
+              description: Kind of delay (delay only)
+              enum:
+                - delay
+                - delay-until
+                - delay-scheduled
+            durationInSeconds:
+              type: integer
+              description: Length of the delay, in seconds (delay only)
+            branches:
+              type: array
+              description: Outgoing branches (conditional-split, random-split)
+              items:
+                $ref: '#/components/schemas/FlowItemBranch'
+            defaultNextItemId:
+              type: string
+              nullable: true
+              description: ID of the next item when no branch matches (conditional-split only)
+            isSticky:
+              type: boolean
+              description: Whether a returning subscriber is kept on the same arm (random-split only)
+            adaptiveTest:
+              type: object
+              description: Adaptive test configuration (adaptive-test only)
+              properties:
+                variants:
+                  type: array
+                  description: Variant flow items under test
+                  items:
+                    type: object
+                    properties:
+                      flowItemId:
+                        type: string
+                        description: ID of the variant's flow item
+                evaluation:
+                  type: object
+                  description: Evaluation configuration used to pick a winner
+                audienceSplitPercentage:
+                  type: number
+                  description: Share of the audience sampled before picking a winner
+            fieldName:
+              type: string
+              description: |
+                Name of the captured field. LEGACY: user-input items are
+                no longer creatable; existing flows may still contain
+                one.
+            validationRule:
+              type: string
+              description: |
+                Validation applied to the subscriber's reply. LEGACY:
+                user-input items are no longer creatable; existing flows
+                may still contain one.
+            skippedNextItemId:
+              type: string
+              nullable: true
+              description: |
+                ID of the next item when the subscriber doesn't respond.
+                LEGACY: user-input items are no longer creatable;
+                existing flows may still contain one.
+            nextItemId:
+              type: string
+              nullable: true
+              description: ID of the next item; null means end of branch (sms, delay, user-input)
     OptinTool:
       type:
         - object
