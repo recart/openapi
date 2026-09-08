@@ -38,7 +38,7 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 #### Added
 - `GET /flows/views/{name}` — account-level flow statistics views: `sms-summary` (the SMS channel's totals, narrowable with `tags`), `flow-groups-summary` (one entry per flow group, campaigns included as `blast`), `automated-flows-summary` (one entry per automated flow) and `campaign-flows-summary` (one entry per campaign with activity in the range); both carry the flow's `flowId` and `name`. Range totals; the date range defaults to the last 7 days.
 - `GET /automated-flows/{id}/views/{name}` and `GET /campaign-flows/{id}/views/{name}` — `flow-summary` (the flow's totals) and `flow-items-summary` (an object keyed by `flowItemId`, one key per message item) for one automated flow or one campaign. The campaign views default to the campaign's lifetime when the range is omitted.
-- Every view returns the same `FlowStatistics` object: sent, recipients, clicked, clickRate, converted, sales and spent per currency, roi, optOutRate, spamRate, revenuePerRecipient and revenuePerMessage.
+- Every view returns the same `FlowStatistics` object: sent, clicked, clickRate, converted, sales and spent per currency, roi, optOutRate, spamRate and revenuePerMessage; recipients and revenuePerRecipient are present on every view except `sms-summary`, whose channel total has no first-message cohort.
 
 ### [2023-12.8] - 2026-09-02
 

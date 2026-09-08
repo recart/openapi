@@ -106,7 +106,11 @@ paths:
         `sms-summary` returns one statistics object for the SMS channel;
         `tags` narrows it — `automated` for the Automated Flows header,
         `blast` for the Campaigns header, or omit `tags` for the whole
-        channel.
+        channel. It carries no `recipients` and no `revenuePerRecipient`:
+        the channel total has no first-message cohort — RPM
+        (`revenuePerMessage`) is the per-message figure here, as on the
+        dashboard header. For the Campaigns header's Recipients and RPR
+        read the `blast` entry of `flow-groups-summary`.
 
         `flow-groups-summary` returns one entry per flow group — the
         dashboard's categories (e.g. `default-welcome`, `abandonment`,
@@ -187,7 +191,6 @@ paths:
                       attributes:
                         sms-summary:
                           sent: 68700
-                          recipients: 68200
                           clicked: 4040
                           clickRate: 0.0588
                           converted: 604
@@ -199,7 +202,6 @@ paths:
                           roi: 23.5
                           optOutRate: 0.0048
                           spamRate: 0.0001
-                          revenuePerRecipient: 0.71
                           revenuePerMessage: 0.7
                 flow-groups-summary:
                   summary: name=flow-groups-summary — one entry per group
@@ -889,9 +891,11 @@ paths:
           in: query
           description: |
             First day of the range, inclusive (YYYY-MM-DD, UTC). Defaults
-            to the start of the campaign's lifetime. Must not be older
-            than 18 months — the API does not serve older data, and an
-            older `dateFrom` returns 400.
+            to the campaign's send day (`sentAt`, or `scheduledFor` /
+            `createdAt` while it has not been sent), clamped to 18 months
+            ago. A caller-supplied `dateFrom` must not be older than 18
+            months — the API does not serve older data, and an older
+            `dateFrom` returns 400.
           schema:
             type: string
             format: date
@@ -3123,9 +3127,17 @@ components:
         numbers as the dashboard. Rates with a zero denominator are 0.
         Amounts are keyed by ISO 4217 code: USD always, the store currency
         additionally when it is not USD.
+
+        recipients and revenuePerRecipient are present on every view except
+        sms-summary: the SMS channel total is aggregated without the
+        first-message cohort that defines recipients, and its sent counts
+        every message of every flow, so the number cannot be derived from
+        it. The dashboard's Automated Flows header, built on the same data,
+        shows RPM and no recipients for the same reason. Where the
+        dashboard shows Recipients and RPR — the Campaigns header — read
+        the blast entry of flow-groups-summary.
       required:
         - sent
-        - recipients
         - clicked
         - clickRate
         - converted
@@ -3134,7 +3146,6 @@ components:
         - roi
         - optOutRate
         - spamRate
-        - revenuePerRecipient
         - revenuePerMessage
       properties:
         sent:
@@ -3143,7 +3154,12 @@ components:
           example: 41200
         recipients:
           type: integer
-          description: Subscribers who received the flow's first message
+          description: |
+            Subscribers who received the flow's first message. Present on
+            flow-groups-summary, automated-flows-summary,
+            campaign-flows-summary, flow-summary and flow-items-summary
+            (where it equals the item's sent — a message reaches a subscriber
+            at most once); absent on sms-summary.
           example: 38900
         clicked:
           type: integer
@@ -3186,7 +3202,10 @@ components:
           example: 0.0002
         revenuePerRecipient:
           type: number
-          description: sales.USD / recipients — the dashboard's RPR
+          description: |
+            sales.USD / recipients — the dashboard's RPR. Present wherever
+            recipients is; absent on sms-summary. Equals revenuePerMessage
+            on flow-items-summary.
           example: 0.64
         revenuePerMessage:
           type: number
@@ -3297,7 +3316,9 @@ components:
               description: |
                 Totals per message item, keyed by flowItemId — the same id as
                 items[] on the flow detail. Only items that recorded activity
-                in the range appear; a missing key means no activity.
+                in the range appear; a missing key means no activity. Per
+                item, recipients equals sent (a message reaches a subscriber
+                at most once), so revenuePerRecipient equals revenuePerMessage.
               additionalProperties:
                 $ref: '#/components/schemas/FlowStatistics'
     CampaignFlowViews:
@@ -3327,7 +3348,9 @@ components:
                 Totals per message item, keyed by flowItemId — the same id as
                 items[] on the campaign detail; adaptive-test variants are
                 message items, so each variant is its own key. Only items
-                that recorded activity in the range appear.
+                that recorded activity in the range appear. Per item,
+                recipients equals sent, so revenuePerRecipient equals
+                revenuePerMessage.
               additionalProperties:
                 $ref: '#/components/schemas/FlowStatistics'
     OptinTool:
