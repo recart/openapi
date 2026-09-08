@@ -90,6 +90,251 @@ paths:
           $ref: '#/components/responses/HttpError'
         5XX:
           $ref: '#/components/responses/HttpError'
+  '/flows/views/{name}':
+    get:
+      summary: Statistics view of the site's flows and campaigns
+      tags:
+        - Flow
+      operationId: getFlowsView
+      security:
+        - ApiKeyAuth: []
+      description: |
+        Account-level SMS statistics — the numbers behind the Automated
+        Flows overview and the Campaigns list. `name` picks the view. When
+        the date range is omitted it defaults to the last 7 days.
+
+        `sms-summary` returns one statistics object for the SMS channel;
+        `tags` narrows it — `automated` for the Automated Flows header,
+        `blast` for the Campaigns header, or omit `tags` for the whole
+        channel.
+
+        `flow-groups-summary` returns one entry per flow group — the
+        dashboard's categories (e.g. `default-welcome`, `abandonment`,
+        `receipt`, `fulfillment`, `back-in-stock`),
+        each integration tag the site uses, and `blast` for campaigns.
+
+        `automated-flows-summary` returns one entry per automated flow of
+        the site — its `flowId`, `name` and statistics; a flow without
+        sends in the range is still present, with zeros. `tags` narrows it
+        to a category.
+
+        `campaign-flows-summary` returns one entry per campaign with
+        activity in the range — the campaign's `flowId`, `name` and
+        statistics. Because every entry names its own flow, no separate
+        list call is needed to label the rows.
+
+        Every view is a range total.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: The view to return
+          schema:
+            type: string
+            enum:
+              - sms-summary
+              - flow-groups-summary
+              - automated-flows-summary
+              - campaign-flows-summary
+        - name: dateFrom
+          in: query
+          description: |
+            First day of the range, inclusive (YYYY-MM-DD, UTC).
+            Defaults to 7 days before `dateTo`. Must not be older than
+            18 months — the API does not serve older data, and an older
+            `dateFrom` returns 400.
+          schema:
+            type: string
+            format: date
+            example: '2026-08-25'
+        - name: dateTo
+          in: query
+          description: |
+            Last day of the range, inclusive — `dateTo=2026-08-31` includes
+            the whole of 2026-08-31 (UTC). Defaults to today.
+          schema:
+            type: string
+            format: date
+            example: '2026-08-31'
+        - name: tags
+          in: query
+          description: |
+            sms-summary and automated-flows-summary only — flow tags; a
+            flow must carry all of them. `sms` is always applied.
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    description: |
+                      Always one resource of type flow-views; attributes
+                      holds the requested view under its name.
+                    $ref: '#/components/schemas/FlowViews'
+              examples:
+                sms-summary:
+                  summary: name=sms-summary
+                  value:
+                    data:
+                      type: flow-views
+                      attributes:
+                        sms-summary:
+                          sent: 68700
+                          recipients: 68200
+                          clicked: 4040
+                          clickRate: 0.0588
+                          converted: 604
+                          sales:
+                            USD: 48423
+                            EUR: 44680.5
+                          spent:
+                            USD: 2061
+                          roi: 23.5
+                          optOutRate: 0.0048
+                          spamRate: 0.0001
+                          revenuePerRecipient: 0.71
+                          revenuePerMessage: 0.7
+                flow-groups-summary:
+                  summary: name=flow-groups-summary — one entry per group
+                  value:
+                    data:
+                      type: flow-views
+                      attributes:
+                        flow-groups-summary:
+                          - group: abandonment
+                            sent: 18400
+                            recipients: 17900
+                            clicked: 1210
+                            clickRate: 0.0658
+                            converted: 204
+                            sales:
+                              USD: 16210
+                            spent:
+                              USD: 552
+                            roi: 29.37
+                            optOutRate: 0.0031
+                            spamRate: 0
+                            revenuePerRecipient: 0.91
+                            revenuePerMessage: 0.88
+                          - group: default-welcome
+                            sent: 9100
+                            recipients: 9100
+                            clicked: 690
+                            clickRate: 0.0758
+                            converted: 88
+                            sales:
+                              USD: 7402.5
+                            spent:
+                              USD: 273
+                            roi: 27.12
+                            optOutRate: 0.0092
+                            spamRate: 0.0001
+                            revenuePerRecipient: 0.81
+                            revenuePerMessage: 0.81
+                          - group: blast
+                            sent: 41200
+                            recipients: 41200
+                            clicked: 2140
+                            clickRate: 0.0519
+                            converted: 312
+                            sales:
+                              USD: 24810.5
+                            spent:
+                              USD: 1236
+                            roi: 20.07
+                            optOutRate: 0.0041
+                            spamRate: 0.0002
+                            revenuePerRecipient: 0.6
+                            revenuePerMessage: 0.6
+                automated-flows-summary:
+                  summary: name=automated-flows-summary — one entry per automated flow
+                  value:
+                    data:
+                      type: flow-views
+                      attributes:
+                        automated-flows-summary:
+                          - flowId: 6138d0ac2d79e00001210035
+                            name: Abandoned Cart
+                            sent: 9100
+                            recipients: 9100
+                            clicked: 690
+                            clickRate: 0.0758
+                            converted: 88
+                            sales:
+                              USD: 7402.5
+                            spent:
+                              USD: 273
+                            roi: 27.12
+                            optOutRate: 0.0092
+                            spamRate: 0.0001
+                            revenuePerRecipient: 0.81
+                            revenuePerMessage: 0.81
+                          - flowId: 6138d0ac2d79e00001210036
+                            name: Welcome flow
+                            sent: 6200
+                            recipients: 6100
+                            clicked: 410
+                            clickRate: 0.0661
+                            converted: 61
+                            sales:
+                              USD: 5104
+                            spent:
+                              USD: 186
+                            roi: 27.44
+                            optOutRate: 0.0026
+                            spamRate: 0
+                            revenuePerRecipient: 0.84
+                            revenuePerMessage: 0.82
+                campaign-flows-summary:
+                  summary: name=campaign-flows-summary — one entry per campaign, keyed by flowId
+                  value:
+                    data:
+                      type: flow-views
+                      attributes:
+                        campaign-flows-summary:
+                          - flowId: 68a0f1c7e8c9d2b001234abc
+                            name: Labor Day 20% off
+                            sent: 24700
+                            recipients: 24700
+                            clicked: 1310
+                            clickRate: 0.053
+                            converted: 189
+                            sales:
+                              USD: 15020.5
+                            spent:
+                              USD: 741
+                            roi: 20.27
+                            optOutRate: 0.0038
+                            spamRate: 0.0001
+                            revenuePerRecipient: 0.61
+                            revenuePerMessage: 0.61
+                          - flowId: 68a0f1c7e8c9d2b001234abd
+                            name: Back to school — 15% off
+                            sent: 16500
+                            recipients: 16500
+                            clicked: 830
+                            clickRate: 0.0503
+                            converted: 123
+                            sales:
+                              USD: 9790
+                            spent:
+                              USD: 495
+                            roi: 19.78
+                            optOutRate: 0.0044
+                            spamRate: 0.0003
+                            revenuePerRecipient: 0.59
+                            revenuePerMessage: 0.59
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
   /automated-flows:
     get:
       summary: Retrieve list of automated flows
@@ -248,6 +493,137 @@ paths:
                                 - text: 'Thanks for joining! Here is 10% off your first order.'
                                   imageUrl: null
                               nextItemId: null
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/automated-flows/{id}/views/{name}':
+    get:
+      summary: Statistics view of an automated flow
+      tags:
+        - Flow
+      operationId: getAutomatedFlowView
+      security:
+        - ApiKeyAuth: []
+      description: |
+        One statistics view of an automated flow. `name` picks the view.
+        When the date range is omitted it defaults to the last 7 days. The
+        id of a campaign-backed flow returns 404 — use
+        `/campaign-flows/{id}/views/{name}` instead.
+
+        `flow-summary` returns the flow's totals for the range.
+        `flow-items-summary` returns an object keyed by `flowItemId` — the
+        same id as `items[]` on `/automated-flows/{id}` — with one key per
+        message item that recorded activity in the range; a missing key
+        means no activity.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the automated flow
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          description: The view to return
+          schema:
+            type: string
+            enum:
+              - flow-summary
+              - flow-items-summary
+        - name: dateFrom
+          in: query
+          description: |
+            First day of the range, inclusive (YYYY-MM-DD, UTC).
+            Defaults to 7 days before `dateTo`. Must not be older than
+            18 months — the API does not serve older data, and an older
+            `dateFrom` returns 400.
+          schema:
+            type: string
+            format: date
+            example: '2026-08-25'
+        - name: dateTo
+          in: query
+          description: |
+            Last day of the range, inclusive — `dateTo=2026-08-31` includes
+            the whole of 2026-08-31 (UTC). Defaults to today.
+          schema:
+            type: string
+            format: date
+            example: '2026-08-31'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    description: |
+                      Always one resource of type automated-flow-views;
+                      attributes holds the requested view under its name.
+                    $ref: '#/components/schemas/AutomatedFlowViews'
+              examples:
+                flow-summary:
+                  summary: name=flow-summary
+                  value:
+                    data:
+                      type: automated-flow-views
+                      attributes:
+                        flow-summary:
+                          sent: 12900
+                          recipients: 9100
+                          clicked: 900
+                          clickRate: 0.0698
+                          converted: 110
+                          sales:
+                            USD: 9252.5
+                          spent:
+                            USD: 387
+                          roi: 23.91
+                          optOutRate: 0.0095
+                          spamRate: 0.0001
+                          revenuePerRecipient: 1.02
+                          revenuePerMessage: 0.72
+                flow-items-summary:
+                  summary: name=flow-items-summary — keyed by flowItemId, one key per message item
+                  value:
+                    data:
+                      type: automated-flow-views
+                      attributes:
+                        flow-items-summary:
+                          6138d0ac2d79e00001210041:
+                            sent: 9100
+                            recipients: 9100
+                            clicked: 690
+                            clickRate: 0.0758
+                            converted: 88
+                            sales:
+                              USD: 7402.5
+                            spent:
+                              USD: 273
+                            roi: 27.12
+                            optOutRate: 0.0092
+                            spamRate: 0.0001
+                            revenuePerRecipient: 0.81
+                            revenuePerMessage: 0.81
+                          6138d0ac2d79e00001210042:
+                            sent: 3800
+                            recipients: 3800
+                            clicked: 210
+                            clickRate: 0.0553
+                            converted: 22
+                            sales:
+                              USD: 1850
+                            spent:
+                              USD: 114
+                            roi: 16.23
+                            optOutRate: 0.0008
+                            spamRate: 0
+                            revenuePerRecipient: 0.49
+                            revenuePerMessage: 0.49
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -468,6 +844,139 @@ paths:
                                 - text: 'Save big this Labor Day. Shop now.'
                                   imageUrl: null
                               nextItemId: null
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/campaign-flows/{id}/views/{name}':
+    get:
+      summary: Statistics view of a campaign
+      tags:
+        - Flow
+      operationId: getCampaignFlowView
+      security:
+        - ApiKeyAuth: []
+      description: |
+        One statistics view of a campaign, addressed by campaign id — the
+        same two views as `/automated-flows/{id}/views/{name}`. When the
+        date range is omitted it covers the campaign's lifetime — a
+        campaign's revenue keeps arriving for days after the send. The id
+        of an automated flow returns 404 — use
+        `/automated-flows/{id}/views/{name}` instead.
+
+        `flow-summary` returns the campaign's totals for the range.
+        `flow-items-summary` returns an object keyed by `flowItemId` — the
+        same id as `items[]` on `/campaign-flows/{id}` — with one key per
+        message item that recorded activity in the range; adaptive-test
+        variants are message items, so each variant gets its own key.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the campaign
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          description: The view to return
+          schema:
+            type: string
+            enum:
+              - flow-summary
+              - flow-items-summary
+        - name: dateFrom
+          in: query
+          description: |
+            First day of the range, inclusive (YYYY-MM-DD, UTC). Defaults
+            to the start of the campaign's lifetime. Must not be older
+            than 18 months — the API does not serve older data, and an
+            older `dateFrom` returns 400.
+          schema:
+            type: string
+            format: date
+            example: '2026-08-25'
+        - name: dateTo
+          in: query
+          description: |
+            Last day of the range, inclusive — `dateTo=2026-08-31` includes
+            the whole of 2026-08-31 (UTC). Defaults to today.
+          schema:
+            type: string
+            format: date
+            example: '2026-08-31'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    description: |
+                      Always one resource of type campaign-flow-views;
+                      attributes holds the requested view under its name.
+                    $ref: '#/components/schemas/CampaignFlowViews'
+              examples:
+                flow-summary:
+                  summary: name=flow-summary
+                  value:
+                    data:
+                      type: campaign-flow-views
+                      attributes:
+                        flow-summary:
+                          sent: 24700
+                          recipients: 24700
+                          clicked: 1310
+                          clickRate: 0.053
+                          converted: 189
+                          sales:
+                            USD: 15020.5
+                          spent:
+                            USD: 741
+                          roi: 20.27
+                          optOutRate: 0.0038
+                          spamRate: 0.0001
+                          revenuePerRecipient: 0.61
+                          revenuePerMessage: 0.61
+                flow-items-summary:
+                  summary: name=flow-items-summary — keyed by flowItemId, one key per adaptive-test variant
+                  value:
+                    data:
+                      type: campaign-flow-views
+                      attributes:
+                        flow-items-summary:
+                          655637c97825e6ae655fe411:
+                            sent: 14800
+                            recipients: 14800
+                            clicked: 850
+                            clickRate: 0.0574
+                            converted: 125
+                            sales:
+                              USD: 10500.75
+                            spent:
+                              USD: 444
+                            roi: 23.65
+                            optOutRate: 0.0035
+                            spamRate: 0.0001
+                            revenuePerRecipient: 0.71
+                            revenuePerMessage: 0.71
+                          655637c97825e6ae655fe412:
+                            sent: 9900
+                            recipients: 9900
+                            clicked: 460
+                            clickRate: 0.0465
+                            converted: 64
+                            sales:
+                              USD: 4519.75
+                            spent:
+                              USD: 297
+                            roi: 15.22
+                            optOutRate: 0.0042
+                            spamRate: 0
+                            revenuePerRecipient: 0.46
+                            revenuePerMessage: 0.46
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -2607,6 +3116,220 @@ components:
               type: string
               nullable: true
               description: ID of the next item; null means end of branch (sms, delay, user-input)
+    FlowStatistics:
+      type: object
+      description: |
+        Range totals of one flow, campaign, group or message — the same
+        numbers as the dashboard. Rates with a zero denominator are 0.
+        Amounts are keyed by ISO 4217 code: USD always, the store currency
+        additionally when it is not USD.
+      required:
+        - sent
+        - recipients
+        - clicked
+        - clickRate
+        - converted
+        - sales
+        - spent
+        - roi
+        - optOutRate
+        - spamRate
+        - revenuePerRecipient
+        - revenuePerMessage
+      properties:
+        sent:
+          type: integer
+          description: SMS and MMS messages sent
+          example: 41200
+        recipients:
+          type: integer
+          description: Subscribers who received the flow's first message
+          example: 38900
+        clicked:
+          type: integer
+          description: Clicks on a link in one of the flow's messages
+          example: 2140
+        clickRate:
+          type: number
+          description: Clicks / sent
+          example: 0.0519
+        converted:
+          type: integer
+          description: Attributed orders
+          example: 312
+        sales:
+          type: object
+          additionalProperties:
+            type: number
+          description: Attributed order value per currency (ISO 4217 code)
+          example:
+            USD: 24810.5
+            EUR: 22890.2
+        spent:
+          type: object
+          additionalProperties:
+            type: number
+          description: SMS and MMS cost per currency (ISO 4217 code)
+          example:
+            USD: 1236
+        roi:
+          type: number
+          description: sales.USD / spent.USD
+          example: 20.07
+        optOutRate:
+          type: number
+          description: Opt-outs attributed to the flow / recipients
+          example: 0.0041
+        spamRate:
+          type: number
+          description: Carrier spam rejections / sent
+          example: 0.0002
+        revenuePerRecipient:
+          type: number
+          description: sales.USD / recipients — the dashboard's RPR
+          example: 0.64
+        revenuePerMessage:
+          type: number
+          description: sales.USD / sent — the dashboard's RPM
+          example: 0.6
+    FlowGroupStatisticsItem:
+      allOf:
+        - type: object
+          required:
+            - group
+          properties:
+            group:
+              type: string
+              description: Flow group tag
+              example: abandonment
+        - $ref: '#/components/schemas/FlowStatistics'
+    AutomatedFlowStatisticsItem:
+      allOf:
+        - type: object
+          required:
+            - flowId
+            - name
+          properties:
+            flowId:
+              type: string
+              description: ID of the automated flow
+              example: 6138d0ac2d79e00001210035
+            name:
+              type: string
+              description: Name of the automated flow
+              example: Abandoned Cart
+        - $ref: '#/components/schemas/FlowStatistics'
+    CampaignFlowStatisticsItem:
+      allOf:
+        - type: object
+          required:
+            - flowId
+            - name
+          properties:
+            flowId:
+              type: string
+              description: The campaign's flow id
+              example: 68a0f1c7e8c9d2b001234abc
+            name:
+              type: string
+              description: Name of the campaign
+              example: Labor Day 20% off
+        - $ref: '#/components/schemas/FlowStatistics'
+    FlowViews:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - flow-views
+        attributes:
+          type: object
+          description: |
+            The requested view's data under its name — exactly one key per
+            request.
+          minProperties: 1
+          properties:
+            sms-summary:
+              description: SMS channel totals for the range, optionally narrowed by tags
+              $ref: '#/components/schemas/FlowStatistics'
+            flow-groups-summary:
+              type: array
+              description: Totals per flow group, campaigns included as blast
+              items:
+                $ref: '#/components/schemas/FlowGroupStatisticsItem'
+            automated-flows-summary:
+              type: array
+              description: Totals per automated flow of the site
+              items:
+                $ref: '#/components/schemas/AutomatedFlowStatisticsItem'
+            campaign-flows-summary:
+              type: array
+              description: Totals per campaign with activity in the range
+              items:
+                $ref: '#/components/schemas/CampaignFlowStatisticsItem'
+    AutomatedFlowViews:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - automated-flow-views
+        attributes:
+          type: object
+          description: |
+            The requested view's data under its name — exactly one key per
+            request.
+          minProperties: 1
+          properties:
+            flow-summary:
+              description: The flow's totals for the range
+              $ref: '#/components/schemas/FlowStatistics'
+            flow-items-summary:
+              type: object
+              description: |
+                Totals per message item, keyed by flowItemId — the same id as
+                items[] on the flow detail. Only items that recorded activity
+                in the range appear; a missing key means no activity.
+              additionalProperties:
+                $ref: '#/components/schemas/FlowStatistics'
+    CampaignFlowViews:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - campaign-flow-views
+        attributes:
+          type: object
+          description: |
+            The requested view's data under its name — exactly one key per
+            request.
+          minProperties: 1
+          properties:
+            flow-summary:
+              description: The campaign's totals for the range
+              $ref: '#/components/schemas/FlowStatistics'
+            flow-items-summary:
+              type: object
+              description: |
+                Totals per message item, keyed by flowItemId — the same id as
+                items[] on the campaign detail; adaptive-test variants are
+                message items, so each variant is its own key. Only items
+                that recorded activity in the range appear.
+              additionalProperties:
+                $ref: '#/components/schemas/FlowStatistics'
     OptinTool:
       type:
         - object
