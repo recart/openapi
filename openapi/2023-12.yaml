@@ -871,6 +871,12 @@ paths:
         same id as `items[]` on `/campaign-flows/{id}` — with one key per
         message item that recorded activity in the range; adaptive-test
         variants are message items, so each variant gets its own key.
+
+        `adaptive-flow-summary` is for adaptive campaigns only (404 for a
+        standard one): the campaign's id and name, its adaptive test state
+        and result, and one entry per variant with the `evaluationStats`
+        the winner was picked on next to the variant's lifetime totals. It
+        ignores `dateFrom` and `dateTo`.
       parameters:
         - name: id
           in: path
@@ -887,6 +893,7 @@ paths:
             enum:
               - flow-summary
               - flow-items-summary
+              - adaptive-flow-summary
         - name: dateFrom
           in: query
           description: |
@@ -981,6 +988,73 @@ paths:
                             spamRate: 0
                             revenuePerRecipient: 0.46
                             revenuePerMessage: 0.46
+                adaptive-flow-summary:
+                  summary: name=adaptive-flow-summary — the test as evaluated next to lifetime totals
+                  value:
+                    data:
+                      type: campaign-flow-views
+                      attributes:
+                        adaptive-flow-summary:
+                          id: 66aa11b7825e6ae655fe200
+                          name: Labor Day Sale
+                          adaptiveTest:
+                            adaptiveTestStatus: complete_with_winner
+                            adaptiveTestResult:
+                              winnerFlowItemId: 655637c97825e6ae655fe411
+                              wasTiebroken: false
+                              completedAt: '2026-09-01T18:03:00.000Z'
+                            testVariantsDispatchedAt: '2026-09-01T14:03:00.000Z'
+                          variants:
+                            - flowItemId: 655637c97825e6ae655fe411
+                              evaluationStats:
+                                sent: 1184
+                                clickRate: 0.0621
+                                sales:
+                                  USD: 1420.5
+                                spent:
+                                  USD: 35.52
+                                roi: 39.99
+                                optOutRate: 0.0034
+                              allTimeStats:
+                                sent: 14800
+                                recipients: 14800
+                                clicked: 850
+                                clickRate: 0.0574
+                                converted: 125
+                                sales:
+                                  USD: 10500.75
+                                spent:
+                                  USD: 444
+                                roi: 23.65
+                                optOutRate: 0.0035
+                                spamRate: 0.0001
+                                revenuePerRecipient: 0.71
+                                revenuePerMessage: 0.71
+                            - flowItemId: 655637c97825e6ae655fe412
+                              evaluationStats:
+                                sent: 1184
+                                clickRate: 0.0447
+                                sales:
+                                  USD: 902
+                                spent:
+                                  USD: 35.52
+                                roi: 25.39
+                                optOutRate: 0.0042
+                              allTimeStats:
+                                sent: 1184
+                                recipients: 1184
+                                clicked: 58
+                                clickRate: 0.049
+                                converted: 9
+                                sales:
+                                  USD: 1130.25
+                                spent:
+                                  USD: 35.52
+                                roi: 31.82
+                                optOutRate: 0.0042
+                                spamRate: 0
+                                revenuePerRecipient: 0.95
+                                revenuePerMessage: 0.95
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -2851,31 +2925,8 @@ components:
           type: boolean
           description: Whether messages from this campaign are held during the subscriber's quiet hours
         adaptiveTest:
-          type: object
           description: Adaptive test state (campaignType=adaptive only)
-          properties:
-            adaptiveTestStatus:
-              type: string
-              enum:
-                - running
-                - complete_with_winner
-                - complete_no_winner
-            adaptiveTestResult:
-              type: object
-              description: Outcome of the test, present once evaluated
-              properties:
-                winnerFlowItemId:
-                  type: string
-                  description: ID of the winning variant's flow item
-                wasTiebroken:
-                  type: boolean
-                completedAt:
-                  type: string
-                  format: date-time
-            testVariantsDispatchedAt:
-              type: string
-              format: date-time
-              description: When the test variants were sent to the sample audience
+          $ref: '#/components/schemas/CampaignAdaptiveTest'
         discountUsage:
           type: array
           description: |
@@ -3120,6 +3171,125 @@ components:
               type: string
               nullable: true
               description: ID of the next item; null means end of branch (sms, delay, user-input)
+    CampaignAdaptiveTest:
+      type: object
+      description: Adaptive test state of a campaign
+      properties:
+        adaptiveTestStatus:
+          type: string
+          enum:
+            - running
+            - complete_with_winner
+            - complete_no_winner
+        adaptiveTestResult:
+          type: object
+          description: Outcome of the test, present once evaluated
+          properties:
+            winnerFlowItemId:
+              type: string
+              description: ID of the winning variant's flow item
+            wasTiebroken:
+              type: boolean
+            completedAt:
+              type: string
+              format: date-time
+        testVariantsDispatchedAt:
+          type: string
+          format: date-time
+          description: When the test variants were sent to the sample audience
+    AdaptiveTestVariantEvaluationStats:
+      type: object
+      description: |
+        The variant's totals frozen at the moment its adaptive test was
+        evaluated — the numbers the winner was picked on. The evaluation
+        runs once, when the evaluation window closes
+        (testVariantsDispatchedAt plus the window), and takes each
+        variant's lifetime totals as they stood then. It is a snapshot,
+        not a range query: clicks, orders and opt-outs that arrive later
+        are not added, and the winner's rollout to the rest of the
+        audience is not included. Amounts are keyed by ISO 4217 code: USD
+        always, the store currency additionally when it is not USD. Rates
+        with a zero denominator are 0.
+      required:
+        - sent
+        - clickRate
+        - sales
+        - spent
+        - roi
+        - optOutRate
+      properties:
+        sent:
+          type: integer
+          description: SMS and MMS messages sent to the test audience by this variant
+          example: 1184
+        clickRate:
+          type: number
+          description: Clicks / sent
+          example: 0.0621
+        sales:
+          type: object
+          additionalProperties:
+            type: number
+          description: Attributed order value per currency (ISO 4217 code)
+          example:
+            USD: 1420.5
+        spent:
+          type: object
+          additionalProperties:
+            type: number
+          description: SMS and MMS cost per currency (ISO 4217 code)
+          example:
+            USD: 35.52
+        roi:
+          type: number
+          description: sales.USD / spent.USD
+          example: 39.99
+        optOutRate:
+          type: number
+          description: Opt-outs attributed to the variant / sent
+          example: 0.0034
+    AdaptiveFlowSummary:
+      type: object
+      description: |
+        One adaptive campaign's test, as evaluated and as it stands now.
+        Each variant carries evaluationStats — the snapshot the winner was
+        picked on, present once the test has completed — next to
+        allTimeStats, the variant's lifetime totals computed at request
+        time, which keep growing with late activity and, for the winner,
+        include the rollout to the rest of the audience.
+      required:
+        - id
+        - name
+        - adaptiveTest
+        - variants
+      properties:
+        id:
+          type: string
+          description: ID of the campaign
+          example: 66aa11b7825e6ae655fe200
+        name:
+          type: string
+          description: Name of the campaign
+          example: Labor Day Sale
+        adaptiveTest:
+          $ref: '#/components/schemas/CampaignAdaptiveTest'
+        variants:
+          type: array
+          description: The variants under test, in the order of the adaptive-test item
+          items:
+            type: object
+            required:
+              - flowItemId
+              - allTimeStats
+            properties:
+              flowItemId:
+                type: string
+                description: ID of the variant's flow item — the same id as items[] on the campaign detail and the keys of flow-items-summary
+              evaluationStats:
+                $ref: '#/components/schemas/AdaptiveTestVariantEvaluationStats'
+              allTimeStats:
+                description: The variant's lifetime totals at request time; recipients equals sent
+                $ref: '#/components/schemas/FlowStatistics'
     FlowStatistics:
       type: object
       description: |
@@ -3353,6 +3523,9 @@ components:
                 revenuePerMessage.
               additionalProperties:
                 $ref: '#/components/schemas/FlowStatistics'
+            adaptive-flow-summary:
+              description: The campaign's adaptive test with per-variant evaluation and lifetime statistics (adaptive campaigns only)
+              $ref: '#/components/schemas/AdaptiveFlowSummary'
     OptinTool:
       type:
         - object
