@@ -33,6 +33,11 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.10] - 2026-09-09
+
+#### Added
+- `GET /campaign-flows/{id}/views/adaptive-flow-summary` — for an adaptive campaign, its id and name, the adaptive test state and result (`adaptiveTestStatus`, `adaptiveTestResult`, `testVariantsDispatchedAt`) and one entry per variant with `evaluationStats` (`sent`, `clickRate`, `sales`, `spent`, `roi`, `optOutRate` frozen at the moment the test was evaluated — the numbers the winner was picked on) next to `allTimeStats` (the variant's lifetime totals at request time). Ignores `dateFrom` and `dateTo`; 404 for a standard campaign.
+
 ### [2023-12.9] - 2026-09-07
 
 #### Added
