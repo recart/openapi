@@ -2,6 +2,8 @@ openapi: 3.1.0
 tags:
   - name: Abandonment
     description: Cart abandonments
+  - name: Account
+    description: Accounts
   - name: Cart
     description: Carts
   - name: Event
@@ -33,6 +35,34 @@ info:
     name: Recart
     url: https://recart.com
 paths:
+  /accounts:
+    get:
+      summary: Retrieve the accounts of the API key
+      tags:
+        - Account
+      operationId: listAccounts
+      security:
+        - ApiKeyAuth: []
+      description: |
+        List the accounts the API key gives access to. An API key belongs to one account,
+        so the list carries a single entry: the account's id, name, domain, currency and time zone.
+        Use the account's `id` wherever an integration needs to identify the account.
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Account'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
   /flows:
     get:
       summary: Retrieve list of flows
@@ -2717,6 +2747,47 @@ components:
               detail:
                 type: string
                 example: ''
+    Account:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - accounts
+        attributes:
+          type: object
+          required:
+            - id
+            - name
+            - domain
+            - currency
+          properties:
+            id:
+              type: string
+              description: ID of the account
+              example: 65491e6a1d600d2c00414601
+            name:
+              type: string
+              description: Name of the account as shown in the Recart dashboard
+              example: Example Store
+            domain:
+              type: string
+              description: Storefront domain of the account
+              example: examplestore.com
+            currency:
+              type: string
+              description: Currency of the account as an ISO 4217 code
+              example: USD
+            timezone:
+              type:
+                - string
+                - 'null'
+              description: Time zone of the account as an IANA time zone name, null when the account has not set one
+              example: America/New_York
     Flow:
       type:
         - object
