@@ -33,6 +33,11 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.11] - 2026-09-11
+
+#### Added
+- `GET /accounts` — the accounts the API key gives access to. An API key belongs to one account, so the list carries a single entry with the account's `id`, `name`, `domain`, `currency` (ISO 4217) and `timezone` (IANA name, `null` when unset). Lets an integration identify the account behind its key without a second lookup.
+
 ### [2023-12.10] - 2026-09-09
 
 #### Added
