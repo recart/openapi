@@ -3043,7 +3043,7 @@ components:
             ID with the resolved name. An ID that could not be resolved is
             absent from it, and the key is omitted when nothing resolved:
             `member-of-a-segment` (segment ids, on the condition), and on
-            the subcondition for `sequence`/`sequence-id` (flow ids),
+            the flow subcondition (flow IDs),
             `subscription-source`/`optin-tool-id` (opt-in tool ids),
             `product`/`product-id` and `product-variant` (Shopify ids),
             `klaviyo-segment-or-list` (Klaviyo ids).
