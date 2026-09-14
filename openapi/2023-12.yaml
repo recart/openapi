@@ -3037,13 +3037,19 @@ components:
           type: object
           description: |
             v2 conditional split expression: `and[].or[]` of conditions,
-            each with a `slug`, `operator`, `value` and an optional
-            `subcondition` (`slug`, `category`, `value`). Conditions whose
-            value is a bare ID also carry `valueNames`, an object keyed by
-            ID with the resolved name. An ID that could not be resolved is
-            absent from it, and the key is omitted when nothing resolved:
-            `member-of-a-segment` (segment ids, on the condition), and on
-            the flow subcondition (flow IDs),
+            each with a `slug`, `type`, `operator` and, depending on the
+            slug, a `value`, a `dateFilter` (time window the condition
+            applies to) and `filters` (occurrence or count). A condition
+            narrows its match with either one `subcondition` or, for
+            `visited-page`, a `subconditions` list whose rows all apply to
+            the same page view; each row has `slug`, `category`, `operator`
+            and a `value`, absent when the operator is `exist`. Conditions
+            and subcondition rows whose value is a bare ID also carry
+            `valueNames`, an object keyed by ID with the resolved name. An
+            ID that could not be resolved is absent from it, and the key is
+            omitted when nothing resolved: `member-of-a-segment` (segment
+            ids, on the condition), and on the subcondition row for the
+            flow subcondition (flow IDs),
             `subscription-source`/`optin-tool-id` (opt-in tool ids),
             `product`/`product-id` and `product-variant` (Shopify ids),
             `klaviyo-segment-or-list` (Klaviyo ids).
