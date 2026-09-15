@@ -2982,12 +2982,12 @@ components:
           type: array
           description: Segments the campaign audience includes
           items:
-            $ref: '#/components/schemas/CampaignSegment'
+            $ref: '#/components/schemas/Segment'
         excludeSegments:
           type: array
           description: Segments the campaign audience excludes
           items:
-            $ref: '#/components/schemas/CampaignSegment'
+            $ref: '#/components/schemas/Segment'
         isQuietHoursEnabled:
           type: boolean
           description: Whether messages from this campaign are held during the subscriber's quiet hours
@@ -3037,7 +3037,7 @@ components:
           type: string
           format: date-time
           description: When the campaign was last updated
-    CampaignSegment:
+    Segment:
       type: object
       description: |
         A segment of the campaign audience. name is the segment's current
