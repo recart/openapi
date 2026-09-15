@@ -3106,7 +3106,36 @@ components:
           description: v1 conditional split conditions
         expression:
           type: object
-          description: v2 conditional split expression
+          description: |
+            v2 conditional split expression: `and[].or[]` of conditions,
+            each with a `slug`, `type`, `operator` and, depending on the
+            slug, a `value`, a `dateFilter` (time window the condition
+            applies to) and `filters` (occurrence or count). A condition
+            narrows its match with either one `subcondition` or, for
+            `visited-page`, a `subconditions` list whose rows all apply to
+            the same page view; each row has `slug`, `category`, `operator`
+            and a `value`, absent when the operator is `exist`. Conditions
+            and subcondition rows whose value is a list of IDs carry
+            `values` instead of `value`: one `{ id, name }` entry per ID,
+            where `name` is the current name of the referenced segment,
+            flow, opt-in tool, product, variant or Klaviyo list, or an
+            empty string when it could not be resolved. This applies to
+            `member-of-a-segment` (segment ids, on the condition), and on
+            the subcondition row for the flow subcondition (flow IDs),
+            `subscription-source`/`optin-tool-id` (opt-in tool ids),
+            `product`/`product-id` and `product-variant` (Shopify ids),
+            `klaviyo-segment-or-list` (Klaviyo ids).
+          example:
+            and:
+              - or:
+                  - slug: member-of-a-segment
+                    type: boolean
+                    operator: eq
+                    values:
+                      - id: 655637c97825e6ae655fe900
+                        name: VIP customers
+                      - id: 655637c97825e6ae655fe901
+                        name: ''
         percentage:
           type: number
           description: Share of traffic sent down this arm (random split)
