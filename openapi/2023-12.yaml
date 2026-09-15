@@ -3045,9 +3045,10 @@ components:
             the same page view; each row has `slug`, `category`, `operator`
             and a `value`, absent when the operator is `exist`. Conditions
             and subcondition rows whose value is a bare ID also carry
-            `valueNames`, an object keyed by ID with the resolved name. An
-            ID that could not be resolved is absent from it, and the key is
-            omitted when nothing resolved: `member-of-a-segment` (segment
+            `valueNames`, an array of `FlowConditionValueName` entries
+            (`id`, `name`) in the order of `value`. An ID that could not be
+            resolved has no entry, and the key is omitted when nothing
+            resolved: `member-of-a-segment` (segment
             ids, on the condition), and on the subcondition row for the
             flow subcondition (flow IDs),
             `subscription-source`/`optin-tool-id` (opt-in tool ids),
@@ -3059,9 +3060,12 @@ components:
                   - slug: member-of-a-segment
                     type: boolean
                     operator: eq
-                    value: ['655637c97825e6ae655fe900']
+                    value: ['655637c97825e6ae655fe900', '655637c97825e6ae655fe901']
                     valueNames:
-                      655637c97825e6ae655fe900: VIP customers
+                      - id: 655637c97825e6ae655fe900
+                        name: VIP customers
+                      - id: 655637c97825e6ae655fe901
+                        name: Repeat buyers
         percentage:
           type: number
           description: Share of traffic sent down this arm (random split)
@@ -3069,6 +3073,23 @@ components:
           type: string
           nullable: true
           description: ID of the next item on this branch; null means end of branch (dead arm)
+    FlowConditionValueName:
+      type: object
+      description: |
+        The resolved name of one ID referenced by a conditional split
+        condition or subcondition row.
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          description: The referenced ID, as it appears in the condition value
+          example: 655637c97825e6ae655fe900
+        name:
+          type: string
+          description: Current name of the referenced segment, flow, opt-in tool, product, variant or Klaviyo list
+          example: VIP customers
     FlowItem:
       type: object
       description: |
