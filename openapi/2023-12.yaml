@@ -2073,6 +2073,89 @@ paths:
         5XX:
           $ref: '#/components/responses/HttpError'
   /subscribers:
+    get:
+      summary: Find subscribers by phone number
+      tags:
+        - Subscriber
+      operationId: findSubscribers
+      security:
+        - ApiKeyAuth: []
+      description: |
+        The subscribers whose SMS number equals `phoneNumber` — normally one
+        entry, an empty list when none. The number is a lookup key only and
+        is never returned; the resources are the same as
+        GET /subscribers/{id}. Phone number, email and names are never
+        part of the response.
+      parameters:
+        - name: phoneNumber
+          in: query
+          required: true
+          description: Phone number of the subscriber in E.164 format, with the leading plus
+          schema:
+            type: string
+            pattern: '^\+[1-9]\d{6,14}$'
+            example: '+15550000000'
+        - name: channel
+          in: query
+          description: |
+            Channels to return; each selected channel is a key of the
+            resource. Defaults to sms, the only channel served today.
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - sms
+            default:
+              - sms
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Subscriber'
+              examples:
+                one-match:
+                  summary: One subscriber behind the number
+                  value:
+                    data:
+                      - type: subscribers
+                        attributes:
+                          id: 66aa0f1c7e8c9d2b00123abc
+                          timezone: America/Chicago
+                          segments: []
+                          createdAt: '2026-03-04T18:22:10.000Z'
+                          updatedAt: '2026-03-04T18:22:10.000Z'
+                          sms:
+                            status: subscribed
+                            subscribedAt: '2026-03-04T18:22:10.000Z'
+                            lastInteractionAt: '2026-03-04T18:22:10.000Z'
+                            subscriptionSource:
+                              type: import
+                              id: 66b1c2d3e4f5a6b7c8d9e0f1
+                              name: vip-customers-2026-03.csv
+                            country: US
+                            optinHistory:
+                              - type: optin
+                                createdAt: '2026-03-04T18:22:10.000Z'
+                                source:
+                                  type: import
+                                  id: 66b1c2d3e4f5a6b7c8d9e0f1
+                                  name: vip-customers-2026-03.csv
+                no-match:
+                  summary: No subscriber has this number
+                  value:
+                    data: []
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
     patch:
       summary: Update subscriber's custom attributes
       tags:
@@ -2101,6 +2184,93 @@ paths:
       responses:
         '204':
           description: No content
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/subscribers/{id}':
+    get:
+      summary: Retrieve a single subscriber
+      tags:
+        - Subscriber
+      operationId: getSubscriber
+      security:
+        - ApiKeyAuth: []
+      description: |
+        One subscriber by internal id — timezone, current segments and, per
+        selected channel, status, dates, acquiring source, country and the
+        opt-in / opt-out history. Phone number, email and names are never
+        returned. To find the id behind a phone number use
+        GET /subscribers?phoneNumber=.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Internal ID of the subscriber
+          schema:
+            type: string
+        - name: channel
+          in: query
+          description: |
+            Channels to return; each selected channel is a key of the
+            resource. Defaults to sms, the only channel served today.
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - sms
+            default:
+              - sms
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Subscriber'
+              examples:
+                subscriber:
+                  summary: A subscriber who opted out with a keyword
+                  value:
+                    data:
+                      type: subscribers
+                      attributes:
+                        id: 66aa0f1c7e8c9d2b00123abc
+                        timezone: America/Chicago
+                        segments:
+                          - id: 64f2a1b2c3d4e5f60718293a
+                            name: VIP customers
+                            type: segment
+                          - id: 64f2a1b2c3d4e5f60718293b
+                            name: Black Friday 2025 buyers
+                            type: list
+                        createdAt: '2026-03-04T18:22:10.000Z'
+                        updatedAt: '2026-08-30T16:03:41.000Z'
+                        sms:
+                          status: unsubscribed
+                          subscribedAt: '2026-03-04T18:22:10.000Z'
+                          lastInteractionAt: '2026-08-30T16:03:41.000Z'
+                          subscriptionSource:
+                            type: popup
+                            id: 655637c97825e6ae655fe1c9
+                            name: Mobile - Preferences - Custom Images
+                          country: US
+                          optinHistory:
+                            - type: optin
+                              createdAt: '2026-03-04T18:22:10.000Z'
+                              source:
+                                type: popup
+                                id: 655637c97825e6ae655fe1c9
+                                name: Mobile - Preferences - Custom Images
+                              sourceUrl: 'https://trueclassic.com/collections/tees?utm_source=meta'
+                            - type: optout
+                              createdAt: '2026-08-30T16:03:41.000Z'
+                              source:
+                                type: keyword
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -4663,6 +4833,155 @@ components:
                   format: ipv4
                   description: IP address of the subscriber
                   example: 192.158.1.38
+    SubscriptionSource:
+      type: object
+      description: |
+        Where a subscription or an opt-out came from. For a subscription or
+        an optin event `type` is the acquiring source — an opt-in tool type
+        (popup, landing-page, embedded-form, keyword) or a non-tool source
+        (import, custom-integration, public-api, shopify_checkout, …). For an
+        optout event it is the reason: keyword, ai, opt_out_link, manual
+        (dashboard), public-api, or a cleaning reason (deactivated_number,
+        known_litigator, landline, reassigned). `id` and `name` are present
+        when the source is an entity: the opt-in tool (its name) or the
+        import (its file name); name is an empty string when it could not
+        be resolved.
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          description: Source slug or opt-out reason
+          example: popup
+        id:
+          type: string
+          description: ID of the opt-in tool or import behind the source
+          example: 655637c97825e6ae655fe1c9
+        name:
+          type: string
+          description: Name of the opt-in tool, or file name of the import; empty when unresolved
+          example: Mobile - Preferences - Custom Images
+    Optin:
+      type: object
+      description: One opt-in or opt-out event of a channel.
+      required:
+        - type
+        - createdAt
+      properties:
+        type:
+          type: string
+          description: optin = the subscriber joined the channel; optout = the subscriber left it
+          enum:
+            - optin
+            - optout
+        createdAt:
+          type: string
+          format: date-time
+          description: When the event happened
+        source:
+          $ref: '#/components/schemas/SubscriptionSource'
+        sourceUrl:
+          type: string
+          description: optin only — the page the opt-in happened on, query string included
+        integrationSlug:
+          type: string
+          description: optin only — the integration that created the subscription
+          example: klaviyo
+    Subscriber:
+      type: object
+      description: |
+        One subscriber — no phone number, email or name. Channel data sits
+        under the channel key; only the channels selected with `channel`
+        are present.
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - subscribers
+        attributes:
+          type: object
+          required:
+            - id
+            - segments
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+              description: Internal ID of the subscriber
+              example: 66aa0f1c7e8c9d2b00123abc
+            timezone:
+              type: string
+              description: IANA timezone name assigned to the subscriber
+              example: America/New_York
+            segments:
+              type: array
+              description: Segments the subscriber is a member of right now — no membership history
+              items:
+                type: object
+                required:
+                  - id
+                  - name
+                  - type
+                properties:
+                  id:
+                    type: string
+                    description: ID of the segment
+                    example: 64f2a1b2c3d4e5f60718293a
+                  name:
+                    type: string
+                    description: Name of the segment as shown in the dashboard
+                    example: VIP customers
+                  type:
+                    type: string
+                    description: segment = dynamic, rule-based; list = manually managed
+                    enum:
+                      - segment
+                      - list
+            createdAt:
+              type: string
+              format: date-time
+              description: When the subscriber record was created — the first time the subscriber was seen on any channel
+            updatedAt:
+              type: string
+              format: date-time
+              description: Last change to the subscriber record
+            sms:
+              type: object
+              description: The subscriber's SMS channel
+              required:
+                - status
+                - subscriptionSource
+                - optinHistory
+              properties:
+                status:
+                  type: string
+                  description: subscribed while the number receives SMS; unsubscribed after any opt-out or cleaning removal
+                  enum:
+                    - subscribed
+                    - unsubscribed
+                subscribedAt:
+                  type: string
+                  format: date-time
+                  description: When the current SMS subscription started; reset by a re-subscribe
+                lastInteractionAt:
+                  type: string
+                  format: date-time
+                  description: Last inbound event on the channel — the opt-in, a STOP or START keyword reply, or an import touching the record
+                subscriptionSource:
+                  $ref: '#/components/schemas/SubscriptionSource'
+                country:
+                  type: string
+                  description: Country code of the phone number from the carrier lookup
+                  example: US
+                optinHistory:
+                  type: array
+                  description: Every opt-in and opt-out event of the channel, oldest first
+                  items:
+                    $ref: '#/components/schemas/Optin'
     SubscriptionSourcesItem:
       type: object
       description: |
