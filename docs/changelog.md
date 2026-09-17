@@ -33,6 +33,11 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.12] - 2026-09-17
+
+#### Added
+- `GET /subscribers/views/{name}` gains three views. `list-summary` — the list statistics for the range: list size at the end of the range, new subscriptions (gross), subscriber-initiated unsubscriptions by how the opt-out arrived (`keyword`, `ai`, `optOutLink`, `dashboard`, `publicApi`, `integration`) and automated cleaning by reason (`deactivatedNumber`, `knownLitigator`, `landline`, `reassigned`). `list-history` — the same statistics per UTC calendar day. `countries-summary` — the currently subscribed numbers by country, a snapshot without a date range. The data of these views is grouped by channel; the new optional `channel` query parameter selects the channels (`sms` only today, the default).
+
 ### [2023-12.11] - 2026-09-11
 
 #### Added

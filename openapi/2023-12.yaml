@@ -2117,6 +2117,21 @@ paths:
         One statistics view over the site's subscribers. `name` picks the
         view. When the date range is omitted it defaults to the last 7 days.
 
+        `list-summary` returns the list statistics for the range: list size
+        at the end of the range, new subscriptions (gross — re-subscribes
+        included), subscriber-initiated unsubscriptions by how the opt-out
+        arrived (keyword, ai, optOutLink, dashboard, publicApi, integration)
+        and automated cleaning by reason (deactivatedNumber, knownLitigator,
+        landline, reassigned). Net growth is not a field — compute
+        subscriptions − unsubscriptions − cleaning.
+
+        `list-history` returns the same statistics per UTC calendar day of
+        the range, one entry per day, without bucketing.
+
+        `countries-summary` returns the currently subscribed numbers by
+        country (the phone number's carrier country), sorted descending. It
+        is a snapshot: it takes no date range, and a date range returns 400.
+
         `subscription-sources` returns the new SMS subscriptions collected
         in the range, one entry per source — where the subscribers came
         from: opt-in tools by type (popup, landing-page, embedded-form,
@@ -2125,6 +2140,10 @@ paths:
         exactly one source; a source without SMS subscriptions in the range
         is absent. Entries are sorted descending by smsSubscriptions. For
         the per-tool split use /optin-tools/views/optin-tools-summary.
+
+        The data of list-summary, list-history and countries-summary is
+        grouped by channel: `channel` selects the channels and defaults to
+        sms. The legacy facebook channel is not served.
       parameters:
         - name: name
           in: path
@@ -2134,6 +2153,9 @@ paths:
             type: string
             enum:
               - subscription-sources
+              - list-summary
+              - list-history
+              - countries-summary
         - name: dateFrom
           in: query
           description: |
@@ -2154,6 +2176,21 @@ paths:
             type: string
             format: date
             example: '2026-08-24'
+        - name: channel
+          in: query
+          description: |
+            Channels to return — list-summary, list-history and
+            countries-summary only. Each selected channel appears as a key
+            in the view's data. Defaults to sms; the legacy facebook channel
+            is not served.
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - sms
+            default:
+              - sms
       responses:
         '200':
           description: Ok
@@ -2183,6 +2220,81 @@ paths:
                             smsSubscriptions: 86
                           - source: public-api
                             smsSubscriptions: 12
+                list-summary:
+                  summary: name=list-summary — the range total, grouped by channel
+                  value:
+                    data:
+                      type: subscribers-views
+                      attributes:
+                        list-summary:
+                          sms:
+                            subscribers: 48210
+                            subscriptions: 1412
+                            unsubscriptions:
+                              keyword: 171
+                              ai: 22
+                              optOutLink: 39
+                              dashboard: 3
+                              publicApi: 1
+                              integration: 0
+                            cleaning:
+                              deactivatedNumber: 44
+                              knownLitigator: 2
+                              landline: 9
+                              reassigned: 6
+                list-history:
+                  summary: name=list-history — one entry per UTC calendar day
+                  value:
+                    data:
+                      type: subscribers-views
+                      attributes:
+                        list-history:
+                          - date: '2026-09-12'
+                            sms:
+                              subscribers: 48042
+                              subscriptions: 201
+                              unsubscriptions:
+                                keyword: 24
+                                ai: 3
+                                optOutLink: 6
+                                dashboard: 0
+                                publicApi: 0
+                                integration: 0
+                              cleaning:
+                                deactivatedNumber: 7
+                                knownLitigator: 0
+                                landline: 1
+                                reassigned: 1
+                          - date: '2026-09-13'
+                            sms:
+                              subscribers: 48210
+                              subscriptions: 212
+                              unsubscriptions:
+                                keyword: 26
+                                ai: 4
+                                optOutLink: 5
+                                dashboard: 1
+                                publicApi: 0
+                                integration: 0
+                              cleaning:
+                                deactivatedNumber: 6
+                                knownLitigator: 0
+                                landline: 1
+                                reassigned: 1
+                countries-summary:
+                  summary: name=countries-summary — subscribed numbers by country
+                  value:
+                    data:
+                      type: subscribers-views
+                      attributes:
+                        countries-summary:
+                          sms:
+                            - countryCode: US
+                              subscribers: 41200
+                            - countryCode: CA
+                              subscribers: 5130
+                            - countryCode: GB
+                              subscribers: 1880
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -4568,6 +4680,124 @@ components:
         smsSubscriptions:
           type: integer
           example: 419
+    SubscriberListStatistics:
+      type: object
+      description: |
+        List statistics of one period, grouped by channel — only the
+        channels selected with `channel` are present.
+      properties:
+        sms:
+          type: object
+          description: |
+            SMS list statistics — list size at the end of the period, and
+            the subscriptions, opt-outs and cleaning removals within it.
+          required:
+            - subscribers
+            - subscriptions
+            - unsubscriptions
+            - cleaning
+          properties:
+            subscribers:
+              type: integer
+              description: SMS subscribers at the end of the period (list size).
+              example: 48210
+            subscriptions:
+              type: integer
+              description: New SMS subscriptions in the period, gross — re-subscribes included.
+              example: 1412
+            unsubscriptions:
+              type: object
+              description: Subscriber-initiated SMS opt-outs in the period, by how the opt-out arrived.
+              required:
+                - keyword
+                - ai
+                - optOutLink
+                - dashboard
+                - publicApi
+                - integration
+              properties:
+                keyword:
+                  type: integer
+                  description: STOP or another unsubscribe keyword texted in (AI-detected replies excluded).
+                  example: 171
+                ai:
+                  type: integer
+                  description: Free-text replies the AI intent classifier recognized as an opt-out.
+                  example: 22
+                optOutLink:
+                  type: integer
+                  description: The opt-out link in a message.
+                  example: 39
+                dashboard:
+                  type: integer
+                  description: Unsubscribed by the merchant in the dashboard.
+                  example: 3
+                publicApi:
+                  type: integer
+                  description: Unsubscribed through the public API (DELETE /subscriptions).
+                  example: 1
+                integration:
+                  type: integer
+                  description: Opt-outs synced from an integration such as Klaviyo.
+                  example: 0
+            cleaning:
+              type: object
+              description: Automated list cleaning in the period, by reason.
+              required:
+                - deactivatedNumber
+                - knownLitigator
+                - landline
+                - reassigned
+              properties:
+                deactivatedNumber:
+                  type: integer
+                  description: The carrier reported the number as deactivated.
+                  example: 44
+                knownLitigator:
+                  type: integer
+                  description: The number is on the known-litigator list.
+                  example: 2
+                landline:
+                  type: integer
+                  description: Landline number, cannot receive SMS.
+                  example: 9
+                reassigned:
+                  type: integer
+                  description: The number was reassigned to a new owner.
+                  example: 6
+    SubscriberListHistoryItem:
+      allOf:
+        - type: object
+          required:
+            - date
+          properties:
+            date:
+              type: string
+              format: date
+              description: The UTC calendar day the statistics belong to.
+              example: '2026-08-31'
+        - $ref: '#/components/schemas/SubscriberListStatistics'
+    SubscribersByCountry:
+      type: object
+      description: Currently subscribed numbers by country, grouped by channel.
+      properties:
+        sms:
+          type: array
+          description: Sorted by subscribers, descending.
+          items:
+            type: object
+            required:
+              - countryCode
+              - subscribers
+            properties:
+              countryCode:
+                type: string
+                description: Country code of the phone number from the carrier lookup.
+                example: US
+              subscribers:
+                type: integer
+                description: Currently subscribed SMS subscribers with a number in this country.
+                example: 41200
     SubscribersViews:
       type:
         - object
@@ -4593,6 +4823,15 @@ components:
                 smsSubscriptions.
               items:
                 $ref: '#/components/schemas/SubscriptionSourcesItem'
+            list-summary:
+              $ref: '#/components/schemas/SubscriberListStatistics'
+            list-history:
+              type: array
+              description: One entry per UTC calendar day of the range.
+              items:
+                $ref: '#/components/schemas/SubscriberListHistoryItem'
+            countries-summary:
+              $ref: '#/components/schemas/SubscribersByCountry'
     PatchSubscriber:
       type: object
       required:
