@@ -33,6 +33,13 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.13] - 2026-09-17
+
+#### Added
+- `GET /subscribers/{id}` — one subscriber by internal id: timezone, current segments (`id`, `name`, `type`) and, per selected channel, `status`, `subscribedAt`, `lastInteractionAt`, `subscriptionSource`, `country` and the full `optinHistory` of opt-in and opt-out events. Every source carries its `type` and, for opt-in tools and imports, the `id` and `name` of the entity behind it. Phone number, email and names are never returned.
+- `GET /subscribers?phoneNumber=` — the subscribers behind an E.164 phone number, returning the same resources as a list (normally one entry, empty when none). The number is a lookup key only.
+- Both take an optional `channel` query parameter (`sms` only today, the default); the resource carries one key per selected channel.
+
 ### [2023-12.12] - 2026-09-17
 
 #### Added
