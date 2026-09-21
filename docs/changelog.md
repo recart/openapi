@@ -33,6 +33,11 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.14] - 2026-09-21
+
+#### Added
+- `complete_control_kept` value of `adaptiveTestStatus` on `GET /campaign-flows/{id}` and `GET /campaign-flows/{id}/views/adaptive-flow-summary` — the adaptive test ended and the control message was kept because no variant beat it.
+
 ### [2023-12.13] - 2026-09-17
 
 #### Added
