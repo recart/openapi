@@ -3573,10 +3573,16 @@ components:
       properties:
         adaptiveTestStatus:
           type: string
+          description: |
+            running while the test variants are being evaluated;
+            complete_with_winner when a variant won and was rolled out;
+            complete_no_winner when no variant stood out; complete_control_kept
+            when the control message beat every variant and was kept.
           enum:
             - running
             - complete_with_winner
             - complete_no_winner
+            - complete_control_kept
         adaptiveTestResult:
           type: object
           description: Outcome of the test, present once evaluated
