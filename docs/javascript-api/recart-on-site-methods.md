@@ -1,7 +1,3 @@
----
-stoplight-id: iro1tnice6vbe
----
-
 # Recart on-site methods
 
 These methods are available on the global Recart object via `window._recart`.
@@ -9,17 +5,13 @@ These methods are available on the global Recart object via `window._recart`.
 ### `Public methods`
 
 #### isReady
-<!--
-title: "Check if Recart scripts has been loaded"
--->
+
 ```typescript
 isReady(): boolean
 ```
 
 #### showOptinTool
-<!--
-title: "Trigger popup externally"
--->
+
 ```typescript
 /*
  * triggers the optin tool to show up (currently only handles popups)
@@ -31,9 +23,7 @@ showOptinTool(optinToolId: string, options?: { force: boolean }): void
 ```
 
 #### getActiveOptinToolInExperiment
-<!--
-title: "Get active variant popup in A/B test"
--->
+
 ```typescript
 /*
  * returns the optin tool that has been evaluated active in the experiment
@@ -44,9 +34,7 @@ getActiveOptinToolInExperiment(experimentId: string): string | null
 ```
 
 #### isSubscriberIdentified
-<!--
-title: "Identify if visitor has already subscribed on any popup"
--->
+
 ```typescript
 /*
  * checks if we have already identified the visitor as a subscriber
@@ -54,10 +42,9 @@ title: "Identify if visitor has already subscribed on any popup"
  */
 isSubscriberIdentified(): boolean
 ```
+
 #### hasSubscribedToOptinTool
-<!--
-title: "Identify if visitor has already subscribed on a specific popup"
--->
+
 ```typescript
 /*
  * checks if the visitor has subscribed to a specific optin tool

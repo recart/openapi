@@ -1,14 +1,10 @@
----
-stoplight-id: xz7vhcvtwprrz
----
-
 # Listening to Recart Opt-in Tool Events
 
 If you're integrating Recart with other tools or analytics platforms, you may want to listen to events emitted by Recart's Opt-in Tool. These events help you track user interactions and capture contact information in real-time.
 
 Recart emits **three types of custom events** via the browser’s `window` object. You can listen to these using JavaScript’s `window.addEventListener()` method.
 
----
+***
 
 ## 🔔 Available Events and Payloads
 
@@ -30,14 +26,14 @@ interface OptinToolInteractionPayload {
 
 **Possible `interaction` values:**
 
-- `impression` – popup was shown
-- `emailClick` – visitor clicked the email CTA
-- `smsClick` – visitor clicked the SMS CTA
-- `minimizedImpression` – popup was shown in minimized view
-- `closePopup` – visitor closed the popup (switches to minimized view)
-- `closeMinimized` – visitor closed the minimized popup
+* `impression` – popup was shown
+* `emailClick` – visitor clicked the email CTA
+* `smsClick` – visitor clicked the SMS CTA
+* `minimizedImpression` – popup was shown in minimized view
+* `closePopup` – visitor closed the popup (switches to minimized view)
+* `closeMinimized` – visitor closed the minimized popup
 
----
+***
 
 ### 2. `recart:optin-tool:email-captured`
 
@@ -55,7 +51,7 @@ interface EmailCapturedPayload {
 }
 ```
 
----
+***
 
 ### 3. `recart:optin-tool:phone-number-captured`
 
@@ -73,7 +69,7 @@ interface PhoneNumberCapturedPayload {
 }
 ```
 
----
+***
 
 ## 🧠 How to Listen to Events
 
@@ -96,14 +92,14 @@ window.addEventListener('recart:optin-tool:phone-number-captured', (event) => {
 });
 ```
 
----
+***
 
 ## 🛠 Example Use Cases
 
-- Send captured emails or phone numbers to a CRM
-- Trigger custom analytics events in tools like Segment or GA4
-- Measure interaction rates for popup performance
+* Send captured emails or phone numbers to a CRM
+* Trigger custom analytics events in tools like Segment or GA4
+* Measure interaction rates for popup performance
 
----
+***
 
 If you have questions about specific interactions, data payloads, or implementation best practices, feel free to contact our support team or your Recart account manager.
