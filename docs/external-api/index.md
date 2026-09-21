@@ -1,3 +1,3 @@
 # External API
 
-The Recart REST API reference, event-triggered flows, subscription flow setup, and the changelog.
+Event-triggered flows and subscription flow setup. The endpoint reference is generated from `openapi/2023-12.yaml` by GitBook and is not stored as markdown here.

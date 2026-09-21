@@ -210,6 +210,6 @@ The cart tracking endpoints above are the only required server-side integration 
 * **Webhooks** (`POST /webhooks`, `GET /webhooks`, `DELETE /webhooks/{id}`) — Receive real-time notifications from Recart (incoming messages, outgoing messages, subscribe/unsubscribe events).
 * **Flows** (`GET /flows`, `GET /flows/{id}`) — Read-only. List flows and check their status.
 
-Full details on all endpoints: [Recart API on Stoplight](../external-api/api-reference)
+Full details on all endpoints: [Recart API reference](../external-api/index.md)
 
 ***

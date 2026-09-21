@@ -258,4 +258,4 @@ Auth header: `X-Recart-API-Key: YOUR_API_KEY`
 
 Content-Type: `application/vnd.api+json`
 
-Interactive docs: [Recart API on Stoplight](../external-api/api-reference)
+Interactive docs: [Recart API reference](../external-api/index.md)

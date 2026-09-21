@@ -48,7 +48,7 @@ An event source declares the kind of event you will be sending, so it can be sel
 
     * `category` — the integration or system the event comes from (e.g. `payment`, `inventory`, `booking`)
     * `name` — the event itself (e.g. `billing attempt failed`, `back in stock`)
-2. **Make API Request**: Send a request to [create the event source](../api-reference/event#post-event-sources) through the appropriate endpoint in the Recart API.
+2. **Make API Request**: Send a request to [create the event source](index.md) through the appropriate endpoint in the Recart API.
 
 Create a separate event source for each distinct event you want to trigger a flow, so each one can drive its own flow.
 
@@ -108,7 +108,7 @@ With the event source registered and the flow activated, post an event whenever 
       }
     }
     ```
-4.  **Submit the Event**: Send the request to the `POST /events` endpoint in the [Recart API reference](api-reference).
+4.  **Submit the Event**: Send the request to the `POST /events` endpoint in the [Recart API reference](index.md).
 
     ```js
     const response = await fetch('https://api.recart.com/app-integrations/2023-12/events', {

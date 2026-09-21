@@ -39,7 +39,7 @@ Before you can start collecting SMS subscriptions, you need to create an event s
     ```
 
     Note the two different `type` fields: the outer `data.type` is the JSON:API resource type and must always be the literal `events`, even when creating an event _source_. The inner `attributes.type` is the one you set to `optin`.
-2. **Make API Request**: Send a request to [create the event source](../api-reference/event#post-event-sources) through the appropriate endpoint in the Recart API.
+2. **Make API Request**: Send a request to [create the event source](index.md) through the appropriate endpoint in the Recart API.
 
 ## Step 2: Create an Integration Flow
 
@@ -71,7 +71,7 @@ After your event source is registered and the flow is activated, you can begin c
 
 1. **Collect Customer Information**: Gather the necessary customer details, including their phone number for SMS delivery.
 2. **Reference Event Source**: Use the event source created in Step 1 to link the subscription to the appropriate source.
-3. **Submit Subscription Request**: Send the [subscription request](../api-reference/subscription#post-subscriptions) through the SMS subscription endpoint.
+3. **Submit Subscription Request**: Send the [subscription request](index.md) through the SMS subscription endpoint.
 4. **Handle Response**: Process the API response to confirm successful subscription creation or handle any errors.
 
 ## Important Considerations
