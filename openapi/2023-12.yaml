@@ -6,6 +6,8 @@ tags:
     description: Accounts
   - name: Cart
     description: Carts
+  - name: Discount
+    description: Discounts
   - name: Event
     description: Events
   - name: Flow
@@ -1087,6 +1089,233 @@ paths:
                                 spamRate: 0
                                 revenuePerRecipient: 0.95
                                 revenuePerMessage: 0.95
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  /discounts:
+    get:
+      summary: Retrieve list of discounts
+      tags:
+        - Discount
+      operationId: listDiscounts
+      security:
+        - ApiKeyAuth: []
+      description: |
+        The site's discounts — configuration and pool state, no statistics.
+        status is computed from the activation and expiration dates: active,
+        scheduled (starts later), expired (ended or deactivated). Default
+        page size 100.
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of discounts to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 100
+        - name: offset
+          in: query
+          description: Number of discounts to skip, for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: mode
+          in: query
+          description: Code pools only — refilling pools serve flows and popups, non-refilling pools serve campaigns
+          schema:
+            type: string
+            enum:
+              - refilling
+              - non-refilling
+        - name: available
+          in: query
+          description: |
+            true = discounts a flow or campaign could pick — every general
+            discount plus the unique discounts not yet assigned to a
+            campaign; with flowId, also the ones that flow already uses.
+            Status and dates are not checked.
+          schema:
+            type: boolean
+        - name: flowId
+          in: query
+          description: Discounts configured in this flow
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Discount'
+              examples:
+                discounts:
+                  summary: A refilling code pool and an expiring discount
+                  value:
+                    data:
+                      - type: discounts
+                        attributes:
+                          id: 66aa0f1c7e8c9d2b00123abc
+                          name: Welcome 10%
+                          status: active
+                          customizationType: unique
+                          expiryType: fixed
+                          type: basic
+                          discountClasses:
+                            - order
+                          amount: 10
+                          valueType: PERCENTAGE
+                          summary: 10% off entire order
+                          discountCodePattern: WELCOME-
+                          mode: refilling
+                          targetCount: 10000
+                          availableCount: 8612
+                          fillStatus: full
+                          startsAt: '2026-03-01T00:00:00.000Z'
+                          endsAt: null
+                          shopifyDiscountId: '1234567890123'
+                          createdAt: '2026-03-01T09:12:00.000Z'
+                          updatedAt: '2026-08-14T10:03:11.000Z'
+                      - type: discounts
+                        attributes:
+                          id: 66bb1a2d8f9e0c3d00456def
+                          name: Labor Day 20%
+                          status: active
+                          customizationType: unique
+                          expiryType: relative
+                          type: basic
+                          discountClasses:
+                            - order
+                          amount: 20
+                          valueType: PERCENTAGE
+                          summary: 20% off entire order • Minimum purchase of $50.00
+                          discountCodePattern: LD-
+                          durationSeconds: 86400
+                          template:
+                            type: BASIC
+                            title: Labor Day 20%
+                            appliesOncePerCustomer: true
+                            usageLimit: 1
+                            combinesWith:
+                              orderDiscounts: false
+                              productDiscounts: false
+                              shippingDiscounts: true
+                            customerSelection:
+                              type: ALL_CUSTOMERS
+                              allCustomers: true
+                            customerGets:
+                              appliesOnOneTimePurchase: true
+                              appliesOnSubscription: false
+                              value:
+                                type: PERCENTAGE
+                                percentage: 20
+                              items:
+                                type: INPUT_ALL
+                                allItems: true
+                            minimumRequirement:
+                              type: MINIMUM_SUBTOTAL
+                              greaterThanOrEqualToSubtotal:
+                                amount: 50
+                                currencyCode: USD
+                          shopifyDiscountId: '1234567890456'
+                          createdAt: '2026-08-20T10:00:00.000Z'
+                          updatedAt: '2026-08-30T16:00:04.000Z'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/discounts/{id}':
+    get:
+      summary: Retrieve a single discount
+      tags:
+        - Discount
+      operationId: getDiscount
+      security:
+        - ApiKeyAuth: []
+      description: |
+        One discount by id — the list entry's attributes plus usage (the
+        flows, campaigns and popups configured with it, ids and names) and
+        statistics (lifetime counters, no date range). Which statistics are
+        present depends on the discount shape and on omitShopifyData — see
+        DiscountStatistics.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the discount
+          schema:
+            type: string
+        - name: omitShopifyData
+          in: query
+          description: |
+            true (default): no live Shopify call — statistics has sent on
+            code pools and expiring discounts and is empty on general
+            discounts. false: Shopify is called and used, sales and
+            codesCount are added on general discounts and code pools
+            (never on expiring discounts).
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DiscountDetail'
+              examples:
+                refilling-pool:
+                  summary: 'GET /discounts/66aa0f1c7e8c9d2b00123abc?omitShopifyData=false'
+                  value:
+                    data:
+                      type: discounts
+                      attributes:
+                        id: 66aa0f1c7e8c9d2b00123abc
+                        name: Welcome 10%
+                        status: active
+                        customizationType: unique
+                        expiryType: fixed
+                        type: basic
+                        discountClasses:
+                          - order
+                        amount: 10
+                        valueType: PERCENTAGE
+                        summary: 10% off entire order
+                        discountCodePattern: WELCOME-
+                        mode: refilling
+                        targetCount: 10000
+                        availableCount: 8612
+                        fillStatus: full
+                        startsAt: '2026-03-01T00:00:00.000Z'
+                        endsAt: null
+                        shopifyDiscountId: '1234567890123'
+                        usage:
+                          flows:
+                            - id: 6138d0ac2d79e00001210035
+                              name: Welcome flow
+                          campaigns: []
+                          optinTools:
+                            - id: 64f2a1b2c3d4e5f60718293a
+                              name: Mobile - Welcome popup
+                        createdAt: '2026-03-01T09:12:00.000Z'
+                        updatedAt: '2026-08-14T10:03:11.000Z'
+                        statistics:
+                          sent: 1388
+                          used: 212
+                          sales:
+                            USD: 9418.4
+                          codesCount: 10000
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -3928,6 +4157,250 @@ components:
             adaptive-flow-summary:
               description: The campaign's adaptive test with per-variant evaluation and lifetime statistics (adaptive campaigns only)
               $ref: '#/components/schemas/AdaptiveFlowSummary'
+    DiscountAttributes:
+      type: object
+      required:
+        - id
+        - name
+        - status
+        - customizationType
+        - type
+        - discountClasses
+        - shopifyDiscountId
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: ID of the discount
+          example: 66aa0f1c7e8c9d2b00123abc
+        name:
+          type: string
+          description: Name of the discount
+          example: Welcome 10%
+        status:
+          type: string
+          description: Computed from startsAt / endsAt; expired also after deactivation
+          enum:
+            - active
+            - scheduled
+            - expired
+        customizationType:
+          type: string
+          description: unique = each customer gets a different code; general = one shared code
+          enum:
+            - unique
+            - general
+        expiryType:
+          type: string
+          description: unique only — fixed = code pool with dates, relative = expiring code issued on demand
+          enum:
+            - fixed
+            - relative
+        type:
+          type: string
+          description: |
+            Shopify discount type; with discountClasses it is the
+            dashboard's type (basic + product = Amount off product,
+            basic + order = Amount off order)
+          enum:
+            - basic
+            - bxgy
+            - free-shipping
+            - app
+        discountClasses:
+          type: array
+          items:
+            type: string
+            enum:
+              - product
+              - order
+              - shipping
+        amount:
+          type: number
+          description: Not on app discounts
+          example: 10
+        valueType:
+          type: string
+          description: Not on app discounts
+          enum:
+            - PERCENTAGE
+            - FIXED_AMOUNT
+            - FREE_SHIPPING
+            - UNKNOWN
+        summary:
+          type: string
+          description: Shopify's one-line description of value, target and conditions; not on app discounts
+          example: 10% off entire order
+        appTitle:
+          type: string
+          description: App discounts only — the Shopify app that owns the discount
+        code:
+          type: string
+          description: general only
+          example: WELCOME10
+        discountCodePattern:
+          type: string
+          description: unique only — the code prefix
+          example: WELCOME-
+        mode:
+          type: string
+          description: code pools only — refilling pools serve flows and popups, non-refilling pools serve campaigns
+          enum:
+            - refilling
+            - non-refilling
+        targetCount:
+          type: integer
+          description: code pools only
+          example: 10000
+        availableCount:
+          type: integer
+          description: code pools only — codes not yet issued
+          example: 8612
+        fillStatus:
+          type: string
+          description: code pools only — filling = codes still uploading to Shopify
+          enum:
+            - needFilling
+            - filling
+            - full
+        durationSeconds:
+          type: integer
+          description: expiring only — validity from the moment the code is issued
+          example: 86400
+        template:
+          type: object
+          additionalProperties: true
+          description: |
+            expiring only — the Shopify discount input each issued code's
+            price rule is created from, as discount-service stores it
+            (type, title, appliesOncePerCustomer, usageLimit,
+            combinesWith, customerSelection, customerGets,
+            minimumRequirement, destinationSelection for free shipping)
+        startsAt:
+          type: string
+          format: date-time
+          description: Not on expiring discounts
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: null = no end date; not on expiring discounts
+        shopifyDiscountId:
+          type: string
+          description: The Shopify discount (price rule) id
+          example: '1234567890123'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Discount:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - discounts
+        attributes:
+          $ref: '#/components/schemas/DiscountAttributes'
+    DiscountStatistics:
+      type: object
+      description: |
+        Lifetime counters of one discount, no date range. Which fields are
+        present depends on the discount shape and on omitShopifyData:
+        - sent — code pools and expiring discounts (customizationType
+          unique), whatever omitShopifyData is; never on general discounts
+          (a shared static code has no issuance record). Recart's count of
+          codes issued to subscribers by a message or popup, not deliveries.
+        - used, sales, codesCount — only with omitShopifyData=false, and
+          only on general discounts and code pools; never on expiring
+          discounts (each issued code is its own Shopify price rule, the
+          stored one is never redeemed). Shopify's own counters, refreshed
+          asynchronously — they can lag recent orders by minutes.
+        Per shape: general → {} by default, used + sales + codesCount with
+        omitShopifyData=false; code pool → sent by default, all four with
+        omitShopifyData=false; expiring → sent, whatever the flag.
+      properties:
+        sent:
+          type: integer
+          description: Codes issued to subscribers from the pool or created on demand. Present on code pools and expiring discounts whatever omitShopifyData is; absent on general discounts
+          example: 1388
+        used:
+          type: integer
+          description: Orders that redeemed the discount (Shopify asyncUsageCount). Present only with omitShopifyData=false, on general discounts and code pools; absent on expiring discounts
+          example: 212
+        sales:
+          type: object
+          additionalProperties:
+            type: number
+          description: Shopify total sales keyed by currency code — the store currency only, no conversion. Same availability as used
+          example:
+            USD: 9418.4
+        codesCount:
+          type: integer
+          description: Codes Shopify holds for the discount, 1 for general. Same availability as used
+          example: 10000
+    DiscountDetail:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - discounts
+        attributes:
+          allOf:
+            - $ref: '#/components/schemas/DiscountAttributes'
+            - type: object
+              required:
+                - usage
+                - statistics
+              properties:
+                usage:
+                  type: object
+                  description: Where the discount is configured — configuration references, not code consumption
+                  required:
+                    - flows
+                    - campaigns
+                    - optinTools
+                  properties:
+                    flows:
+                      type: array
+                      description: Automated flows; a campaign's own flow is listed under campaigns only
+                      items:
+                        $ref: '#/components/schemas/UsageReference'
+                    campaigns:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/UsageReference'
+                    optinTools:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/UsageReference'
+                statistics:
+                  $ref: '#/components/schemas/DiscountStatistics'
+    UsageReference:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          example: 6138d0ac2d79e00001210035
+        name:
+          type: string
+          description: Empty when the referenced entity no longer exists
+          example: Welcome flow
     OptinTool:
       type:
         - object

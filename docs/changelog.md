@@ -33,6 +33,12 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.15] - 2026-09-22
+
+#### Added
+- `GET /discounts` and `GET /discounts/{id}` endpoints for the site's discounts. Discounts come in three shapes, told apart by `customizationType` and `expiryType`: general (one shared `code`), code pool (`unique` + `fixed` — `discountCodePattern`, `mode` (`refilling` serves flows and popups, `non-refilling` serves campaigns), `targetCount`, `availableCount`, `fillStatus`) and expiring (`unique` + `relative` — `discountCodePattern`, `durationSeconds`, `template`; one Shopify price rule per issued code, no `startsAt`/`endsAt`). The list supports `mode`, `available` and `flowId` filters plus `limit`/`offset` (default page size 100) and carries configuration and pool state only, no statistics.
+- `GET /discounts/{id}` additionally returns `usage` (the flows, campaigns and opt-in tools configured with the discount, as ids and names) and `statistics` — lifetime counters with no date range: `sent` (codes issued by Recart) always, and, with the new `omitShopifyData` query parameter set to `false` (default `true` skips the live Shopify call), `used`, `sales` (by currency) and `codesCount` from Shopify. Expiring discounts carry `sent` only.
+
 ### [2023-12.14] - 2026-09-21
 
 #### Added
