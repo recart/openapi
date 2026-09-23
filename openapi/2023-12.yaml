@@ -1105,8 +1105,33 @@ paths:
         The site's discounts — configuration and pool state, no statistics.
         status is computed from the activation and expiration dates: active,
         scheduled (starts later), expired (ended or deactivated). Default
-        page size 100.
+        page size 100. All filters combine with AND.
       parameters:
+        - name: code
+          in: query
+          description: |
+            The static code of a general discount, exact match,
+            case-insensitive. Only general discounts have a code.
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+        - name: name
+          in: query
+          description: Discount name contains this text, case-insensitive
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+        - name: pattern
+          in: query
+          description: |
+            The code prefix of a unique discount (discountCodePattern),
+            exact match, case-insensitive. Only unique discounts have one.
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
         - name: limit
           in: query
           description: Maximum number of discounts to return
@@ -4193,7 +4218,11 @@ components:
             - general
         expiryType:
           type: string
-          description: unique only — fixed = code pool with dates, relative = expiring code issued on demand
+          description: |
+            unique only. fixed = a code pool whose codes expire at the end
+            date set when the discount was created. relative = an expiring
+            code created on demand; its expiration timer starts the moment
+            the customer receives the code via popup or SMS.
           enum:
             - fixed
             - relative
@@ -4210,6 +4239,11 @@ components:
             - app
         discountClasses:
           type: array
+          description: |
+            Shopify discount classes of the discount. Together with the
+            price rule's combination settings they define which other
+            discounts it can be combined with in one checkout, see
+            https://help.shopify.com/en/manual/discounts/discount-combinations
           items:
             type: string
             enum:
@@ -4273,7 +4307,7 @@ components:
           additionalProperties: true
           description: |
             expiring only — the Shopify discount input each issued code's
-            price rule is created from, as discount-service stores it
+            price rule is created from, as stored
             (type, title, appliesOncePerCustomer, usageLimit,
             combinesWith, customerSelection, customerGets,
             minimumRequirement, destinationSelection for free shipping)
