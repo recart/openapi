@@ -1767,7 +1767,8 @@ paths:
       security:
         - ApiKeyAuth: []
       description: |
-        List the site's opt-in tool A/B test experiments — scheduled, running and ended.
+        List the site's opt-in tool A/B test experiments in every status —
+        draft, scheduled, running, ended and cancelled.
       responses:
         '200':
           description: Ok
@@ -1835,8 +1836,8 @@ paths:
         There are no date parameters and no `targetResolution` — every section
         is a total for the experiment's own window, which is derived from its
         status: an `ended` experiment uses its full window, a `running` one
-        spans its start until now, and a `scheduled` one has no statistics yet
-        and returns 400.
+        spans its start until now, and a `draft`, `scheduled` or `cancelled`
+        one has no statistics and returns 400.
 
         Statistics fields behave as in the opt-in tool views: counts and rates
         are never null, so a variant without activity returns 0 rather than
@@ -4881,12 +4882,17 @@ components:
             status:
               type: string
               description: |
-                Status of the experiment. A scheduled experiment has no
-                statistics yet, so its views return 400.
+                Status of the experiment. `draft` is still being set up in
+                the A/B test wizard, `scheduled` waits for `dateFrom`,
+                `cancelled` was called off before it ran. Only a `running`
+                or `ended` experiment has statistics; the views of any other
+                status return 400.
               enum:
+                - draft
                 - scheduled
                 - running
                 - ended
+                - cancelled
             dateFrom:
               type: string
               format: date-time
@@ -4910,17 +4916,65 @@ components:
               example:
                 - 655637c97825e6ae655fe1c9
                 - 655637c97825e6ae655fe1b5
+            variants:
+              type: array
+              description: |
+                Traffic split of the experiment, one entry per opt-in tool in
+                `optinToolIds`. Present for experiments created in the A/B
+                test wizard; older experiments split traffic evenly and have
+                no designated control.
+              items:
+                $ref: '#/components/schemas/OptinToolExperimentVariant'
+            primaryMetric:
+              type: string
+              description: |
+                Metric the experiment is decided on. Present for experiments
+                created in the A/B test wizard; older experiments were decided
+                on opt-in rate. `emailOptin` and `smsOptin` are opt-in rates,
+                the rest are the `revenue-summary` metrics.
+              enum:
+                - emailOptin
+                - smsOptin
+                - associatedRevenue
+                - orders
+                - averageOrderValue
+                - revenuePerVisitor
+                - orderConversionRate
+              example: smsOptin
             winnerOptinToolId:
               type: string
               description: |
                 ID of the variant Recart picked as the winner, present once the
-                experiment has ended. Picked on opt-in rate alone — this is not
-                a statistical significance test.
+                experiment has ended. Picked on the highest `primaryMetric`
+                value — opt-in rate when there is none — this is not a
+                statistical significance test.
               example: 655637c97825e6ae655fe1c9
+            winnerMetricValue:
+              type: number
+              description: |
+                Value of `primaryMetric` for the winning variant, present with
+                `winnerOptinToolId`. Rates are fractions (0.0135 = 1.35%),
+                revenue amounts are in USD. For an experiment without a
+                `primaryMetric` this is the winner's opt-in rate.
+              example: 0.0135
             winnerOptinRate:
               type: number
-              description: Opt-in rate of the winning variant
+              description: |
+                Opt-in rate of the winning variant. Set only for experiments
+                without a `primaryMetric`; `winnerMetricValue` carries the
+                same number for those.
               example: 0.0135
+            tags:
+              type: array
+              description: |
+                Tags the merchant put on the experiment in the A/B test
+                wizard, in the order they were added.
+              items:
+                $ref: '#/components/schemas/OptinToolExperimentTag'
+            notes:
+              type: string
+              description: Free-text notes the merchant wrote on the experiment
+              example: Testing a shorter headline on the mobile popup
             createdAt:
               type: string
               format: date-time
@@ -4931,6 +4985,47 @@ components:
               format: date-time
               description: Last modification time of the experiment. UTC date and time in ISO 8601 format
               example: '2026-08-10T00:00:01.000Z'
+    OptinToolExperimentVariant:
+      type: object
+      description: One variant of an A/B test experiment and its share of traffic.
+      required:
+        - optinToolId
+        - weight
+        - isControl
+      properties:
+        optinToolId:
+          type: string
+          description: ID of the opt-in tool shown as this variant
+          example: 655637c97825e6ae655fe1c9
+        weight:
+          type: number
+          description: |
+            Share of eligible visitors assigned to this variant, as a fraction
+            of 1. The weights of an experiment sum to 1.
+          minimum: 0
+          maximum: 1
+          example: 0.5
+        isControl:
+          type: boolean
+          description: |
+            Whether this variant is the control the others are compared
+            against. Exactly one variant of an experiment is the control.
+          example: true
+    OptinToolExperimentTag:
+      type: object
+      description: A tag attached to an A/B test experiment.
+      required:
+        - value
+        - label
+      properties:
+        value:
+          type: string
+          description: Stable key of the tag, unique within the site
+          example: headline
+        label:
+          type: string
+          description: Display name of the tag as shown in the dashboard
+          example: Headline
     OptinToolExperimentOptinSummaryData:
       description: |
         Opt-in performance totals of one variant for the experiment's window —

@@ -33,6 +33,13 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.16] - 2026-09-25
+
+#### Added
+- `OptinToolExperiment` carries the A/B test wizard setup: `variants` (per opt-in tool `optinToolId`, traffic `weight` as a fraction of 1 and `isControl`), `primaryMetric` (`emailOptin`, `smsOptin`, `associatedRevenue`, `orders`, `averageOrderValue`, `revenuePerVisitor` or `orderConversionRate`), `tags` (`value` + `label`) and `notes`. Older experiments have none of these: they split traffic evenly, have no designated control and were decided on opt-in rate.
+- `winnerMetricValue` — the winning variant's value of `primaryMetric`, present with `winnerOptinToolId`. For an experiment without a `primaryMetric` it is the winner's opt-in rate, so consumers need not branch on the experiment's age.
+- `status` gains `draft` and `cancelled`; `GET /optin-tool-experiments` lists experiments in every status. The views of a `draft`, `scheduled` or `cancelled` experiment return 400.
+
 ### [2023-12.15] - 2026-09-22
 
 #### Added
