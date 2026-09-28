@@ -20,6 +20,8 @@ tags:
     description: Opt-in tools
   - name: Order
     description: Orders
+  - name: Segment
+    description: Segments
   - name: Subscriber
     description: Subscribers
   - name: Subscription
@@ -1341,6 +1343,338 @@ paths:
                           sales:
                             USD: 9418.4
                           codesCount: 10000
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  /segments:
+    get:
+      summary: Retrieve list of segments
+      tags:
+        - Segment
+      operationId: listSegments
+      security:
+        - ApiKeyAuth: []
+      description: |
+        The site's active segments — name, status, the expression and its
+        description; size with includeSize=true. Page size 5, newest first.
+        Lists: GET /lists.
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of segments to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+            default: 5
+        - name: offset
+          in: query
+          description: Number of segments to skip, for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: ids
+          in: query
+          description: Only these segments
+          schema:
+            type: array
+            items:
+              type: string
+        - name: isMemberOf
+          in: query
+          description: Segments whose expression has a member-of-a-segment condition on this segment or list id
+          schema:
+            type: string
+        - name: includeSize
+          in: query
+          description: Compute the live size of each segment on the page
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Segment'
+              examples:
+                segments:
+                  summary: An active and a dormant segment
+                  value:
+                    data:
+                      - type: segments
+                        attributes:
+                          id: 64f2a1b2c3d4e5f60718293a
+                          name: Win-back — no order in 90 days
+                          status: active
+                          editedAt: '2026-06-02T09:14:00.000Z'
+                          createdAt: '2025-11-18T14:02:10.000Z'
+                          updatedAt: '2026-09-23T22:00:04.000Z'
+                          expression:
+                            and:
+                              - or:
+                                  - slug: number-of-orders
+                                    type: number
+                                    operator: gt
+                                    value: 0
+                              - or:
+                                  - slug: placed-an-order
+                                    type: boolean
+                                    operator: neq
+                                    value: true
+                                    dateFilter:
+                                      type: in-the-last
+                                      daysOffset: 90
+                              - or:
+                                  - slug: member-of-a-segment
+                                    type: boolean
+                                    operator: neq
+                                    values:
+                                      - id: 64f2a1b2c3d4e5f60718293b
+                                        name: VIP customers
+                                  - slug: received-a-flow
+                                    type: boolean
+                                    operator: neq
+                                    dateFilter:
+                                      type: in-the-last
+                                      daysOffset: 30
+                                    subcondition:
+                                      slug: sequence
+                                      category: sequence-id
+                                      operator: eq
+                                      values:
+                                        - id: 6138d0ac2d79e00001210035
+                                          name: Win-back flow
+                          description: Number of orders is greater than 0 and Has not placed an order in the last 90 days and Is not member of VIP customers or Has not received a flow in the last 30 days flow name is Win-back flow
+                      - type: segments
+                        attributes:
+                          id: 64f2a1b2c3d4e5f60718293c
+                          name: Summer 2025 quiz takers
+                          status: dormant
+                          dormantAt: '2026-03-01T03:00:00.000Z'
+                          editedAt: '2025-06-10T08:00:00.000Z'
+                          createdAt: '2025-06-10T08:00:00.000Z'
+                          updatedAt: '2026-03-01T03:00:00.000Z'
+                          expression:
+                            and:
+                              - or:
+                                  - slug: subscribed-to-channel
+                                    type: boolean
+                                    operator: eq
+                                    value: sms
+                                    subcondition:
+                                      slug: subscription-source
+                                      category: optin-tool-id
+                                      operator: eq
+                                      values:
+                                        - id: 655637c97825e6ae655fe1c9
+                                          name: Summer quiz
+                          description: Has subscribed to sms source is Summer quiz
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/segments/{id}':
+    get:
+      summary: Retrieve a single segment
+      tags:
+        - Segment
+      operationId: getSegment
+      security:
+        - ApiKeyAuth: []
+      description: |
+        One segment by id — the same resource as a list entry, with its live
+        size. Which campaigns target it: GET /campaign-flows?segmentId=.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the segment
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Segment'
+              examples:
+                segment:
+                  summary: 'GET /segments/64f2a1b2c3d4e5f60718293a'
+                  value:
+                    data:
+                      type: segments
+                      attributes:
+                        id: 64f2a1b2c3d4e5f60718293a
+                        name: Win-back — no order in 90 days
+                        status: active
+                        size: 8312
+                        editedAt: '2026-06-02T09:14:00.000Z'
+                        createdAt: '2025-11-18T14:02:10.000Z'
+                        updatedAt: '2026-09-23T22:00:04.000Z'
+                        expression:
+                          and:
+                            - or:
+                                - slug: number-of-orders
+                                  type: number
+                                  operator: gt
+                                  value: 0
+                            - or:
+                                - slug: placed-an-order
+                                  type: boolean
+                                  operator: neq
+                                  value: true
+                                  dateFilter:
+                                    type: in-the-last
+                                    daysOffset: 90
+                            - or:
+                                - slug: member-of-a-segment
+                                  type: boolean
+                                  operator: neq
+                                  values:
+                                    - id: 64f2a1b2c3d4e5f60718293b
+                                      name: VIP customers
+                                - slug: received-a-flow
+                                  type: boolean
+                                  operator: neq
+                                  dateFilter:
+                                    type: in-the-last
+                                    daysOffset: 30
+                                  subcondition:
+                                    slug: sequence
+                                    category: sequence-id
+                                    operator: eq
+                                    values:
+                                      - id: 6138d0ac2d79e00001210035
+                                        name: Win-back flow
+                        description: Number of orders is greater than 0 and Has not placed an order in the last 90 days and Is not member of VIP customers or Has not received a flow in the last 30 days flow name is Win-back flow
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  /lists:
+    get:
+      summary: Retrieve list of lists
+      tags:
+        - List
+      operationId: listLists
+      security:
+        - ApiKeyAuth: []
+      description: |
+        The site's active manual lists — name and status; size with
+        includeSize=true. Page size 5, newest first.
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of lists to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+            default: 5
+        - name: offset
+          in: query
+          description: Number of lists to skip, for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: ids
+          in: query
+          description: Only these lists
+          schema:
+            type: array
+            items:
+              type: string
+        - name: includeSize
+          in: query
+          description: Compute the live size of each list on the page
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/List'
+              examples:
+                lists:
+                  summary: An imported list
+                  value:
+                    data:
+                      - type: lists
+                        attributes:
+                          id: 64f2a1b2c3d4e5f60718293d
+                          name: Black Friday 2025 import
+                          status: active
+                          editedAt: '2025-11-20T10:00:00.000Z'
+                          createdAt: '2025-11-20T10:00:00.000Z'
+                          updatedAt: '2026-09-23T22:00:04.000Z'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/lists/{id}':
+    get:
+      summary: Retrieve a single list
+      tags:
+        - List
+      operationId: getList
+      security:
+        - ApiKeyAuth: []
+      description: |
+        One manual list by id — the same resource as a list entry, with its
+        live size.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the list
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/List'
+              examples:
+                list:
+                  summary: 'GET /lists/64f2a1b2c3d4e5f60718293d'
+                  value:
+                    data:
+                      type: lists
+                      attributes:
+                        id: 64f2a1b2c3d4e5f60718293d
+                        name: Black Friday 2025 import
+                        status: active
+                        size: 1204
+                        editedAt: '2025-11-20T10:00:00.000Z'
+                        createdAt: '2025-11-20T10:00:00.000Z'
+                        updatedAt: '2026-09-23T22:00:04.000Z'
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -3519,12 +3853,12 @@ components:
           type: array
           description: Segments the campaign audience includes
           items:
-            $ref: '#/components/schemas/Segment'
+            $ref: '#/components/schemas/SegmentReference'
         excludeSegments:
           type: array
           description: Segments the campaign audience excludes
           items:
-            $ref: '#/components/schemas/Segment'
+            $ref: '#/components/schemas/SegmentReference'
         isQuietHoursEnabled:
           type: boolean
           description: Whether messages from this campaign are held during the subscriber's quiet hours
@@ -3574,10 +3908,11 @@ components:
           type: string
           format: date-time
           description: When the campaign was last updated
-    Segment:
+    SegmentReference:
       type: object
       description: |
-        A segment of the campaign audience. name is the segment's current
+        A segment of the campaign audience, or a resolved value of an
+        expression condition. name is the referenced entity's current
         name, or an empty string when it could not be resolved (for
         example a deleted segment).
       required:
@@ -3656,7 +3991,7 @@ components:
             type: object
           description: v1 conditional split conditions
         expression:
-          type: object
+          $ref: '#/components/schemas/Expression'
           description: |
             v2 conditional split expression: `and[].or[]` of conditions,
             each with a `slug`, `type`, `operator` and, depending on the
@@ -4436,6 +4771,269 @@ components:
           type: string
           description: Empty when the referenced entity no longer exists
           example: Welcome flow
+    Segment:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - segments
+        attributes:
+          type: object
+          required:
+            - id
+            - name
+            - status
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+              example: 64f2a1b2c3d4e5f60718293a
+            name:
+              type: string
+              example: Win-back — no order in 90 days
+            status:
+              type: string
+              enum:
+                - active
+                - calculating
+                - syncing
+                - unable-to-sync
+                - dormant
+              description: |
+                The dashboard's Status column. active = membership kept current. calculating = segment being (re)computed.
+                syncing = Klaviyo sync in progress. unable-to-sync = Klaviyo sync failed or the Klaviyo list was deleted.
+                dormant = unused for 30 days (14 for Klaviyo-based), membership dropped, size 0.
+            size:
+              type: integer
+              description: |
+                Currently subscribed SMS subscribers, live; 0 while dormant. On
+                the list only with includeSize=true, on the detail always.
+              example: 8312
+            dormantAt:
+              type: string
+              format: date-time
+              description: dormant only
+            editedAt:
+              type: string
+              format: date-time
+              description: Last change to name or expression
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+            expression:
+              $ref: '#/components/schemas/Expression'
+              description: The membership rule, AND of ORs, ids resolved to names
+            description:
+              type: string
+              description: The expression in words, exactly the dashboard's sentence
+              example: Number of orders is greater than 0 and Has not placed an order in the last 90 days
+    List:
+      type:
+        - object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - lists
+        attributes:
+          type: object
+          required:
+            - id
+            - name
+            - status
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+              example: 64f2a1b2c3d4e5f60718293d
+            name:
+              type: string
+              example: Black Friday 2025 import
+            status:
+              type: string
+              enum:
+                - active
+                - importing
+                - syncing
+                - unable-to-sync
+                - dormant
+              description: The dashboard's Status column — importing = list import running; the rest as on Segment
+            size:
+              type: integer
+              description: |
+                Currently subscribed SMS subscribers, live; 0 while dormant. On
+                the list only with includeSize=true, on the detail always.
+              example: 1204
+            dormantAt:
+              type: string
+              format: date-time
+              description: dormant only
+            editedAt:
+              type: string
+              format: date-time
+              description: Last change to the name
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    Expression:
+      type: object
+      required:
+        - and
+      properties:
+        and:
+          type: array
+          description: Every group must hold
+          items:
+            type: object
+            required:
+              - or
+            properties:
+              or:
+                type: array
+                description: At least one condition of the group must hold
+                items:
+                  $ref: '#/components/schemas/Condition'
+    Condition:
+      type: object
+      required:
+        - slug
+        - type
+      properties:
+        slug:
+          type: string
+          example: placed-an-order
+        type:
+          type: string
+          enum:
+            - boolean
+            - number
+            - string
+            - date
+            - array
+        operator:
+          type: string
+          enum:
+            - eq
+            - neq
+            - lt
+            - gt
+            - include
+            - not_include
+            - exist
+            - not_exist
+          description: Absent on date conditions
+        field:
+          type: string
+          description: subscriber-detail only
+        value:
+          description: String, number, boolean or array of strings; absent when values is present
+        values:
+          type: array
+          description: Replaces value when it is an entity id; name empty when unresolved
+          items:
+            $ref: '#/components/schemas/SegmentReference'
+        dateFilter:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - all
+                - between
+                - not-between
+                - since
+                - until
+                - 'on'
+                - in-the-last
+                - not-in-the-last
+                - exist
+                - not-exist
+            dateFrom:
+              type: string
+              format: date-time
+            dateTo:
+              type: string
+              format: date-time
+            daysOffset:
+              type: integer
+        filters:
+          type: object
+          description: occurrence narrows to the first or last event; count (visited-page) asks for at least min matching page views
+          properties:
+            occurrence:
+              type: string
+              enum:
+                - first
+                - last
+            count:
+              type: object
+              required:
+                - min
+              properties:
+                min:
+                  type: integer
+                  minimum: 1
+        subcondition:
+          $ref: '#/components/schemas/Subcondition'
+        subconditions:
+          type: array
+          description: visited-page only — rows that all apply to the same page view (page, product, collection, utm), in place of subcondition
+          items:
+            $ref: '#/components/schemas/Subcondition'
+    Subcondition:
+      type: object
+      description: Narrows a condition to one entity or attribute; value is the literal, values the resolved { id, name } entries
+      required:
+        - slug
+        - category
+        - operator
+      properties:
+        slug:
+          type: string
+          enum:
+            - sequence
+            - product
+            - subscription-source
+            - location-category
+            - klaviyo-segment-or-list
+            - page
+            - collection
+            - utm
+        category:
+          type: string
+        operator:
+          type: string
+          enum:
+            - eq
+            - neq
+            - lt
+            - gt
+            - include
+            - not_include
+            - exist
+            - not_exist
+        value:
+          description: Literal, absent when values is present
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/SegmentReference'
     OptinTool:
       type:
         - object

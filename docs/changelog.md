@@ -33,6 +33,15 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.17] - 2026-09-28
+
+#### Added
+- `GET /segments` and `GET /segments/{id}` endpoints for the site's active segments — dynamic audiences defined by a rule. Each segment carries `name`, `status` (the dashboard's Status column: `active`, `calculating`, `syncing`, `unable-to-sync` or `dormant`), `dormantAt`, `editedAt`, the `expression` (an AND of ORs of conditions, entity ids resolved to `{ id, name }` values, `name` empty when unresolved) and `description` (the expression in words, exactly the dashboard's sentence). `size` (currently subscribed SMS subscribers, live) is on the list only with `includeSize=true` and always on the detail. The list supports `ids`, `isMemberOf` (segments whose expression has a `member-of-a-segment` condition on the given segment or list id) and `limit`/`offset` (page size 5, newest first).
+- `GET /lists` and `GET /lists/{id}` endpoints for the site's active manual lists (imported, created in the dashboard or through the public API). Lists have no expression or description; `status` is `active`, `importing`, `syncing`, `unable-to-sync` or `dormant`. Same `ids`, `includeSize` and `limit`/`offset` (page size 5) as the segments.
+
+#### Changed
+- The `Expression` component (with `Condition` and `Subcondition`) is now shared by `FlowItemBranch.expression` and `Segment.expression`, and the `{ id, name }` audience component of `Campaign.includeSegments` / `excludeSegments` was renamed `SegmentReference`. Component renames only — the wire format is unchanged.
+
 ### [2023-12.16] - 2026-09-25
 
 #### Added
