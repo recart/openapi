@@ -4834,7 +4834,7 @@ components:
               description: The membership rule, AND of ORs, ids resolved to names
             description:
               type: string
-              description: The expression in words, exactly the dashboard's sentence
+              description: The expression description in a sentence
               example: Number of orders is greater than 0 and Has not placed an order in the last 90 days
     List:
       type:
@@ -5007,7 +5007,7 @@ components:
         slug:
           type: string
           enum:
-            - sequence
+            - flow
             - product
             - subscription-source
             - location-category
