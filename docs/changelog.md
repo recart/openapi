@@ -36,7 +36,7 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 ### [2023-12.18] - 2026-09-28
 
 #### Changed
-- `GET /optin-tools/{id}/views/{name}` now serves landing pages and embedded forms for `optin-summary`, `optin-history` and `subscriptions-history`; it used to return 400 for every non-popup tool. The revenue views and `all` stay popup-only, and keywords keep `subscriptions-history` only. Forms have no teaser step and record no bounce, so their `teaserConfirm`, `teaserConfirmRate`, `teaserDecline`, `bounce` and `bounceRate` are always 0.
+- `GET /optin-tools/{id}/views/{name}` now serves landing pages and embedded forms for `optin-summary`, `optin-history` and `subscriptions-history`; it used to return 400 for every non-popup tool. The revenue views and `all` stay popup-only, and keywords keep `subscriptions-history` only. Forms have no teaser step, so their `teaserConfirm`, `teaserConfirmRate` and `teaserDecline` are always 0.
 
 ### [2023-12.17] - 2026-09-28
 

@@ -1754,9 +1754,8 @@ paths:
         `optin-summary`, `optin-history` and `subscriptions-history` only —
         the revenue views and `all` return 400 for them. Keywords support
         `subscriptions-history` only. A landing page or embedded form has
-        no teaser step and records no bounce, so its `teaserConfirm`,
-        `teaserConfirmRate`, `teaserDecline`, `bounce` and `bounceRate` are
-        always 0.
+        no teaser step, so its `teaserConfirm`, `teaserConfirmRate` and
+        `teaserDecline` are always 0.
 
         Statistics fields are never null: buckets without activity and empty
         ranges return 0 counts and 0 rates — zero and "no data" are
