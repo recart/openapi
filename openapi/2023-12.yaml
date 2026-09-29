@@ -1745,9 +1745,18 @@ paths:
       security:
         - ApiKeyAuth: []
       description: |
-        One statistics view of a popup-type opt-in tool. `name` picks the view; `all`
-        returns every section in one response. When the date range is
-        omitted it defaults to the last 7 days.
+        One statistics view of a popup, landing-page or embedded-form
+        opt-in tool. `name` picks the view; `all` returns every section in
+        one response. When the date range is omitted it defaults to the
+        last 7 days.
+
+        Popups support every view. Landing pages and embedded forms support
+        `optin-summary`, `optin-history` and `subscriptions-history` only —
+        the revenue views and `all` return 400 for them. Keywords support
+        `subscriptions-history` only. A landing page or embedded form has
+        no teaser step and records no bounce, so its `teaserConfirm`,
+        `teaserConfirmRate`, `teaserDecline`, `bounce` and `bounceRate` are
+        always 0.
 
         Statistics fields are never null: buckets without activity and empty
         ranges return 0 counts and 0 rates — zero and "no data" are
