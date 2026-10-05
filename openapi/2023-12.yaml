@@ -2019,13 +2019,16 @@ paths:
 
         `optin-tools-summary` returns one entry per opt-in tool that
         recorded any metric event or collected any SMS subscription in the
-        range: the tool's `optinToolName` and `optinToolType`, then its raw
-        metric-event unique-session counts merged with its new SMS
-        subscription count. Event keys are sparse — a missing key means 0;
-        `smsSubscriptions` is always present, 0 when none. Because every
-        entry names and types its own tool, a per-type total can be computed
-        from this response alone, without a separate `/optin-tools` call.
-        Values are counts, not amounts: this view carries no USD figures; for
+        range: the tool's `optinToolName`, `optinToolType` and, for popups,
+        `optinToolTags`, then its raw metric-event unique-session counts
+        merged with its new SMS subscription count. Event keys are sparse — a
+        missing key means 0; `smsSubscriptions` is always present, 0 when
+        none. Because every entry names, types and tags its own tool, a
+        per-type or per-tag total can be computed from this response alone,
+        without a separate `/optin-tools` call. The tags are the tool's
+        current ones: as in the dashboard, the range's statistics are
+        reported per tool under its current configuration. Values are
+        counts, not amounts: this view carries no USD figures; for
         attributed revenue use the per-tool revenue views. Subscriptions from
         non-tool sources (imports, customer chat, …) are not part of this
         view.
@@ -2083,6 +2086,12 @@ paths:
                           - optinToolId: 655637c97825e6ae655fe1c9
                             optinToolName: Summer sale — Main
                             optinToolType: popup
+                            optinToolTags:
+                              - delay
+                              - discount-694132dcb842e9d365676043
+                              - micro-yes
+                              - one-click-opt-in
+                              - opt-in-offer
                             impression: 20400
                             teaserConfirmation: 512
                             closePopup: 3100
@@ -2092,6 +2101,12 @@ paths:
                           - optinToolId: 655637c97825e6ae655fe1b5
                             optinToolName: Summer sale — Preferences
                             optinToolType: popup
+                            optinToolTags:
+                              - button-group
+                              - discount-694132dcb842e9d365676043
+                              - exit-intent
+                              - in-popup-confirmation
+                              - opt-in-offer
                             impression: 18100
                             teaserConfirmation: 445
                             engagement: 5210
@@ -5158,6 +5173,35 @@ components:
               enum:
                 - two-way
                 - one-way
+            tags:
+              type: array
+              items:
+                type: string
+              description: |
+                Tags Recart derives from the popup's configuration on every
+                save. Lowercase kebab-case, sorted. Popups only. Current
+                groups: template (opt-in-offer, back-in-stock), opt-in method
+                (email-only, phone-number-only, in-popup-confirmation,
+                one-click-opt-in, reply-sms-consent), trigger (delay,
+                exit-intent, returning-delay, external-trigger), engagement
+                tool (plinko, spin-the-wheel, button-group, micro-yes) and
+                discount (`discount-<id>`, see `GET /discounts/{id}`). A
+                popup carries exactly one template and one opt-in method tag,
+                at most one trigger and one discount tag, and one engagement
+                tool tag when it has a teaser step: tags of one group never
+                share a popup, so per-tag totals within a group add up, while
+                tags from different groups overlap. The vocabulary can grow;
+                treat unknown tags as opaque. The tags
+                describe the popup's current configuration; as in the
+                dashboard, statistics are reported per tool under its current
+                configuration. Not related to the `tags` of an opt-in tool
+                experiment.
+              example:
+                - delay
+                - discount-694132dcb842e9d365676043
+                - micro-yes
+                - one-click-opt-in
+                - opt-in-offer
             settings:
               type: object
               description: |
@@ -5398,9 +5442,9 @@ components:
         One opt-in tool's totals for the range — the tool's identity, then its
         raw metric-event unique-session counts merged with the new SMS
         subscriptions it collected. Besides optinToolId, optinToolName,
-        optinToolType and smsSubscriptions, every key is a MetricEvent value
-        (see the MetricEvent schema) with its count; only events that occurred
-        appear, a missing key means 0.
+        optinToolType, optinToolTags and smsSubscriptions, every key is a
+        MetricEvent value (see the MetricEvent schema) with its count; only
+        events that occurred appear, a missing key means 0.
       required:
         - optinToolId
         - optinToolName
@@ -5422,6 +5466,19 @@ components:
             - landing-page
             - embedded-form
             - keyword
+        optinToolTags:
+          type: array
+          items:
+            type: string
+          description: |
+            The tool's current tags (see OptinTool.tags). Absent for tools
+            without tags.
+          example:
+            - delay
+            - discount-694132dcb842e9d365676043
+            - micro-yes
+            - one-click-opt-in
+            - opt-in-offer
         smsSubscriptions:
           type: integer
           description: New SMS subscriptions collected by the tool in the range

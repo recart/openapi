@@ -33,6 +33,12 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.19] - 2026-10-05
+
+#### Added
+- `tags` on opt-in tools (`GET /optin-tools`, `GET /optin-tools/{id}`): the tags Recart derives from a popup's configuration on every save, for example `opt-in-offer`, `exit-intent`, `plinko`, `one-click-opt-in` or `discount-<id>`. Popups only; lowercase kebab-case, sorted. They describe the popup's current configuration; as in the dashboard, statistics are reported per tool under its current configuration. Unrelated to the `tags` of an opt-in tool experiment.
+- `optinToolTags` on the `optin-tools-summary` entries of `GET /optin-tools/views/{name}`: the tool's current tags, next to `optinToolName` and `optinToolType`, so a response can be filtered or grouped by tag without a second `GET /optin-tools` call. Absent for tools without tags.
+
 ### [2023-12.18] - 2026-09-28
 
 #### Changed
