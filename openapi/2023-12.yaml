@@ -5184,7 +5184,7 @@ components:
                 (email-only, phone-number-only, in-popup-confirmation,
                 one-click-opt-in, reply-sms-consent), trigger (delay,
                 exit-intent, returning-delay, external-trigger), engagement
-                tool (plinko, spin-the-wheel, button-group, micro-yes) and
+                tool (plinko, spin-the-wheel, mystery-box, button-group, micro-yes) and
                 discount (`discount-<id>`, see `GET /discounts/{id}`). A
                 popup carries exactly one template and one opt-in method tag,
                 at most one trigger and one discount tag, and one engagement
