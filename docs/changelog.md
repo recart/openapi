@@ -33,6 +33,11 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.20] - 2026-10-09
+
+#### Added
+- `mystery-box` value of the popup tags (`tags` on `GET /optin-tools` and `GET /optin-tools/{id}`, `optinToolTags` on the `optin-tools-summary` entries of `GET /optin-tools/views/{name}`): the popup's teaser is a mystery box game, where the visitor picks one of three boxes to open the popup. It belongs to the engagement tool group with `plinko`, `spin-the-wheel`, `button-group` and `micro-yes`.
+
 ### [2023-12.19] - 2026-10-05
 
 #### Added
