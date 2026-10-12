@@ -934,11 +934,12 @@ paths:
           in: query
           description: |
             First day of the range, inclusive (YYYY-MM-DD, UTC). Defaults
-            to the campaign's send day (`sentAt`, or `scheduledFor` /
-            `createdAt` while it has not been sent), clamped to 18 months
-            ago. A caller-supplied `dateFrom` must not be older than 18
-            months — the API does not serve older data, and an older
-            `dateFrom` returns 400.
+            to the campaign's scheduled send day (`scheduledFor`, or
+            `sentAt` / `createdAt` when it has none), clamped to 18 months
+            ago. `sentAt` is when the campaign was marked sent, which can be
+            up to two days after the send started. A caller-supplied
+            `dateFrom` must not be older than 18 months — the API does not
+            serve older data, and an older `dateFrom` returns 400.
           schema:
             type: string
             format: date
