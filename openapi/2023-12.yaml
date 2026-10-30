@@ -1130,8 +1130,10 @@ paths:
         - name: pattern
           in: query
           description: |
-            The code prefix of a unique discount (discountCodePattern),
-            exact match, case-insensitive. Only unique discounts have one.
+            The discountCodePattern of a unique discount, such as
+            WELCOME{RAND}, exact match, case-insensitive. Only unique
+            discounts have one. `{RAND}` is a placeholder for the random
+            string that makes each code unique.
           schema:
             type: string
             minLength: 1
@@ -1200,10 +1202,10 @@ paths:
                           type: basic
                           discountClasses:
                             - order
-                          amount: 10
+                          amount: 0.1
                           valueType: PERCENTAGE
                           summary: 10% off entire order
-                          discountCodePattern: WELCOME-
+                          discountCodePattern: WELCOME{RAND}
                           mode: refilling
                           targetCount: 10000
                           availableCount: 8612
@@ -1223,10 +1225,10 @@ paths:
                           type: basic
                           discountClasses:
                             - order
-                          amount: 20
+                          amount: 0.2
                           valueType: PERCENTAGE
                           summary: 20% off entire order • Minimum purchase of $50.00
-                          discountCodePattern: LD-
+                          discountCodePattern: LD{RAND}
                           durationSeconds: 86400
                           template:
                             type: BASIC
@@ -1245,7 +1247,7 @@ paths:
                               appliesOnSubscription: false
                               value:
                                 type: PERCENTAGE
-                                percentage: 20
+                                percentage: 0.2
                               items:
                                 type: INPUT_ALL
                                 allItems: true
@@ -1488,10 +1490,10 @@ paths:
                         type: basic
                         discountClasses:
                           - order
-                        amount: 10
+                        amount: 0.1
                         valueType: PERCENTAGE
                         summary: 10% off entire order
-                        discountCodePattern: WELCOME-
+                        discountCodePattern: WELCOME{RAND}
                         mode: refilling
                         targetCount: 10000
                         availableCount: 8612
@@ -4841,8 +4843,8 @@ components:
           example: WELCOME10
         discountCodePattern:
           type: string
-          description: unique only — the code prefix
-          example: WELCOME-
+          description: unique only — the code prefix followed by `{RAND}`, the placeholder for the random part of each code
+          example: WELCOME{RAND}
         mode:
           type: string
           description: code pools only — refilling pools serve flows and popups, non-refilling pools serve campaigns
