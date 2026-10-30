@@ -1677,7 +1677,9 @@ paths:
         '404':
           description: |
             `ERR_NOT_FOUND` — this API key made no draft with this id, or
-            the draft expired. Create a new draft.
+            the draft expired. If an earlier publish of this id returned
+            `409`, `5XX`, or no response, the discount may already exist on
+            Shopify. Check there before creating a new draft.
           content:
             application/vnd.api+json:
               schema:
@@ -1697,7 +1699,9 @@ paths:
         '429':
           description: |
             `ERR_SHOPIFY_THROTTLED` — Shopify throttled the request. Nothing
-            was created. Call again in a minute with the same id.
+            was created. Call again in a minute with the same id. After three
+            throttled publishes the draft cannot be published, and calling
+            again returns the same error. Create a new draft.
 
             `ERR_LIMIT_REACHED` — the publish limit of the site is reached.
             `detail` names the limit and when it resets. Call again after the
