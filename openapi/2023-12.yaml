@@ -1277,8 +1277,8 @@ paths:
         Creates a draft, not a discount: nothing is created on Shopify. The
         draft holds the effective settings — the request's settings with
         every default filled in — so they can be reviewed before the
-        discount is published. The draft can be read with
-        `GET /discounts/{id}` until it expires.
+        discount is published with `POST /discounts/{id}/publish`. The
+        draft can be read with `GET /discounts/{id}` until it expires.
 
         The code of a general discount is checked with Shopify, so a code
         already in use, in Recart or on Shopify, fails here and no draft is
@@ -1550,6 +1550,172 @@ paths:
                           - limits.totalUses
                         warnings: []
                         expiresAt: '2026-10-08T12:25:00.000Z'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+  '/discounts/{id}/publish':
+    post:
+      summary: Publish a discount draft
+      tags:
+        - Discount
+      operationId: publishDiscountDraft
+      security:
+        - ApiKeyAuth: []
+      description: |
+        **Not yet enabled for merchant accounts.** Returns `403`
+        `ERR_WRITE_NOT_ALLOWED` until enabled for your account.
+
+        Creates the discount on Shopify from a draft made with
+        `POST /discounts`, with the draft's effective settings. The request
+        has no body. Only the API key that made the draft can publish it.
+        The discount keeps the draft's id. A code pool's codes are uploaded
+        to Shopify over the next minutes, until fillStatus is full.
+
+        Publishing again is safe: a published draft returns the discount
+        with `200`, and no second discount is created. When the response is
+        lost or is a `5XX`, call again with the same id.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the draft
+          schema:
+            type: string
+      responses:
+        '201':
+          description: The discount was created on Shopify
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DiscountDetail'
+              examples:
+                refilling-pool:
+                  summary: The published draft of the refilling code pool example of POST /discounts
+                  value:
+                    data:
+                      type: discounts
+                      attributes:
+                        id: 6ac77d8c9b7d4e3fa1c6d2e0
+                        name: Welcome 15
+                        status: active
+                        customizationType: unique
+                        expiryType: fixed
+                        type: basic
+                        discountClasses:
+                          - order
+                        amount: 0.15
+                        valueType: PERCENTAGE
+                        summary: 15% off entire order
+                        discountCodePattern: WELCOME{RAND}
+                        mode: refilling
+                        targetCount: 10000
+                        availableCount: 0
+                        fillStatus: needFilling
+                        startsAt: '2026-10-08T11:25:00.000Z'
+                        endsAt: null
+                        shopifyDiscountId: '1234567890456'
+                        usage:
+                          flows: []
+                          campaigns: []
+                          optinTools: []
+                        createdAt: '2026-10-08T11:25:00.000Z'
+                        updatedAt: '2026-10-08T11:31:12.000Z'
+                        statistics:
+                          sent: 0
+        '200':
+          description: The draft was already published; the body is the discount, as with `201`
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DiscountDetail'
+        '400':
+          description: |
+            `ERR_CODE_TAKEN` — another discount took the code after the draft
+            was made.
+
+            `ERR_BAD_REQUEST` — Shopify rejected the draft's settings.
+            `detail` is Shopify's message.
+
+            After either error the draft cannot be published, and calling
+            again returns the same error. Correct the settings and create a
+            new draft.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '401':
+          description: '`ERR_UNAUTHORIZED` — the API key is missing.'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '403':
+          description: |
+            `ERR_FORBIDDEN` — the API key is unknown or has been revoked.
+
+            `ERR_WRITE_NOT_ALLOWED` — creating discounts is not enabled for
+            this account. Do not retry.
+
+            `ERR_SHOPIFY_ACCESS_DENIED` — Shopify denied access to the
+            store's discounts. Publishing cannot work until the store's
+            Shopify connection is fixed. Do not retry.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '404':
+          description: |
+            `ERR_NOT_FOUND` — this API key made no draft with this id, or
+            the draft expired. If an earlier publish of this id returned
+            `409`, `5XX`, or no response, the discount may already exist on
+            Shopify. Check there before creating a new draft.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '409':
+          description: |
+            `ERR_CONFLICT` — a publish of this draft has started and not
+            finished. Call again in a few seconds with the same id; once the
+            publish finishes, the call returns the discount. If it keeps
+            returning `409`, the publish stopped partway and cannot finish.
+            The discount may already exist on Shopify, so check there before
+            creating a new draft.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '429':
+          description: |
+            `ERR_SHOPIFY_THROTTLED` — Shopify throttled the request. Nothing
+            was created. Call again in a minute with the same id. After three
+            throttled publishes the draft cannot be published, and calling
+            again returns the same error. Create a new draft.
+
+            `ERR_LIMIT_REACHED` — the publish limit of the site is reached.
+            `detail` names the limit and when it resets. Call again after the
+            reset with the same id, or create a new draft if the draft
+            expires before then.
+          headers:
+            Retry-After:
+              description: Seconds until the limit resets; sent with `ERR_LIMIT_REACHED`
+              schema:
+                type: integer
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
