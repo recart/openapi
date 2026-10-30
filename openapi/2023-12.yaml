@@ -1108,7 +1108,8 @@ paths:
         The site's discounts — configuration and pool state, no statistics.
         status is computed from the activation and expiration dates: active,
         scheduled (starts later), expired (ended or deactivated). Default
-        page size 100. All filters combine with AND.
+        page size 100. All filters combine with AND. Drafts are never
+        listed.
       parameters:
         - name: code
           in: query
@@ -1129,8 +1130,10 @@ paths:
         - name: pattern
           in: query
           description: |
-            The code prefix of a unique discount (discountCodePattern),
-            exact match, case-insensitive. Only unique discounts have one.
+            The discountCodePattern of a unique discount, such as
+            WELCOME{RAND}, exact match, case-insensitive. Only unique
+            discounts have one. `{RAND}` is a placeholder for the random
+            string that makes each code unique.
           schema:
             type: string
             minLength: 1
@@ -1199,10 +1202,10 @@ paths:
                           type: basic
                           discountClasses:
                             - order
-                          amount: 10
+                          amount: 0.1
                           valueType: PERCENTAGE
                           summary: 10% off entire order
-                          discountCodePattern: WELCOME-
+                          discountCodePattern: WELCOME{RAND}
                           mode: refilling
                           targetCount: 10000
                           availableCount: 8612
@@ -1222,10 +1225,10 @@ paths:
                           type: basic
                           discountClasses:
                             - order
-                          amount: 20
+                          amount: 0.2
                           valueType: PERCENTAGE
                           summary: 20% off entire order • Minimum purchase of $50.00
-                          discountCodePattern: LD-
+                          discountCodePattern: LD{RAND}
                           durationSeconds: 86400
                           template:
                             type: BASIC
@@ -1244,7 +1247,7 @@ paths:
                               appliesOnSubscription: false
                               value:
                                 type: PERCENTAGE
-                                percentage: 20
+                                percentage: 0.2
                               items:
                                 type: INPUT_ALL
                                 allItems: true
@@ -1256,6 +1259,168 @@ paths:
                           shopifyDiscountId: '1234567890456'
                           createdAt: '2026-08-20T10:00:00.000Z'
                           updatedAt: '2026-08-30T16:00:04.000Z'
+        4XX:
+          $ref: '#/components/responses/HttpError'
+        5XX:
+          $ref: '#/components/responses/HttpError'
+    post:
+      summary: Create a discount draft
+      tags:
+        - Discount
+      operationId: createDiscountDraft
+      security:
+        - ApiKeyAuth: []
+      description: |
+        **Not yet enabled for merchant accounts.** Returns `403`
+        `ERR_WRITE_NOT_ALLOWED` until enabled for your account.
+
+        Creates a draft, not a discount: nothing is created on Shopify. The
+        draft holds the effective settings — the request's settings with
+        every default filled in — so they can be reviewed before the
+        discount is published. The draft can be read with
+        `GET /discounts/{id}` until it expires.
+
+        The code of a general discount is checked with Shopify, so a code
+        already in use, in Recart or on Shopify, fails here and no draft is
+        stored.
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  $ref: '#/components/schemas/PostDiscount'
+            examples:
+              refilling-pool:
+                summary: 15% off, refilling code pool, never expires
+                value:
+                  data:
+                    type: discounts
+                    attributes:
+                      name: Welcome 15
+                      shape:
+                        type: refilling_pool
+                        codePrefix: WELCOME
+                        endsAt: null
+                      value:
+                        type: percentage
+                        percent: 15
+              general:
+                summary: $10 off orders over $50, one shared code, ends at the end of the year
+                value:
+                  data:
+                    type: discounts
+                    attributes:
+                      name: Holiday 10
+                      shape:
+                        type: general
+                        code: HOLIDAY10
+                        endsAt: '2026-12-31T23:59:59.000Z'
+                      value:
+                        type: fixed_amount
+                        amount: 10
+                      minimumRequirement:
+                        type: subtotal
+                        amount: 50
+                      limits:
+                        oncePerCustomer: true
+      responses:
+        '201':
+          description: The draft was created
+          content:
+            application/vnd.api+json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DiscountDraft'
+              examples:
+                refilling-pool:
+                  summary: Draft of the refilling code pool request example
+                  value:
+                    data:
+                      type: discounts
+                      attributes:
+                        id: 6ac77d8c9b7d4e3fa1c6d2e0
+                        status: draft
+                        effectiveSettings:
+                          name: Welcome 15
+                          shape:
+                            type: refilling_pool
+                            codePrefix: WELCOME
+                            targetCount: 10000
+                            endsAt: null
+                          value:
+                            type: percentage
+                            percent: 15
+                          startsAt: '2026-10-08T11:25:00.000Z'
+                          combinesWith:
+                            orderDiscounts: false
+                            productDiscounts: false
+                            shippingDiscounts: false
+                          limits:
+                            oncePerCustomer: false
+                          currency: USD
+                        defaultsApplied:
+                          - startsAt
+                          - minimumRequirement
+                          - combinesWith
+                          - limits
+                        warnings: []
+                        expiresAt: '2026-10-08T12:25:00.000Z'
+        '400':
+          description: |
+            `ERR_BAD_REQUEST` — the payload failed validation, in which case
+            `detail` lists the offending fields. Also returned for a rule
+            that spans several settings, such as `endsAt` before `startsAt`.
+
+            `ERR_CODE_TAKEN` — another discount already uses the code.
+            `detail` is `discount-exists` when it is a Recart discount, and
+            `price-rule-exists-in-shopify` when it exists only on Shopify.
+            No draft is stored.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '401':
+          description: '`ERR_UNAUTHORIZED` — the API key is missing.'
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '403':
+          description: |
+            `ERR_FORBIDDEN` — the API key is unknown or has been revoked.
+
+            `ERR_WRITE_NOT_ALLOWED` — creating discounts is not enabled for
+            this account. Do not retry.
+
+            `ERR_SHOPIFY_ACCESS_DENIED` — Shopify denied access to the
+            store's discounts. Creating cannot work until the store's Shopify
+            connection is fixed. Do not retry.
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
+        '429':
+          description: |
+            `ERR_LIMIT_REACHED` — the draft limit of the site is
+            reached. `detail` names the limit and when it resets.
+          headers:
+            Retry-After:
+              description: Seconds until the limit resets
+              schema:
+                type: integer
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/HttpErrorBody'
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -1274,6 +1439,10 @@ paths:
         statistics (lifetime counters, no date range). Which statistics are
         present depends on the discount shape and on omitShopifyData — see
         DiscountStatistics.
+
+        A draft made with `POST /discounts` is returned as a DiscountDraft,
+        with status draft, until it expires. omitShopifyData has no effect
+        on a draft.
       parameters:
         - name: id
           in: path
@@ -1301,7 +1470,10 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: '#/components/schemas/DiscountDetail'
+                    description: A DiscountDraft when attributes.status is draft, a DiscountDetail otherwise
+                    oneOf:
+                      - $ref: '#/components/schemas/DiscountDetail'
+                      - $ref: '#/components/schemas/DiscountDraft'
               examples:
                 refilling-pool:
                   summary: 'GET /discounts/66aa0f1c7e8c9d2b00123abc?omitShopifyData=false'
@@ -1317,10 +1489,10 @@ paths:
                         type: basic
                         discountClasses:
                           - order
-                        amount: 10
+                        amount: 0.1
                         valueType: PERCENTAGE
                         summary: 10% off entire order
-                        discountCodePattern: WELCOME-
+                        discountCodePattern: WELCOME{RAND}
                         mode: refilling
                         targetCount: 10000
                         availableCount: 8612
@@ -1344,6 +1516,40 @@ paths:
                           sales:
                             USD: 9418.4
                           codesCount: 10000
+                draft:
+                  summary: 'GET /discounts/6ac77d8c9b7d4e3fa1c6d2e0, a draft'
+                  value:
+                    data:
+                      type: discounts
+                      attributes:
+                        id: 6ac77d8c9b7d4e3fa1c6d2e0
+                        status: draft
+                        effectiveSettings:
+                          name: Holiday 10
+                          shape:
+                            type: general
+                            code: HOLIDAY10
+                            endsAt: '2026-12-31T23:59:59.000Z'
+                          value:
+                            type: fixed_amount
+                            amount: 10
+                          startsAt: '2026-10-08T11:25:00.000Z'
+                          minimumRequirement:
+                            type: subtotal
+                            amount: 50
+                          combinesWith:
+                            orderDiscounts: false
+                            productDiscounts: false
+                            shippingDiscounts: false
+                          limits:
+                            oncePerCustomer: true
+                          currency: USD
+                        defaultsApplied:
+                          - startsAt
+                          - combinesWith
+                          - limits.totalUses
+                        warnings: []
+                        expiresAt: '2026-10-08T12:25:00.000Z'
         4XX:
           $ref: '#/components/responses/HttpError'
         5XX:
@@ -4636,8 +4842,8 @@ components:
           example: WELCOME10
         discountCodePattern:
           type: string
-          description: unique only — the code prefix
-          example: WELCOME-
+          description: unique only — the code prefix followed by `{RAND}`, the placeholder for the random part of each code
+          example: WELCOME{RAND}
         mode:
           type: string
           description: code pools only — refilling pools serve flows and popups, non-refilling pools serve campaigns
@@ -4796,6 +5002,444 @@ components:
           type: string
           description: Empty when the referenced entity no longer exists
           example: Welcome flow
+    PostDiscount:
+      type: object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - discounts
+        attributes:
+          $ref: '#/components/schemas/DiscountSettings'
+    DiscountSettings:
+      type: object
+      description: |
+        The settings of a new discount. Every discount applies to all
+        products, all customers, all countries and one-time purchases only.
+        Percentage and fixed amount discounts are order discounts, free
+        shipping is a shipping discount; combinesWith is judged against that
+        class. Amounts are in the store currency, which the draft echoes in
+        effectiveSettings.currency.
+
+        Once published, the discount keeps the draft's id, and its settings
+        read in `GET /discounts` as below. An attribute without a value
+        holds the setting's value unchanged.
+
+        | Setting | `GET /discounts` attributes |
+        | --- | --- |
+        | `name` | `name` |
+        | `startsAt` | `startsAt` (absent on expiring discounts) |
+        | `shape.type: general` | `customizationType: general` |
+        | `shape.type: refilling_pool` | `customizationType: unique`, `expiryType: fixed`, `mode: refilling` |
+        | `shape.type: non_refilling_pool` | `customizationType: unique`, `expiryType: fixed`, `mode: non-refilling` |
+        | `shape.type: expiring` | `customizationType: unique`, `expiryType: relative` |
+        | `shape.code` | `code` |
+        | `shape.codePrefix` | `discountCodePattern: <codePrefix>{RAND}` (`WELCOME` reads as `WELCOME{RAND}`) |
+        | `shape.targetCount` | `targetCount` |
+        | `shape.validForHours` | `durationSeconds: validForHours × 3600` |
+        | `shape.endsAt` | `endsAt` |
+        | `value.type: percentage` | `valueType: PERCENTAGE`, `type: basic`, `discountClasses: [order]` |
+        | `value.percent` | `amount: percent / 100` (15 reads as 0.15) |
+        | `value.type: fixed_amount` | `valueType: FIXED_AMOUNT`, `type: basic`, `discountClasses: [order]` |
+        | `value.amount` | `amount` |
+        | `value.type: free_shipping` | `valueType: FREE_SHIPPING`, `type: free-shipping`, `discountClasses: [shipping]`, `amount: 1` |
+        | `value.maximumShippingPrice`, `minimumRequirement`, `combinesWith`, `limits` | in `summary`, and in `template` on expiring discounts |
+      additionalProperties: false
+      required:
+        - name
+        - shape
+        - value
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Name of the discount, also its title on Shopify
+          example: Welcome 15
+        shape:
+          $ref: '#/components/schemas/DiscountShape'
+        value:
+          $ref: '#/components/schemas/DiscountValue'
+        startsAt:
+          type: string
+          format: date-time
+          description: 'Default: now'
+        minimumRequirement:
+          $ref: '#/components/schemas/DiscountMinimumRequirement'
+        combinesWith:
+          type: object
+          description: |
+            Which other discounts it can be combined with in one checkout,
+            see https://help.shopify.com/en/manual/discounts/discount-combinations.
+            Each omitted key defaults to false.
+          additionalProperties: false
+          properties:
+            orderDiscounts:
+              type: boolean
+            productDiscounts:
+              type: boolean
+            shippingDiscounts:
+              type: boolean
+        limits:
+          type: object
+          additionalProperties: false
+          properties:
+            totalUses:
+              type: integer
+              minimum: 1
+              description: |
+                Total redemptions; on a code pool it counts across every code
+                and stops the whole pool. Default: unlimited
+            oncePerCustomer:
+              type: boolean
+              description: 'Default: false'
+    DiscountShape:
+      description: |
+        general = one shared code. A code pool or an expiring discount gives
+        each customer a different code, starting with the code prefix. Refilling
+        pools serve flows and popups, non-refilling pools serve campaigns,
+        expiring codes are for urgency.
+      oneOf:
+        - $ref: '#/components/schemas/DiscountShapeGeneral'
+        - $ref: '#/components/schemas/DiscountShapeRefillingPool'
+        - $ref: '#/components/schemas/DiscountShapeNonRefillingPool'
+        - $ref: '#/components/schemas/DiscountShapeExpiring'
+      discriminator:
+        propertyName: type
+        mapping:
+          general: '#/components/schemas/DiscountShapeGeneral'
+          refilling_pool: '#/components/schemas/DiscountShapeRefillingPool'
+          non_refilling_pool: '#/components/schemas/DiscountShapeNonRefillingPool'
+          expiring: '#/components/schemas/DiscountShapeExpiring'
+    DiscountShapeGeneral:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - code
+        - endsAt
+      properties:
+        type:
+          type: string
+          enum:
+            - general
+        code:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: The shared code customers enter at checkout
+          example: WELCOME15
+        endsAt:
+          $ref: '#/components/schemas/DiscountEndsAt'
+    DiscountShapeRefillingPool:
+      type: object
+      description: |
+        Recart sets the number of codes in a refilling pool; the request
+        cannot. effectiveSettings.shape.targetCount shows it.
+      additionalProperties: false
+      required:
+        - type
+        - codePrefix
+        - endsAt
+      properties:
+        type:
+          type: string
+          enum:
+            - refilling_pool
+        codePrefix:
+          $ref: '#/components/schemas/DiscountCodePrefix'
+        endsAt:
+          $ref: '#/components/schemas/DiscountEndsAt'
+    DiscountShapeNonRefillingPool:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - codePrefix
+        - targetCount
+        - endsAt
+      properties:
+        type:
+          type: string
+          enum:
+            - non_refilling_pool
+        codePrefix:
+          $ref: '#/components/schemas/DiscountCodePrefix'
+        targetCount:
+          type: integer
+          minimum: 1
+          description: Number of codes in the pool
+          example: 50000
+        endsAt:
+          $ref: '#/components/schemas/DiscountEndsAt'
+    DiscountShapeExpiring:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - codePrefix
+        - validForHours
+      properties:
+        type:
+          type: string
+          enum:
+            - expiring
+        codePrefix:
+          $ref: '#/components/schemas/DiscountCodePrefix'
+        validForHours:
+          type: integer
+          minimum: 1
+          description: How long each code is valid from the moment it is issued to the customer
+          example: 24
+    DiscountCodePrefix:
+      type: string
+      minLength: 1
+      maxLength: 200
+      example: WELCOME
+    DiscountEndsAt:
+      type:
+        - string
+        - 'null'
+      format: date-time
+      description: Required; null = the discount never expires
+    DiscountValue:
+      oneOf:
+        - $ref: '#/components/schemas/DiscountValuePercentage'
+        - $ref: '#/components/schemas/DiscountValueFixedAmount'
+        - $ref: '#/components/schemas/DiscountValueFreeShipping'
+      discriminator:
+        propertyName: type
+        mapping:
+          percentage: '#/components/schemas/DiscountValuePercentage'
+          fixed_amount: '#/components/schemas/DiscountValueFixedAmount'
+          free_shipping: '#/components/schemas/DiscountValueFreeShipping'
+    DiscountValuePercentage:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - percent
+      properties:
+        type:
+          type: string
+          enum:
+            - percentage
+        percent:
+          type: number
+          minimum: 1
+          maximum: 100
+          description: Off the entire order
+          example: 15
+    DiscountValueFixedAmount:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - amount
+      properties:
+        type:
+          type: string
+          enum:
+            - fixed_amount
+        amount:
+          type: number
+          exclusiveMinimum: 0
+          description: Off the entire order, in the store currency
+          example: 10
+    DiscountValueFreeShipping:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum:
+            - free_shipping
+        maximumShippingPrice:
+          type: number
+          exclusiveMinimum: 0
+          description: 'Free shipping only on rates up to this price, in the store currency. Default: no maximum'
+    DiscountMinimumRequirement:
+      description: 'Default: none'
+      oneOf:
+        - $ref: '#/components/schemas/DiscountMinimumSubtotal'
+        - $ref: '#/components/schemas/DiscountMinimumQuantity'
+      discriminator:
+        propertyName: type
+        mapping:
+          subtotal: '#/components/schemas/DiscountMinimumSubtotal'
+          quantity: '#/components/schemas/DiscountMinimumQuantity'
+    DiscountMinimumSubtotal:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - amount
+      properties:
+        type:
+          type: string
+          enum:
+            - subtotal
+        amount:
+          type: number
+          exclusiveMinimum: 0
+          description: Minimum order subtotal, in the store currency
+    DiscountMinimumQuantity:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - quantity
+      properties:
+        type:
+          type: string
+          enum:
+            - quantity
+        quantity:
+          type: integer
+          minimum: 1
+          description: Minimum number of items in the order
+    EffectiveDiscountSettings:
+      type: object
+      description: |
+        The settings the discount will be created with: the request's
+        settings with every default filled in.
+      required:
+        - name
+        - shape
+        - value
+        - startsAt
+        - combinesWith
+        - limits
+        - currency
+      properties:
+        name:
+          type: string
+          example: Welcome 15
+        shape:
+          oneOf:
+            - $ref: '#/components/schemas/DiscountShapeGeneral'
+            - $ref: '#/components/schemas/EffectiveDiscountShapeRefillingPool'
+            - $ref: '#/components/schemas/DiscountShapeNonRefillingPool'
+            - $ref: '#/components/schemas/DiscountShapeExpiring'
+          discriminator:
+            propertyName: type
+            mapping:
+              general: '#/components/schemas/DiscountShapeGeneral'
+              refilling_pool: '#/components/schemas/EffectiveDiscountShapeRefillingPool'
+              non_refilling_pool: '#/components/schemas/DiscountShapeNonRefillingPool'
+              expiring: '#/components/schemas/DiscountShapeExpiring'
+        value:
+          $ref: '#/components/schemas/DiscountValue'
+        startsAt:
+          type: string
+          format: date-time
+        minimumRequirement:
+          $ref: '#/components/schemas/DiscountMinimumRequirement'
+        combinesWith:
+          type: object
+          required:
+            - orderDiscounts
+            - productDiscounts
+            - shippingDiscounts
+          properties:
+            orderDiscounts:
+              type: boolean
+            productDiscounts:
+              type: boolean
+            shippingDiscounts:
+              type: boolean
+        limits:
+          type: object
+          required:
+            - oncePerCustomer
+          properties:
+            totalUses:
+              type: integer
+              description: Absent = unlimited
+            oncePerCustomer:
+              type: boolean
+        currency:
+          type: string
+          description: The store currency of every amount
+          example: USD
+    EffectiveDiscountShapeRefillingPool:
+      type: object
+      required:
+        - type
+        - codePrefix
+        - targetCount
+        - endsAt
+      properties:
+        type:
+          type: string
+          enum:
+            - refilling_pool
+        codePrefix:
+          type: string
+          example: WELCOME
+        targetCount:
+          type: integer
+          description: Number of codes in the pool
+          example: 10000
+        endsAt:
+          $ref: '#/components/schemas/DiscountEndsAt'
+    DiscountDraft:
+      type: object
+      required:
+        - type
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - discounts
+        attributes:
+          type: object
+          required:
+            - id
+            - status
+            - effectiveSettings
+            - defaultsApplied
+            - warnings
+            - expiresAt
+          properties:
+            id:
+              type: string
+              description: ID of the draft; the published discount keeps it
+              example: 6ac77d8c9b7d4e3fa1c6d2e0
+            status:
+              type: string
+              enum:
+                - draft
+            effectiveSettings:
+              $ref: '#/components/schemas/EffectiveDiscountSettings'
+            defaultsApplied:
+              type: array
+              description: |
+                The settings the API filled in: a whole setting when it was
+                omitted (e.g. limits), or one key of it when the setting was
+                given without that key (e.g. limits.totalUses)
+              items:
+                type: string
+              example:
+                - startsAt
+                - minimumRequirement
+                - combinesWith
+                - limits
+            warnings:
+              type: array
+              description: Values that are allowed but risky, to show to the user before publishing
+              items:
+                type: string
+            expiresAt:
+              type: string
+              format: date-time
+              description: The draft is deleted after this time
     Segment:
       type:
         - object

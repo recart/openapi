@@ -33,6 +33,12 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.21] - 2026-10-29
+
+#### Added
+- `POST /discounts` creates a discount draft: a general discount, a code pool or an expiring discount, with every default filled in for review. Nothing is created on Shopify. **Not yet enabled for merchant accounts:** it returns 403 `ERR_WRITE_NOT_ALLOWED` until enabled for your account.
+- `GET /discounts/{id}` also returns drafts, with `status: draft`. `GET /discounts` never lists drafts.
+
 ### [2023-12.20] - 2026-10-09
 
 #### Added
