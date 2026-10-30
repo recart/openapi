@@ -1420,6 +1420,8 @@ paths:
             application/vnd.api+json:
               schema:
                 $ref: '#/components/schemas/HttpErrorBody'
+        4XX:
+          $ref: '#/components/responses/HttpError'
         5XX:
           $ref: '#/components/responses/HttpError'
   '/discounts/{id}':
@@ -1438,8 +1440,8 @@ paths:
         DiscountStatistics.
 
         A draft made with `POST /discounts` is returned as a DiscountDraft,
-        with status draft, only to the account that created it and until it
-        expires. omitShopifyData has no effect on a draft.
+        with status draft, until it expires. omitShopifyData has no effect
+        on a draft.
       parameters:
         - name: id
           in: path
@@ -5020,6 +5022,31 @@ components:
         shipping is a shipping discount; combinesWith is judged against that
         class. Amounts are in the store currency, which the draft echoes in
         effectiveSettings.currency.
+
+        Once published, the discount keeps the draft's id, and its settings
+        read in `GET /discounts` as below. An attribute without a value
+        holds the setting's value unchanged.
+
+        | Setting | `GET /discounts` attributes |
+        | --- | --- |
+        | `name` | `name` |
+        | `startsAt` | `startsAt` (absent on expiring discounts) |
+        | `shape.type: general` | `customizationType: general` |
+        | `shape.type: refilling_pool` | `customizationType: unique`, `expiryType: fixed`, `mode: refilling` |
+        | `shape.type: non_refilling_pool` | `customizationType: unique`, `expiryType: fixed`, `mode: non-refilling` |
+        | `shape.type: expiring` | `customizationType: unique`, `expiryType: relative` |
+        | `shape.code` | `code` |
+        | `shape.codePrefix` | `discountCodePattern: <codePrefix>{RAND}` (`WELCOME` reads as `WELCOME{RAND}`) |
+        | `shape.targetCount` | `targetCount` |
+        | `shape.validForHours` | `durationSeconds: validForHours × 3600` |
+        | `shape.endsAt` | `endsAt` |
+        | `value.type: percentage` | `valueType: PERCENTAGE`, `type: basic`, `discountClasses: [order]` |
+        | `value.percent` | `amount: percent / 100` (15 reads as 0.15) |
+        | `value.type: fixed_amount` | `valueType: FIXED_AMOUNT`, `type: basic`, `discountClasses: [order]` |
+        | `value.amount` | `amount` |
+        | `value.type: free_shipping` | `valueType: FREE_SHIPPING`, `type: free-shipping`, `discountClasses: [shipping]`, `amount: 1` |
+        | `value.maximumShippingPrice`, `minimumRequirement`, `combinesWith`, `limits` | in `summary`, and in `template` on expiring discounts |
+      additionalProperties: false
       required:
         - name
         - shape
@@ -5047,6 +5074,7 @@ components:
             Which other discounts it can be combined with in one checkout,
             see https://help.shopify.com/en/manual/discounts/discount-combinations.
             Each omitted key defaults to false.
+          additionalProperties: false
           properties:
             orderDiscounts:
               type: boolean
@@ -5056,6 +5084,7 @@ components:
               type: boolean
         limits:
           type: object
+          additionalProperties: false
           properties:
             totalUses:
               type: integer
@@ -5086,6 +5115,7 @@ components:
           expiring: '#/components/schemas/DiscountShapeExpiring'
     DiscountShapeGeneral:
       type: object
+      additionalProperties: false
       required:
         - type
         - code
@@ -5098,13 +5128,17 @@ components:
         code:
           type: string
           minLength: 1
-          maxLength: 255
+          maxLength: 200
           description: The shared code customers enter at checkout
           example: WELCOME15
         endsAt:
           $ref: '#/components/schemas/DiscountEndsAt'
     DiscountShapeRefillingPool:
       type: object
+      description: |
+        Recart sets the number of codes in a refilling pool; the request
+        cannot. effectiveSettings.shape.targetCount shows it.
+      additionalProperties: false
       required:
         - type
         - codePrefix
@@ -5120,6 +5154,7 @@ components:
           $ref: '#/components/schemas/DiscountEndsAt'
     DiscountShapeNonRefillingPool:
       type: object
+      additionalProperties: false
       required:
         - type
         - codePrefix
@@ -5141,6 +5176,7 @@ components:
           $ref: '#/components/schemas/DiscountEndsAt'
     DiscountShapeExpiring:
       type: object
+      additionalProperties: false
       required:
         - type
         - codePrefix
@@ -5160,6 +5196,7 @@ components:
     DiscountCodePrefix:
       type: string
       minLength: 1
+      maxLength: 200
       example: WELCOME
     DiscountEndsAt:
       type:
@@ -5180,6 +5217,7 @@ components:
           free_shipping: '#/components/schemas/DiscountValueFreeShipping'
     DiscountValuePercentage:
       type: object
+      additionalProperties: false
       required:
         - type
         - percent
@@ -5196,6 +5234,7 @@ components:
           example: 15
     DiscountValueFixedAmount:
       type: object
+      additionalProperties: false
       required:
         - type
         - amount
@@ -5211,6 +5250,7 @@ components:
           example: 10
     DiscountValueFreeShipping:
       type: object
+      additionalProperties: false
       required:
         - type
       properties:
@@ -5223,34 +5263,45 @@ components:
           exclusiveMinimum: 0
           description: 'Free shipping only on rates up to this price, in the store currency. Default: no maximum'
     DiscountMinimumRequirement:
-      oneOf:
-        - type: object
-          required:
-            - type
-            - amount
-          properties:
-            type:
-              type: string
-              enum:
-                - subtotal
-            amount:
-              type: number
-              exclusiveMinimum: 0
-              description: Minimum order subtotal, in the store currency
-        - type: object
-          required:
-            - type
-            - quantity
-          properties:
-            type:
-              type: string
-              enum:
-                - quantity
-            quantity:
-              type: integer
-              minimum: 1
-              description: Minimum number of items in the order
       description: 'Default: none'
+      oneOf:
+        - $ref: '#/components/schemas/DiscountMinimumSubtotal'
+        - $ref: '#/components/schemas/DiscountMinimumQuantity'
+      discriminator:
+        propertyName: type
+        mapping:
+          subtotal: '#/components/schemas/DiscountMinimumSubtotal'
+          quantity: '#/components/schemas/DiscountMinimumQuantity'
+    DiscountMinimumSubtotal:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - amount
+      properties:
+        type:
+          type: string
+          enum:
+            - subtotal
+        amount:
+          type: number
+          exclusiveMinimum: 0
+          description: Minimum order subtotal, in the store currency
+    DiscountMinimumQuantity:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+        - quantity
+      properties:
+        type:
+          type: string
+          enum:
+            - quantity
+        quantity:
+          type: integer
+          minimum: 1
+          description: Minimum number of items in the order
     EffectiveDiscountSettings:
       type: object
       description: |
