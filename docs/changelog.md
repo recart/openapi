@@ -37,6 +37,7 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 #### Added
 - `POST /discounts` creates a discount draft: a general discount, a code pool or an expiring discount, with every default filled in for review. Nothing is created on Shopify. **Not yet enabled for merchant accounts:** it returns 403 `ERR_WRITE_NOT_ALLOWED` until enabled for your account.
+- `POST /discounts/{id}/publish` creates the discount on Shopify from a draft. Publishing again returns the discount and never creates a second one. **Not yet enabled for merchant accounts:** it returns 403 `ERR_WRITE_NOT_ALLOWED` until enabled for your account.
 - `GET /discounts/{id}` also returns drafts, with `status: draft`. `GET /discounts` never lists drafts.
 
 ### [2023-12.20] - 2026-10-09
