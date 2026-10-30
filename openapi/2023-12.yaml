@@ -1282,8 +1282,7 @@ paths:
 
         The code of a general discount is checked with Shopify, so a code
         already in use, in Recart or on Shopify, fails here and no draft is
-        stored. A code pool or an expiring discount gets a random base code,
-        which the API never returns.
+        stored.
       requestBody:
         required: true
         content:
@@ -5308,8 +5307,7 @@ components:
       type: object
       description: |
         The settings the discount will be created with: the request's
-        settings with every default filled in. Never includes the base code
-        of a code pool or an expiring discount.
+        settings with every default filled in.
       required:
         - name
         - shape
