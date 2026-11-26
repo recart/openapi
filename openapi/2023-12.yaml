@@ -157,9 +157,10 @@ paths:
         to a category.
 
         `campaign-flows-summary` returns one entry per campaign with
-        activity in the range — the campaign's `flowId`, `name` and
-        statistics. Because every entry names its own flow, no separate
-        list call is needed to label the rows.
+        activity in the range — the campaign's `flowId`, `campaignId`,
+        `name` and statistics. Because every entry names its own flow, no
+        separate list call is needed to label the rows; `campaignId` is the
+        id for `/campaign-flows/{id}` and its views.
 
         Every view is a range total.
       parameters:
@@ -336,6 +337,7 @@ paths:
                       attributes:
                         campaign-flows-summary:
                           - flowId: 68a0f1c7e8c9d2b001234abc
+                            campaignId: 66aa11b7825e6ae655fe200
                             name: Labor Day 20% off
                             sent: 24700
                             recipients: 24700
@@ -352,6 +354,7 @@ paths:
                             revenuePerRecipient: 0.61
                             revenuePerMessage: 0.61
                           - flowId: 68a0f1c7e8c9d2b001234abd
+                            campaignId: 66aa11b7825e6ae655fe201
                             name: Back to school — 15% off
                             sent: 16500
                             recipients: 16500
@@ -755,6 +758,7 @@ paths:
                       - type: campaigns
                         attributes:
                           id: 66aa11b7825e6ae655fe200
+                          flowId: 68a0f1c7e8c9d2b001234abc
                           name: Labor Day Sale
                           status: sent
                           campaignType: adaptive
@@ -823,6 +827,7 @@ paths:
                       type: campaigns
                       attributes:
                         id: 66aa11b7825e6ae655fe200
+                        flowId: 68a0f1c7e8c9d2b001234abc
                         name: Labor Day Sale
                         status: sent
                         campaignType: adaptive
@@ -1033,6 +1038,7 @@ paths:
                       attributes:
                         adaptive-flow-summary:
                           id: 66aa11b7825e6ae655fe200
+                          flowId: 68a0f1c7e8c9d2b001234abc
                           name: Labor Day Sale
                           adaptiveTest:
                             adaptiveTestStatus: complete_with_winner
@@ -4197,6 +4203,7 @@ components:
       type: object
       required:
         - id
+        - flowId
         - name
         - status
         - campaignType
@@ -4205,6 +4212,10 @@ components:
           type: string
           description: ID of the campaign
           example: 66aa11b7825e6ae655fe200
+        flowId:
+          type: string
+          description: ID of the campaign's flow — the flowId of the campaign's entry in campaign-flows-summary
+          example: 68a0f1c7e8c9d2b001234abc
         name:
           type: string
           description: Name of the campaign
@@ -4648,6 +4659,7 @@ components:
         include the rollout to the rest of the audience.
       required:
         - id
+        - flowId
         - name
         - adaptiveTest
         - variants
@@ -4656,6 +4668,10 @@ components:
           type: string
           description: ID of the campaign
           example: 66aa11b7825e6ae655fe200
+        flowId:
+          type: string
+          description: ID of the campaign's flow
+          example: 68a0f1c7e8c9d2b001234abc
         name:
           type: string
           description: Name of the campaign
@@ -4802,12 +4818,17 @@ components:
         - type: object
           required:
             - flowId
+            - campaignId
             - name
           properties:
             flowId:
               type: string
               description: The campaign's flow id
               example: 68a0f1c7e8c9d2b001234abc
+            campaignId:
+              type: string
+              description: ID of the campaign — the id for /campaign-flows/{id}
+              example: 66aa11b7825e6ae655fe200
             name:
               type: string
               description: Name of the campaign

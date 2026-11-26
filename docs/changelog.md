@@ -33,6 +33,12 @@ Each entry is also published as a scope-tagged [GitHub Release](https://github.c
 
 ## REST API
 
+### [2023-12.22] - 2026-11-26
+
+#### Added
+- `flowId` on campaigns (`GET /campaign-flows`, `GET /campaign-flows/{id}`) and on the `adaptive-flow-summary` view of `GET /campaign-flows/{id}/views/{name}`: the id of the campaign's flow.
+- `campaignId` on the `campaign-flows-summary` entries of `GET /flows/views/{name}`: the id to pass to `GET /campaign-flows/{id}` and its views.
+
 ### [2023-12.21] - 2026-10-29
 
 #### Added
